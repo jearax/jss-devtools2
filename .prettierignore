@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+
+pnpm-lock.yaml
+
+.agentkit/
+
+plans/
+
+.env*
+.eslintcache
+*.log

@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint + Typecheck + Test + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+        with:
+          runtime: node@24
+          require-lockfile: true
+          cache: true
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cli-bundle
+          path: dist/cli.mjs
+          if-no-files-found: error
+          retention-days: 1
+
+  # The matrix runs the latest patch of each line, and the toolchain cannot install on the exact
+  # floor, so this job runs only the shipped bundle on the version `engines.node` promises.
+  consumer-floor:
+    name: Bundle on the consumer Node floor
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - id: floor
+        run: echo "version=$(node -p "require('./package.json').engines.node.replace(/^>=/, '')")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.floor.outputs.version }}
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: cli-bundle
+          path: bundle
+
+      - name: Run the bundle, directly and through a symlink
+        working-directory: bundle
+        run: |
+          node --version
+          node cli.mjs --version | grep -E '^[0-9]+\.[0-9]+\.[0-9]+'
+          node cli.mjs --help > /dev/null
+          ln -s cli.mjs jss-devtools
+          node jss-devtools --version | grep -E '^[0-9]+\.[0-9]+\.[0-9]+'
+          if node jss-devtools nope; then echo "unknown command exited 0" >&2; exit 1; fi
+
+  node-matrix:
+    name: Node ${{ matrix.node }}
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24', '26']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+        with:
+          runtime: node@${{ matrix.node }}
+          require-lockfile: true
+
+      - run: pnpm test

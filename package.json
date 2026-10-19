@@ -1,0 +1,82 @@
+{
+	"private": true,
+	"name": "@jjuidev/jss-devtools",
+	"version": "0.0.0",
+	"description": "JavaScript stack dev tools CLI",
+	"license": "MIT",
+	"type": "module",
+	"bin": {
+		"jss-devtools": "dist/cli.mjs"
+	},
+	"scripts": {
+		"build": "tsdown",
+		"dev": "tsdown --watch",
+		"format": "pnpm lint:fix && prettier --write .",
+		"format:check": "prettier --check .",
+		"lint": "eslint \"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\" \"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\"",
+		"lint:fix": "eslint --fix \"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\" \"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\"",
+		"prepare": "husky",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@clack/prompts": "1.8.1",
+		"commander": "15.0.0"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "21.2.4",
+		"@commitlint/config-conventional": "21.2.4",
+		"@eslint/js": "10.0.1",
+		"@types/node": "22.20.5",
+		"@vitest/eslint-plugin": "1.6.27",
+		"eslint": "10.13.0",
+		"eslint-config-prettier": "10.1.8",
+		"eslint-plugin-autofix": "2.2.0",
+		"eslint-plugin-import-x": "4.17.1",
+		"eslint-plugin-prefer-arrow-functions": "3.10.2",
+		"eslint-plugin-prettier": "5.5.7",
+		"globals": "17.13.0",
+		"husky": "9.1.7",
+		"lint-staged": "17.6.0",
+		"prettier": "3.9.10",
+		"prettier-package-json": "2.8.0",
+		"tsdown": "0.23.1",
+		"typescript": "6.0.3",
+		"typescript-eslint": "8.71.2",
+		"vitest": "5.0.5"
+	},
+	"keywords": [
+		"cli",
+		"devtools",
+		"javascript",
+		"typescript"
+	],
+	"engines": {
+		"node": ">=22.12.0"
+	},
+	"devEngines": {
+		"runtime": {
+			"name": "node",
+			"version": ">=22.13.0",
+			"onFail": "error"
+		}
+	},
+	"lint-staged": {
+		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"!(package).json": [
+			"prettier --write"
+		],
+		"**/*.{md,yml,yaml}": [
+			"prettier --write"
+		],
+		"package.json": [
+			"prettier-package-json --write",
+			"prettier --write"
+		]
+	},
+	"packageManager": "pnpm@11.24.0"
+}
