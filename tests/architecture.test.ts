@@ -40,3 +40,27 @@ describe('architecture rules', () => {
 		).toBe(rules.length);
 	});
 });
+
+describe('the alias in the scanner', () => {
+	const rule = rules.find((entry) => {
+		return entry.id === 'command-imports-no-other-command';
+	});
+
+	it('sees an aliased import of another command', () => {
+		const broken = rule?.check?.(
+			'commands/doctor/doctor.service.ts',
+			"import { other } from '@/commands/other/other.service.js';"
+		);
+
+		expect(broken).toBe(true);
+	});
+
+	it('leaves an aliased import of core alone', () => {
+		const broken = rule?.check?.(
+			'commands/doctor/doctor.service.ts',
+			"import { PACKAGE } from '@/core/constants/package.constant.js';"
+		);
+
+		expect(broken).toBe(false);
+	});
+});

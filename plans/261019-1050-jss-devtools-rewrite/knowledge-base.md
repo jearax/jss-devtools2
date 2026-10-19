@@ -60,6 +60,7 @@ Living notes for the rewrite. These record goals, philosophies, features and tec
 - Consumer-facing version floors trail the newest supported release instead of chasing it: "không lấy nodejs latest, mà chỉ lấy nodejs latest supported lùi về trước 3 version" (user, 2026-10-19). Applies to what consumers must have (runtime of the shipped CLI, versions it generates into their repos), not to dev-only pins in this repo. For Node on 2026-10-19 (nodejs/Release schedule.json): supported lines are 26 (current, LTS 2026-10-28), 24 (LTS, maintenance from 2026-10-20), 22 (maintenance until 2027-04-30), so three supported lines back from 26 gives a floor of 22.
 - The tool's own source must be clean before features are built on it (2026-10-19).
 - Distribution is native (curl, sh, wget) and deploys through a VPS with Dokploy; no npm in CI/CD (2026-10-19).
+- This repository's own toolchain is the reference output for `jss-devtools init`: "khi `jss-devtools init` thì expect của tôi cũng 80 ~ 90% như này" (user, 2026-10-19). Frozen as branch `checkpoint/init-reference` at `68f5e83`, so later work on `main` does not move the reference. Which parts are generated and which stay specific to this repo is open question T5.
 
 ### H0: knowledge and ownership
 - Three layers each own their files: toolchain (jss), agent workflows (AgentKit, optional), knowledge and learning (harness). `.claude/settings.json` is merged entry by entry.

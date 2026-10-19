@@ -21,15 +21,15 @@ and drop the over-engineered ones.
 
 ## Current stage
 
-Phase 0 of the rewrite: a clean, verified TypeScript CLI repository that feature work can build on.
-The CLI entry point exists with `--help` and `--version`. No product command has been built yet. The
-next steps are in [project-roadmap.md](./project-roadmap.md).
+The foundation is in place: a verified TypeScript CLI repository, the install site that serves it, the
+terminal UI layer every command renders through, and the source layout the commands live in.
+The CLI entry point has `-h, --help` and `-v, --version`, and `jss-devtools doctor` is the first
+command. The next steps are in [project-roadmap.md](./project-roadmap.md).
 
 ## Non-goals for now
 
-- Product commands, framework presets, and the harness module.
+- The toolchain and harness modules, and the framework presets.
 - Publication to npm. Distribution is native installation, and CI/CD never touches npm.
-- A release workflow, `install.sh`, or the installation site.
 - Committing to a first-release version number.
 
 ## Distribution

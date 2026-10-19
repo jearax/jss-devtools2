@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"name": "@jjuidev/jss-devtools",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"description": "JavaScript stack dev tools CLI",
 	"license": "MIT",
 	"type": "module",
@@ -16,6 +16,7 @@
 		"lint": "eslint \"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\" \"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\"",
 		"lint:fix": "eslint --fix \"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\" \"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\"",
 		"prepare": "husky",
+		"stage:release": "node scripts/stage-release.mjs",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"typecheck": "tsc --noEmit"
@@ -28,7 +29,7 @@
 		"@commitlint/cli": "21.2.4",
 		"@commitlint/config-conventional": "21.2.4",
 		"@eslint/js": "10.0.1",
-		"@types/node": "22.20.5",
+		"@types/node": "24.19.2",
 		"@vitest/eslint-plugin": "1.6.27",
 		"eslint": "10.13.0",
 		"eslint-config-prettier": "10.1.8",
@@ -53,14 +54,7 @@
 		"typescript"
 	],
 	"engines": {
-		"node": ">=22.12.0"
-	},
-	"devEngines": {
-		"runtime": {
-			"name": "node",
-			"version": ">=22.13.0",
-			"onFail": "error"
-		}
+		"node": ">=24.11.0"
 	},
 	"lint-staged": {
 		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [

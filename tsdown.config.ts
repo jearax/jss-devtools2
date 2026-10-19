@@ -2,8 +2,9 @@ import { readFileSync } from 'node:fs';
 
 import { defineConfig } from 'tsdown';
 
+import { readPackageInfo } from './scripts/package-info.mjs';
+
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
-	version: string;
 	dependencies?: Record<string, string>;
 };
 
@@ -12,7 +13,7 @@ const tsdownConfig = defineConfig({
 	outDir: 'dist',
 	format: ['esm'],
 	platform: 'node',
-	target: 'node22',
+	target: 'node24',
 	clean: true,
 	dts: false,
 	sourcemap: false,
@@ -23,7 +24,12 @@ const tsdownConfig = defineConfig({
 		alwaysBundle: Object.keys(pkg.dependencies ?? {}),
 		onlyBundle: false
 	},
-	define: { __JSS_VERSION__: JSON.stringify(pkg.version) }
+	inputOptions: {
+		onLog: (level, log, handler) => {
+			handler(log.code === 'UNRESOLVED_IMPORT' ? 'error' : level, log);
+		}
+	},
+	define: { __JSS_PACKAGE__: JSON.stringify(readPackageInfo()) }
 });
 
 export default tsdownConfig;

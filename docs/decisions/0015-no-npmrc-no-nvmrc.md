@@ -58,3 +58,10 @@ stated separately rather than rounded to one number.
   is the floor a developer may use; the `checks` job pins `runtime: node@24` so the job that gates
   merges cannot silently drift to whatever the newest Node happens to be. The matrix covers 22, 24
   and 26.
+
+## Later
+
+Decision 0022 removed `devEngines` and restored `engineStrict`, now that a single floor of
+`>=22.22.1` satisfies every dependency's engines. The claim above that pnpm fails an install on the
+project's own `engines.node` whatever `engineStrict` is set to was wrong: pnpm 11.24.0 only warns
+([0022](./0022-one-node-floor.md)).

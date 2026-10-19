@@ -1,14 +1,13 @@
-import { readFileSync } from 'node:fs';
-
 import { defineConfig } from 'vitest/config';
 
-const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
-	version: string;
-};
+import { readPackageInfo } from './scripts/package-info.mjs';
 
 const vitestConfig = defineConfig({
 	define: {
-		__JSS_VERSION__: JSON.stringify(pkg.version)
+		__JSS_PACKAGE__: JSON.stringify(readPackageInfo())
+	},
+	resolve: {
+		tsconfigPaths: true
 	},
 	test: {
 		environment: 'node',

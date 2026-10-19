@@ -1,3 +1,3 @@
 process.on('unhandledRejection', () => {
-	return (process.exitCode = 0);
+	process.exitCode = 0;
 });

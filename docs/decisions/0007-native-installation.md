@@ -31,3 +31,11 @@ VPS and Dokploy.
   contributors.
 - The release workflow, checksums, `install.sh` and the install site are not in this plan. Whether
   the artifact is a JS bundle requiring Node or a single executable is still open for that plan.
+
+## Later
+
+The install plan answered the open question: the artifact is a JS bundle that runs on Node, not a
+single executable. That is [0018](./0018-javascript-bundle-artifact.md), with the artifact host in
+[0019](./0019-artifact-lives-in-the-site-image.md) and the install path itself in
+[deployment-guide.md](../deployment-guide.md). A native executable stays possible for a later plan
+and would revisit this decision.

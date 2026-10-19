@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="vi">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>jss-devtools</title>
+		<style>
+			:root {
+				color-scheme: light dark;
+			}
+
+			body {
+				margin: 0;
+				padding: 3rem 1.5rem;
+				font-family:
+					ui-sans-serif,
+					system-ui,
+					-apple-system,
+					'Segoe UI',
+					sans-serif;
+				line-height: 1.6;
+			}
+
+			main {
+				max-width: 42rem;
+				margin: 0 auto;
+			}
+
+			h1 {
+				margin: 0 0 0.5rem;
+				font-size: 1.75rem;
+			}
+
+			pre {
+				overflow-x: auto;
+				padding: 1rem;
+				border: 1px solid currentColor;
+				border-radius: 0.5rem;
+			}
+
+			code {
+				font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', monospace;
+			}
+
+			.tagline {
+				margin-top: 0;
+				opacity: 0.8;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>jss-devtools</h1>
+			<p class="tagline">Công cụ dòng lệnh cho các repository JavaScript.</p>
+
+			<p>Cài đặt cho user hiện tại, không cần sudo:</p>
+			<pre><code>curl -fsSL https://jss-devtools.jjuidev.com/install.sh | sh</code></pre>
+
+			<p>Yêu cầu <code>Node &gt;= 24.11.0</code>, cùng <code>curl</code> hoặc <code>wget</code>.</p>
+
+			<p>
+				Sau khi cài, lệnh nằm ở <code>~/.local/bin/jss-devtools</code>. Thêm thư mục đó vào <code>PATH</code> nếu chưa
+				có.
+			</p>
+
+			<p>
+				Mã nguồn:
+				<a href="https://github.com/jearax/jss-devtools2">github.com/jearax/jss-devtools2</a>
+			</p>
+		</main>
+	</body>
+</html>

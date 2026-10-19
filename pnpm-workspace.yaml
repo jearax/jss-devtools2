@@ -3,6 +3,10 @@ allowBuilds:
 
 strictPeerDependencies: true
 
+# Refuses a Node below engines.node. CI installs on exactly that floor, so a dependency that needs a
+# newer Node fails there instead of slipping past the declared floor.
+engineStrict: true
+
 minimumReleaseAgeExclude:
   - '@commitlint/cli@21.2.4'
   - '@commitlint/config-conventional@21.2.4'

@@ -135,14 +135,16 @@ that peer range binding rather than advisory.
 
 ## Comments
 
-A comment earns its place only when it explains something the code does not already show: the
-reason, the constraint, the platform trap, the bug that motivated the rule.
+The default is no comment. A comment survives only when removing it would likely cause a wrong
+change: a platform or tool trap, a bug a guard prevents, a contract with something outside the
+code. JSDoc that says what a thing is or does goes, even when it is correct.
 
 | Keep                                         | Remove                                       |
 | -------------------------------------------- | -------------------------------------------- |
-| Why a rule or workaround exists              | Restating the next line or the function name |
-| A constraint that is not visible in the code | Step-by-step narration of control flow       |
-| The failure a guard was added to prevent     | Labels that name a category, not a fact      |
+| A platform or tool trap                      | JSDoc that says what a thing is or does      |
+| A bug a guard was added to prevent           | Restating the next line or the function name |
+| A contract with something outside the code   | Step-by-step narration of control flow       |
+| A constraint that is not visible in the code | Labels that name a category, not a fact      |
 | Assumptions and edge cases                   | TODOs that name no actionable task           |
 
 One line, or two when the second carries a new fact. Never three. Value is not length: a useful note
@@ -153,7 +155,31 @@ stays one line, and a padding paragraph stays gone no matter how true it is.
 - Files are kebab-case, including test files: `architecture-rules.ts`, `global-setup.ts`.
 - One concern per file. Split a file once it passes roughly 200 lines and has separable parts.
 - Prefer names that say what the thing is over names that say what it does.
-- Comments explain why a decision was made. Delete a comment that only restates the code.
+- A comment explains why a decision was made. Delete a comment that only restates the code.
+
+A file under `src/` carries a suffix that states its role, and the suffix is the one its folder
+allows. The architecture suite enforces this, and a rule with no fixture is a comment, not a rule.
+
+| Suffix         | Folder              | Role                                                             |
+| -------------- | ------------------- | ---------------------------------------------------------------- |
+| `.command.ts`  | command folder root | commander wiring, argument parsing, rendering through clack      |
+| `.ui.ts`       | `ui/`               | terminal rendering built on `@clack/prompts`, shared by commands |
+| `.service.ts`  | command folder root | the command's logic; returns data, prints nothing                |
+| `.check.ts`    | `checks/`           | one doctor check                                                 |
+| `.adapter.ts`  | `adapters/`         | the only knowledge of one external tool's command line           |
+| `.util.ts`     | `utils/`            | stateless helpers                                                |
+| `.constant.ts` | `constants/`        | constant values                                                  |
+| `.error.ts`    | `errors/`           | error classes                                                    |
+| `.type.ts`     | `types/`            | types only                                                       |
+
+`src/cli.ts` is the only file without a suffix: it is the entry point. A new role needs an entry in
+this table, in the rules and in
+[0024](./decisions/0024-core-and-command-layout.md), together.
+
+## CLI
+
+Every CLI exposes the same two flag pairs: `-h, --help` and `-v, --version`, so `-v` is taken and a
+later `--verbose` cannot use it.
 
 ## TypeScript
 
@@ -162,6 +188,9 @@ stays one line, and a padding paragraph stays gone no matter how true it is.
 - `module` and `moduleResolution` are `NodeNext`, so relative imports carry a `.js` extension. This
   is stricter than the design-system's `Bundler` resolution, and deliberately so: this repo ships a
   real Node ESM artifact, and `NodeNext` is what proves the extensions are right.
+- An import that leaves its folder goes through the `@/` alias, which `tsconfig.json` maps to `src/`.
+  An import in the same folder stays `./`, and ESLint rejects a parent-relative `../` import. The
+  `.js` extension stays: `@/core/errors/cli.error.js` is the file `src/core/errors/cli.error.ts`.
 - `verbatimModuleSyntax` is on: type-only imports must use `import type`.
 - `noEmit`. tsdown builds; `tsc` only checks.
 - `allowJs` and `checkJs` are off, so the `.mjs` config files are not type-checked and the repository
@@ -206,8 +235,8 @@ race.
 
 - Exact versions only, no ranges. The lockfile is the source of truth. That includes tools a script
   or hook runs: they are devDependencies, never `pnpm dlx` with a range.
-- `@types/node` follows the consumer floor's major line (22), not the development runtime, so `tsc`
-  rejects a Node API the oldest supported runtime does not have.
+- `@types/node` follows the floor's major line (22), so `tsc` rejects a Node API the oldest
+  supported runtime does not have.
 - Runtime libraries go in `dependencies`, tooling in `devDependencies`, following Node convention.
 - Every dependency added here is one the toolchain will generate for consumers, so it is a tested
   claim rather than a preference.
@@ -217,22 +246,12 @@ race.
 ## Package manager
 
 There is no `.npmrc`. pnpm reads every setting except auth and registry from
-`pnpm-workspace.yaml`, so that file holds `strictPeerDependencies` and `allowBuilds`. There is no
-`.nvmrc` either: `package.json` declares the Node floor.
+`pnpm-workspace.yaml`, so that file holds `strictPeerDependencies`, `engineStrict` and
+`allowBuilds`. There is no `.nvmrc` either: `package.json` declares the Node floor.
 
-Two floors, two numbers, because they are set by different packages:
-
-| Floor       | Value           | Set by                                                     |
-| ----------- | --------------- | ---------------------------------------------------------- |
-| Consumer    | Node >= 22.12.0 | commander 15, the only runtime dependency the CLI ships    |
-| Development | Node >= 22.13.0 | ESLint 10, declared as `>=22.13.0` in `devEngines.runtime` |
-
-`devEngines.runtime` uses `onFail: error`, so pnpm enforces the development floor at install rather
-than warning. Which Node a CI job runs is stated in the workflow, not the manifest: a developer floor
-and a test target are different facts. The one exception is the `consumer-floor` CI job, which reads
-the exact version from `engines.node` and runs the shipped bundle on it, because the toolchain
-itself cannot install on that version.
-
-`engineStrict` is deliberately not set. pnpm checks dependency engines against a version it resolves
-from the declared range, not the Node actually running, so a range floor gets validated at one of
-its boundaries. The project's own `engines.node` is enforced regardless of that setting.
+One floor, Node >= 24.11.0 in `engines.node`, for developing and for running the CLI. It is the first
+release of the Node 24 LTS line, and the lowest release of that line every pinned package accepts
+(tsdown 0.23.1 needs `^24.11.0` or newer). `engineStrict` makes pnpm refuse an older Node; without
+it pnpm only warns. CI installs exactly this version, so a dependency that raises its own requirement
+fails CI at install
+([decision 0026](./decisions/0026-node-floor-24.md)).

@@ -4,32 +4,15 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { main, reportFatalError } from '../src/cli.js';
+import { createProgram, main, reportFatalError, runProgram } from '@/cli.js';
+import { CliError } from '@/core/errors/cli.error.js';
+
+import { capture } from './support/capture-stream.js';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const pkg = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8')) as {
 	version: string;
-};
-
-// Swallow the stream so the test does not print what it is asserting on.
-const capture = async <T>(stream: NodeJS.WriteStream, fn: () => T | Promise<T>): Promise<string> => {
-	const chunks: string[] = [];
-	const original = stream.write.bind(stream);
-
-	stream.write = (chunk: string | Uint8Array): boolean => {
-		chunks.push(typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString());
-
-		return true;
-	};
-
-	try {
-		await fn();
-	} finally {
-		stream.write = original;
-	}
-
-	return chunks.join('');
 };
 
 const originalExitCode = process.exitCode;
@@ -72,6 +55,48 @@ describe('cli program', () => {
 
 		expect(output).toContain("error: unknown command 'inti'");
 		expect(output).not.toContain('too many arguments');
+		expect(process.exitCode).toBe(1);
+	});
+
+	it('shows the help and exits 0 with no command', async () => {
+		const output = await capture(process.stdout, () => {
+			return main(['node', 'jss-devtools'], { exitOverride: true });
+		});
+
+		expect(output).toContain('Usage: jss-devtools');
+		expect(process.exitCode).toBe(0);
+	});
+});
+
+describe('command failures', () => {
+	it('renders a CliError with its hint on stderr and exits 1', async () => {
+		const program = createProgram({ exitOverride: true });
+
+		program.command('boom').action(() => {
+			throw new CliError('the check failed', { hint: 'run it again with --yes' });
+		});
+
+		const output = await capture(process.stderr, () => {
+			return runProgram(program, ['node', 'jss-devtools', 'boom']);
+		});
+
+		expect(output).toContain('the check failed');
+		expect(output).toContain('run it again with --yes');
+		expect(process.exitCode).toBe(1);
+	});
+
+	it('reports an unexpected error on stderr and exits 1', async () => {
+		const program = createProgram({ exitOverride: true });
+
+		program.command('boom').action(() => {
+			throw new Error('something broke');
+		});
+
+		const output = await capture(process.stderr, () => {
+			return runProgram(program, ['node', 'jss-devtools', 'boom']);
+		});
+
+		expect(output.trim()).toBe('something broke');
 		expect(process.exitCode).toBe(1);
 	});
 });

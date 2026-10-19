@@ -2,45 +2,42 @@ import { realpathSync } from 'node:fs';
 
 import { Command, CommanderError } from 'commander';
 
-/** Injected by tsdown (`define` in tsdown.config.ts) and by vitest.config.ts. */
-declare const __JSS_VERSION__: string;
-
-const pkg = {
-	name: 'jss-devtools',
-	description: 'JavaScript stack dev tools CLI',
-	version: __JSS_VERSION__
-};
+import { registerDoctorCommand } from '@/commands/doctor/doctor.command.js';
+import { PACKAGE } from '@/core/constants/package.constant.js';
+import { CliError } from '@/core/errors/cli.error.js';
+import { bannerText, showBanner } from '@/core/ui/banner.ui.js';
+import { isInteractive, renderError } from '@/core/ui/terminal.ui.js';
 
 export type ProgramOptions = {
-	/** Tests set this so a failing command rejects instead of killing the runner. */
 	exitOverride?: boolean;
 };
 
-/** Commander reports an unknown command only when subcommands exist, and "too many arguments"
- * otherwise. Registered at parse time, because command modules attach after `createProgram` returns. */
-const addUnknownCommandFallback = (program: Command): void => {
-	if (program.commands.length > 0) {
-		return;
-	}
-
-	program.on('command:*', (operands: string[]) => {
-		const [unknown = ''] = operands;
-
-		program.error(`error: unknown command '${unknown}'`, { code: 'commander.unknownCommand' });
-	});
-};
-
-// Only `src/cli.ts` may construct the root command: modules attach to it, they do not replace it.
+// Only `src/cli.ts` may construct the root command: commands attach to it, they do not replace it.
 export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Command => {
 	const program = new Command();
 
+	// Before `.version()`, so the banner comes before the version it belongs to.
+	program.on('option:version', () => {
+		showBanner();
+	});
+
 	program
-		.name(pkg.name)
-		.description(pkg.description)
-		.version(pkg.version)
+		.name(PACKAGE.name)
+		.description(PACKAGE.description)
+		.version(PACKAGE.version, '-v, --version')
 		.showHelpAfterError(true)
 		.showSuggestionAfterError(true)
 		.allowExcessArguments(false);
+
+	program.addHelpText('beforeAll', (context) => {
+		if (context.error || !isInteractive()) {
+			return '';
+		}
+
+		return `${bannerText()}\n`;
+	});
+
+	registerDoctorCommand(program);
 
 	if (exitOverride) {
 		program.exitOverride();
@@ -49,7 +46,6 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 	return program;
 };
 
-/** One line on stderr, stack under `JSS_DEBUG=1`. Never exit 0: the last release shipped that bug. */
 export const reportFatalError = (error: unknown): void => {
 	const message = error instanceof Error ? error.message : String(error);
 
@@ -65,13 +61,29 @@ export const reportFatalError = (error: unknown): void => {
 export const main = async (argv: readonly string[] = process.argv, options: ProgramOptions = {}): Promise<void> => {
 	const program = createProgram(options);
 
-	addUnknownCommandFallback(program);
+	await runProgram(program, argv);
+};
 
+export const runProgram = async (program: Command, argv: readonly string[]): Promise<void> => {
 	try {
+		// Commander exits 1 when a subcommand is required, so the bare run takes the help path.
+		if (argv.length <= 2) {
+			program.help();
+
+			return;
+		}
+
 		await program.parseAsync([...argv]);
 	} catch (error) {
-		// CommanderError carries the intended code: 0 for --help and --version, 1 for a failure.
+		// CommanderError carries the exit code commander chose.
 		if (error instanceof CommanderError) {
+			process.exitCode = error.exitCode;
+
+			return;
+		}
+
+		if (error instanceof CliError) {
+			renderError(error);
 			process.exitCode = error.exitCode;
 
 			return;

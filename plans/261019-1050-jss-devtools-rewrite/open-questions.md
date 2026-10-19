@@ -16,8 +16,8 @@ F1 is answered. F2 to F12 now block the first step, setting up a clean source fo
 | F4 | CLI parser and TUI framework | | - | answered: "commander 15 + @clack/prompts 1.8" (user, 2026-10-19) |
 | F5 | Build tool | | - | answered: "tsdown 0.23" (user, 2026-10-19) |
 | F6 | Node floor for consumers | Principle: three supported lines back from the newest. On 2026-10-19 the supported lines are 26, 24, 22 (22 ends 2027-04-30). commander 15 needs >=22.12, clack 1.8 >=20.12, vitest 5 `^22.12 \|\| ^24 \|\| >=26`, tsdown 0.23 `^22.18 \|\| ^24.11 \|\| >=26`. Raise the floor to 24 when 22 reaches end of life. | - | answered: ">=22.12, CI chạy 22/24/26" (user, 2026-10-19), replacing the earlier ">=24" |
-| F7 | Distribution | Install through native tools (curl, sh, wget). CI/CD does not touch npm. Deploy infrastructure is a VPS with Dokploy (`ssh vps-5890-ci`: Dokploy v0.30.8, Traefik, Docker 29; no GitHub Actions runner on it). Still open for the release phase: JS bundle that needs Node, or a single executable. | - | answered: "CICD không tương tác với NPM nữa, hạ tầng deploy bây giờ là VPS + dokploy ... Chỉ install qua native như curl, sh, wget,... thay vì NPM" (user, 2026-10-19) |
-| F8 | Version for the first release of the rewrite: 0.7.0 or 1.0.0 | 0.x allows breaking changes. | none yet | open |
+| F7 | Distribution | Install through native tools (curl, sh, wget). CI/CD does not touch npm. Deploy infrastructure is a VPS with Dokploy (`ssh vps-5890-ci`: Dokploy v0.30.8, Traefik, Docker 29; no GitHub Actions runner on it). Still open for the release phase: JS bundle that needs Node, or a single executable. | - | answered: "CICD không tương tác với NPM nữa, hạ tầng deploy bây giờ là VPS + dokploy ... Chỉ install qua native như curl, sh, wget,... thay vì NPM" (user, 2026-10-19); artifact: "JS bundle, cần Node" (user, 2026-10-19) |
+| F8 | Version for the first release of the rewrite: 0.7.0 or 1.0.0 | 0.x allows breaking changes. | none yet | answered: "0.0.1, và cũng sẽ giữ 0.0.1 mãi trong quá trình dev / test" (user, 2026-10-19) |
 | F9 | Package manager | `packageManager` in the CLI repo only affects people who develop this repo, not consumers, and with native install the published package.json is never consumed. Pin the installed pnpm 11.24.0. User principle recorded: limit the maximum version a tool requires of consumers (corrected 2026-10-19). | pnpm 11.24.0 (dev only) | answered by explanation; user asked "chỗ này là consumer hay chỉ bản thân mình?" (2026-10-19) |
 | F10 | Test runner | | - | answered: vitest 5 (option Q1, user, 2026-10-19) |
 | F11 | Remote and CI | New GitHub repo `https://github.com/jearax/jss-devtools2` (does not exist yet on 2026-10-19). CI runs lint, typecheck, test, build. CD (release plus install site on Dokploy) belongs to the release phase. Still open at repo creation: visibility (public is needed if install.sh downloads GitHub release assets). | - | answered: "Tạo 1 github repo mới `https://github.com/jearax/jss-devtools2` để dùng" (user, 2026-10-19) |
@@ -31,6 +31,7 @@ F1 is answered. F2 to F12 now block the first step, setting up a clean source fo
 | T2 | Scaffold an empty folder (git init, package.json, README), or only overlay an existing repo? | JSS roadmap says scaffolding is out of scope. H0 decisions 0019 and 0020 scaffold. | overlay only | open |
 | T3 | Which presets ship first, and in what order? | Roadmap: react (Vite), next, nest, rn (Expo). | none yet | open |
 | T4 | Keep the current `init` flags and the JSON result as a contract? | Has consumers only if someone scripts it. | none yet | open |
+| T5 | Which parts of `checkpoint/init-reference` does `init` generate, and which stay specific to this repo? | User expects `init` output to be 80 to 90% of this repo (2026-10-19). | generate the toolchain (package.json scripts and devDependencies, tsconfig, ESLint, Prettier, EditorConfig, VS Code, husky, commitlint, lint-staged, pnpm-workspace, .gitignore, CI checks); leave out `src/`, `tests/`, `docs/`, `plans/`, tsdown and the consumer-floor job, which exist because this repo ships a CLI | open |
 
 ## Harness module
 
@@ -53,6 +54,23 @@ F1 is answered. F2 to F12 now block the first step, setting up a clean source fo
 
 | # | Question | Context | Leaning | Status |
 |---|---|---|---|---|
-| X1 | Exit codes: H0's 0/1/2/3 or JSS's 0/1? | | none yet | open |
-| X2 | Which H0 decisions carry over into the new repo, and which are superseded? | 20 decisions in `.harness/decisions/`. | review one by one during planning | open |
-| X3 | What happens to the old repos (jearax/harness, the install site)? | | none yet | open |
+| X1 | Exit codes: H0's 0/1/2/3 or JSS's 0/1? | | none yet | answered: "0/1, kiểu lỗi có code" (user, 2026-10-20); decision 0023 |
+| X2 | Which H0 decisions carry over into the new repo, and which are superseded? | 20 decisions in `.harness/decisions/`. | review one by one during planning | answered for core (user, 2026-10-20, 2026-10-21): H0 0010 adapter rule carries over, 0009 exit codes replaced by X1, 0011 and 0012 superseded by 0018, 0019, 0022; the rest decided by the toolchain and harness plans. Decisions 0023 and 0024 record the core part |
+| X3 | What happens to the old repos (jearax/harness, the install site)? | `harness.jjuidev.com/install.sh` answers 404 and `jearax/harness` has no releases reachable (2026-10-19). | none yet | open |
+
+## Release and install site
+
+Context: [Dokploy scout](../reports/scout-261019-1611-dokploy-release-and-install-site.md). Target from
+the user: `curl -fsSL https://jss-devtools.jjuidev.com/install.sh | sh` and a home page at the
+domain root `https://jss-devtools.jjuidev.com/`, deployed on `vps-5890-ci` through Dokploy the way
+`design-system` is. CI/CD is deferred: "tôi đang tính CICD tính sau nên chưa takecare nó" (user, 2026-10-19).
+
+| # | Question | Context | Leaning | Status |
+|---|---|---|---|---|
+| R1 | Where is the release artifact hosted: GitHub Releases, or inside the site image? | H0 used GitHub Releases plus checksums; that needs `jearax/jss-devtools2` to stay public. | GitHub Releases, as in H0 | answered: "Trong image của site" (user, 2026-10-19); recorded as [0019](../../docs/decisions/0019-artifact-lives-in-the-site-image.md) |
+| R2 | What is the home page: a content site in the `design-system` style (language segment, built with Vite), or a minimal page next to `install.sh`? | `design-system` serves `/<lang>/home` with a 302 from `/`. | none yet | answered: "Chỉ để tạm nginx home, install.sh nằm trong scripts/install.sh" (user, 2026-10-19); amended the same day: "nginx.conf chỉ dùng \"/\", ví dụ yoursite.com không handle gì i18n, /home cả" — the home page is the domain root, no i18n, no `/home`; recorded as [0021](../../docs/decisions/0021-temporary-nginx-home-and-install-script-location.md) |
+
+Built and deployed on 2026-10-19: [../261019-1619-dokploy-install-site/plan.md](../261019-1619-dokploy-install-site/plan.md),
+live guide [../../docs/deployment-guide.md](../../docs/deployment-guide.md). F7's artifact
+answer is decision [0018](../../docs/decisions/0018-javascript-bundle-artifact.md) and F8's is
+[0020](../../docs/decisions/0020-version-0-0-1-during-development.md). X3 stays open.

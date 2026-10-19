@@ -1,0 +1,7 @@
+# Allow-list: the site image is built from these paths only, so a stray file in the repository
+# never reaches the server.
+**
+
+!docker/
+!scripts/install.sh
+!release/

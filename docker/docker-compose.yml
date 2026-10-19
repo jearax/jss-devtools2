@@ -1,0 +1,25 @@
+networks:
+  dokploy-network:
+    external: true
+
+services:
+  jss-devtools-web:
+    image: ghcr.io/jearax/jss-devtools2:latest
+    # Always pull, or the redeploy webhook keeps the old image.
+    pull_policy: always
+    container_name: jss-devtools-web
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=dokploy-network'
+      - 'traefik.http.routers.jss-devtools-web.rule=Host(`jss-devtools.jjuidev.com`)'
+      - 'traefik.http.routers.jss-devtools-web.entryPoints=websecure'
+      - 'traefik.http.routers.jss-devtools-web.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.jss-devtools-web.loadbalancer.server.port=80'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:80/']
+      interval: 30s
+      timeout: 10s
+      retries: 3

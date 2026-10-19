@@ -1,0 +1,331 @@
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { CliError } from '@/core/errors/cli.error.js';
+import { createSpinner, isInteractive, renderError, runTasks } from '@/core/ui/terminal.ui.js';
+
+import { capture } from './support/capture-stream.js';
+
+const piped = {
+	isTTY: false,
+	env: {}
+};
+
+const terminal = {
+	isTTY: true,
+	env: {}
+};
+
+const ESC = '\u001b';
+
+const originalNoColor = process.env['NO_COLOR'];
+const originalForceColor = process.env['FORCE_COLOR'];
+
+afterEach(() => {
+	if (originalNoColor === undefined) {
+		delete process.env['NO_COLOR'];
+	} else {
+		process.env['NO_COLOR'] = originalNoColor;
+	}
+
+	if (originalForceColor === undefined) {
+		delete process.env['FORCE_COLOR'];
+	} else {
+		process.env['FORCE_COLOR'] = originalForceColor;
+	}
+});
+
+describe('interactive terminal detection', () => {
+	it('is interactive on a terminal outside CI', () => {
+		expect(isInteractive(terminal)).toBe(true);
+	});
+
+	it('is not interactive when the output is piped', () => {
+		expect(isInteractive(piped)).toBe(false);
+	});
+
+	it('is not interactive under CI', () => {
+		expect(
+			isInteractive({
+				isTTY: true,
+				env: { CI: 'true' }
+			})
+		).toBe(false);
+	});
+
+	it.each(['', '0', 'false'])('is interactive when CI is %j', (ci) => {
+		expect(
+			isInteractive({
+				isTTY: true,
+				env: { CI: ci }
+			})
+		).toBe(true);
+	});
+});
+
+describe('spinner', () => {
+	it('writes plain lines and no escape byte when the output is piped', async () => {
+		// Node colours by the environment, not by the layer, so the colour is off here.
+		process.env['NO_COLOR'] = '1';
+
+		const output = await capture(process.stdout, () => {
+			const spinner = createSpinner(piped);
+
+			spinner.start('Installing dependencies');
+			spinner.success('Dependencies installed');
+		});
+
+		expect(output).toContain('Installing dependencies');
+		expect(output).toContain('Dependencies installed');
+		expect(output).not.toContain(ESC);
+	});
+
+	it('animates on a terminal', async () => {
+		const output = await capture(process.stdout, () => {
+			const spinner = createSpinner(terminal);
+
+			spinner.start('Installing dependencies');
+			spinner.success('Dependencies installed');
+		});
+
+		expect(output).toContain('Installing dependencies');
+		expect(output).toContain(ESC);
+	});
+
+	it('erases the frame without moving up over the output above it', async () => {
+		const output = await capture(process.stdout, () => {
+			const spinner = createSpinner(terminal);
+
+			spinner.start('Installing dependencies');
+			spinner.success('Dependencies installed');
+		});
+
+		// A cursor up of zero still moves up one line, so a one-line frame must not write it.
+		expect(output).not.toContain('\u001b[0A');
+		expect(output).toContain('\u001b[1G\u001b[J');
+	});
+
+	it('installs no global process handler while it runs', async () => {
+		const before = {
+			unhandledRejection: process.listenerCount('unhandledRejection'),
+			uncaughtException: process.listenerCount('uncaughtException'),
+			sigint: process.listenerCount('SIGINT'),
+			exit: process.listenerCount('exit')
+		};
+
+		await capture(process.stdout, () => {
+			const spinner = createSpinner(terminal);
+
+			spinner.start('Installing dependencies');
+
+			expect(process.listenerCount('unhandledRejection')).toBe(before.unhandledRejection);
+			expect(process.listenerCount('uncaughtException')).toBe(before.uncaughtException);
+			expect(process.listenerCount('SIGINT')).toBe(before.sigint);
+			expect(process.listenerCount('exit')).toBe(before.exit);
+
+			spinner.success('Dependencies installed');
+		});
+	});
+});
+
+describe('tasks', () => {
+	it('writes a step line per task and a result line when the output is piped', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const output = await capture(process.stdout, () => {
+			return runTasks(
+				[
+					{
+						title: 'Copying the config',
+						run: () => {
+							return 'Config copied';
+						}
+					},
+					{
+						title: 'Installing dependencies',
+						run: () => {
+							return 'Dependencies installed';
+						}
+					}
+				],
+				piped
+			);
+		});
+
+		expect(output).toContain('Copying the config');
+		expect(output).toContain('Config copied');
+		expect(output).toContain('Installing dependencies');
+		expect(output).toContain('Dependencies installed');
+		expect(output).not.toContain(ESC);
+	});
+
+	it('writes the progress of a task', async () => {
+		const output = await capture(process.stdout, () => {
+			return runTasks(
+				[
+					{
+						title: 'Installing dependencies',
+						run: (message) => {
+							message('resolving');
+							message('linking');
+
+							return 'Dependencies installed';
+						}
+					}
+				],
+				piped
+			);
+		});
+
+		expect(output).toContain('resolving');
+		expect(output).toContain('linking');
+	});
+
+	it('falls back to the title when a task returns nothing', async () => {
+		const output = await capture(process.stdout, () => {
+			return runTasks(
+				[
+					{
+						title: 'Copying the config',
+						run: () => {
+							return undefined;
+						}
+					}
+				],
+				piped
+			);
+		});
+
+		expect(output).toContain('Copying the config');
+	});
+
+	it('ends the run at a failed task and passes the failure on', async () => {
+		const failures: unknown[] = [];
+
+		const output = await capture(process.stdout, async () => {
+			try {
+				await runTasks(
+					[
+						{
+							title: 'Copying the config',
+							run: () => {
+								return 'Config copied';
+							}
+						},
+						{
+							title: 'Installing dependencies',
+							run: () => {
+								throw new Error('the install failed');
+							}
+						},
+						{
+							title: 'Never runs',
+							run: () => {
+								return 'never';
+							}
+						}
+					],
+					piped
+				);
+			} catch (error) {
+				failures.push(error);
+			}
+		});
+
+		expect(output).toContain('Installing dependencies');
+		expect(output).not.toContain('the install failed');
+		expect(output).not.toContain('Never runs');
+		expect(failures).toHaveLength(1);
+	});
+
+	it('ends the failed task on a terminal too', async () => {
+		const output = await capture(process.stdout, async () => {
+			await expect(
+				runTasks(
+					[
+						{
+							title: 'Installing dependencies',
+							run: () => {
+								throw new Error('the install failed');
+							}
+						}
+					],
+					terminal
+				)
+			).rejects.toThrow('the install failed');
+		});
+
+		expect(output).toContain('Installing dependencies');
+	});
+
+	it('writes the result of a task on a terminal', async () => {
+		const output = await capture(process.stdout, () => {
+			return runTasks(
+				[
+					{
+						title: 'Copying the config',
+						run: () => {
+							return 'Config copied';
+						}
+					}
+				],
+				terminal
+			);
+		});
+
+		expect(output).toContain('Copying the config');
+		expect(output).toContain('Config copied');
+	});
+});
+
+describe('error rendering', () => {
+	it('writes the message and the hint on stderr', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const stderr = await capture(process.stderr, () => {
+			renderError(new CliError('the check failed', { hint: 'run it again with --yes' }));
+		});
+
+		expect(stderr).toBe(['│', '└  the check failed', '   ↳ run it again with --yes', ''].join('\n'));
+	});
+
+	it('writes the message on stderr when there is no hint', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const stderr = await capture(process.stderr, () => {
+			renderError(new CliError('the check failed'));
+		});
+
+		expect(stderr).toBe(['│', '└  the check failed', ''].join('\n'));
+	});
+
+	it('writes the frame corner in gray and the message in red', async () => {
+		delete process.env['NO_COLOR'];
+		process.env['FORCE_COLOR'] = '1';
+
+		const stderr = await capture(process.stderr, () => {
+			renderError(new CliError('the check failed'));
+		});
+
+		expect(stderr).toContain('\u001b[90m└\u001b[39m  \u001b[31mthe check failed\u001b[39m');
+	});
+
+	it('writes nothing to stdout', async () => {
+		const stdout = await capture(process.stdout, async () => {
+			await capture(process.stderr, () => {
+				renderError(new CliError('the check failed'));
+			});
+		});
+
+		expect(stdout).toBe('');
+	});
+
+	it('survives a non-Error throw', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const stderr = await capture(process.stderr, () => {
+			renderError('plain string');
+		});
+
+		expect(stderr).toBe(['│', '└  plain string', ''].join('\n'));
+	});
+});

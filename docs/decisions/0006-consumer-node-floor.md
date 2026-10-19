@@ -42,3 +42,8 @@ The floor was first exercised on 2026-10-19, after a review found that no job ra
 matrix takes the latest patch of each line. The `consumer-floor` CI job now runs the shipped bundle
 on the exact version in `engines.node`, and `@types/node` follows the 22 line so `tsc` rejects APIs
 that version lacks.
+
+Decision 0022 replaced the two floors with one, `>=22.22.1`, and replaced the matrix and the
+`consumer-floor` job with a single CI job on exactly that version
+([0022](./0022-one-node-floor.md)). The claim above that pnpm refuses a mismatched `engines.node`
+without `engineStrict` was wrong: pnpm 11.24.0 only warns.

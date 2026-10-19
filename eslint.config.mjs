@@ -73,6 +73,9 @@ const eslintConfig = defineConfig(
 
 	{
 		files: CODE_FILES,
+		settings: {
+			'import-x/internal-regex': '^@/'
+		},
 		plugins: {
 			autofix: pluginAutofix,
 			'import-x': pluginImportX,
@@ -81,6 +84,18 @@ const eslintConfig = defineConfig(
 		},
 		rules: {
 			'@typescript-eslint/no-explicit-any': 'off',
+
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['../*'],
+							message: 'Import through the @/ alias, not a parent-relative path.'
+						}
+					]
+				}
+			],
 
 			'autofix/eol-last': 'error',
 			'autofix/curly': 'error',
@@ -164,6 +179,11 @@ const eslintConfig = defineConfig(
 				}
 			]
 		}
+	},
+
+	{
+		files: ['tests/fixtures/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}'],
+		rules: { 'no-restricted-imports': 'off' }
 	},
 
 	eslintConfigPrettier

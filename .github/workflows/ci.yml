@@ -18,14 +18,21 @@ jobs:
     name: Lint + Typecheck + Test + Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      node: ${{ steps.floor.outputs.node }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
+      # The only Node CI runs is the exact floor in engines.node, so one run proves both the toolchain
+      # and the shipped bundle on the oldest version anyone may use.
+      - id: floor
+        run: echo "node=$(node -p "require('./package.json').engines.node.replace(/^>=/, '')")" >> "$GITHUB_OUTPUT"
+
       - uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
         with:
-          runtime: node@24
+          runtime: node@${{ steps.floor.outputs.node }}
           require-lockfile: true
           cache: true
 
@@ -34,6 +41,13 @@ jobs:
       - run: pnpm test
       - run: pnpm build
 
+      # The installer is fetched over HTTP and piped into a shell, so it is checked as POSIX sh.
+      - name: Shellcheck the installer
+        run: |
+          docker run --rm -v "$PWD:/mnt:ro" \
+            koalaman/shellcheck-alpine:v0.11.0@sha256:9955be09ea7f0dbf7ae942ac1f2094355bb30d96fffba0ec09f5432207544002 \
+            shellcheck --shell=sh /mnt/scripts/install.sh
+
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: cli-bundle
@@ -41,57 +55,86 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  # The matrix runs the latest patch of each line, and the toolchain cannot install on the exact
-  # floor, so this job runs only the shipped bundle on the version `engines.node` promises.
-  consumer-floor:
-    name: Bundle on the consumer Node floor
+  image:
+    name: Build and smoke the site image
     needs: checks
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - id: floor
-        run: echo "version=$(node -p "require('./package.json').engines.node.replace(/^>=/, '')")" >> "$GITHUB_OUTPUT"
-
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ steps.floor.outputs.version }}
+          node-version: ${{ needs.checks.outputs.node }}
 
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: cli-bundle
           path: bundle
 
-      - name: Run the bundle, directly and through a symlink
-        working-directory: bundle
+      - name: Stage the release
+        run: node scripts/stage-release.mjs bundle/cli.mjs
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # The image is loaded, not pushed, so the smoke test runs against the exact bytes that ship.
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          load: true
+          tags: jss-devtools-site:ci
+          cache-from: type=gha,scope=site
+          cache-to: type=gha,mode=max,scope=site
+
+      - name: Smoke the image
+        run: ci/smoke-site-image.sh jss-devtools-site:ci "$(node -p "require('./package.json').version")"
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          node --version
-          node cli.mjs --version | grep -E '^[0-9]+\.[0-9]+\.[0-9]+'
-          node cli.mjs --help > /dev/null
-          ln -s cli.mjs jss-devtools
-          node jss-devtools --version | grep -E '^[0-9]+\.[0-9]+\.[0-9]+'
-          if node jss-devtools nope; then echo "unknown command exited 0" >&2; exit 1; fi
+          docker tag jss-devtools-site:ci ghcr.io/${{ github.repository }}:latest
+          docker tag jss-devtools-site:ci ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
+          docker push ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
 
-  node-matrix:
-    name: Node ${{ matrix.node }}
-    needs: checks
+  # Dokploy deploys only a GitHub push event for the service's branch; anything else gets 301
+  # "Branch Not Match". A push to main is therefore a deploy, and the checks gate it.
+  deploy:
+    name: Deploy to Dokploy
+    needs: image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ['22', '24', '26']
+    timeout-minutes: 10
+    environment: main
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
-        with:
-          runtime: node@${{ matrix.node }}
-          require-lockfile: true
-
-      - run: pnpm test
+      - name: Trigger the Dokploy redeploy
+        env:
+          DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+          PUSH_EVENT: ${{ toJSON(github.event) }}
+        run: |
+          if [ -z "$DOKPLOY_WEBHOOK_URL" ]; then
+            echo "::error::DOKPLOY_WEBHOOK_URL is not set on the 'main' environment"
+            exit 1
+          fi
+          status=$(curl -sS -o response.json -w '%{http_code}' -X POST "$DOKPLOY_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -H 'X-GitHub-Event: push' \
+            --data "$PUSH_EVENT")
+          echo "Dokploy answered HTTP $status: $(cat response.json)"
+          if [ "$status" != "200" ]; then
+            echo "::error::Dokploy did not deploy"
+            exit 1
+          fi

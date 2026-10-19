@@ -1,0 +1,36 @@
+import type { DoctorCheck } from '@/commands/doctor/types/doctor-check.type.js';
+
+const CHECK_ID = 'git.installed';
+
+export const gitInstalledCheck: DoctorCheck = {
+	id: CHECK_ID,
+	run: (context) => {
+		const version = context.git.version;
+
+		if (version.status === 'ok') {
+			return {
+				id: CHECK_ID,
+				label: 'Git',
+				ok: true,
+				detail: version.output.replace(/^git version /, '')
+			};
+		}
+
+		if (version.status === 'missing') {
+			return {
+				id: CHECK_ID,
+				label: 'Git',
+				ok: false,
+				detail: version.problem,
+				hint: 'install git, then run the command again'
+			};
+		}
+
+		return {
+			id: CHECK_ID,
+			label: 'Git',
+			ok: false,
+			detail: version.problem
+		};
+	}
+};

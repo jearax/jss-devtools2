@@ -4,6 +4,9 @@ dist/
 coverage/
 *.tsbuildinfo
 
+# The staging directory the site image is built from.
+release/
+
 *.log
 pnpm-debug.log*
 

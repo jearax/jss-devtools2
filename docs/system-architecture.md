@@ -1,20 +1,63 @@
 # System architecture
 
-What the code does today. A leaner arrangement is under discussion and is not yet adopted; see the
-proposal in [../plans/reports/brainstorm-261019-1038-jss-devtools-lean-redesign.md](../plans/reports/brainstorm-261019-1038-jss-devtools-lean-redesign.md).
+What the code does today. The source layout was decided in
+[0024](./decisions/0024-core-and-command-layout.md) and the exit codes in
+[0023](./decisions/0023-exit-codes.md).
+
+## Source layout
+
+```
+src/
+├─ cli.ts                     the program, the exit code, the global handlers
+├─ core/                      shared; imports no command and no commander
+│  ├─ adapters/git.adapter.ts the only file that knows git's command line
+│  ├─ constants/              the banner art, the exit codes, the package facts
+│  ├─ errors/cli.error.ts     an expected failure with an exit code and a hint
+│  ├─ ui/                     the banner, the terminal layer, the check list, the spinner frames
+│  └─ utils/                  the command runner, the version comparison
+└─ commands/
+   └─ doctor/                 one folder per command
+      ├─ doctor.command.ts    commander wiring and rendering
+      ├─ doctor.service.ts    the checks, no I/O
+      ├─ checks/              one file per check
+      └─ types/               the types the command shares
+```
+
+A file name says what the file is: `.command.ts`, `.ui.ts`, `.service.ts`, `.check.ts`,
+`.adapter.ts`, `.util.ts`, `.constant.ts`, `.error.ts`, `.type.ts`. The table and the rules are in
+[0024](./decisions/0024-core-and-command-layout.md) and
+[code-standards.md](./code-standards.md).
+
+The rules are enforced by the architecture suite, and each rule has a negative fixture that breaks
+exactly that rule:
+
+| Id                                               | Rule                                                                                                |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `file-role-suffix`                               | Every file under `src/` except `cli.ts` has a suffix from the table, in its folder                  |
+| `core-imports-no-command`                        | `src/core/**` never imports from `src/commands/**`                                                  |
+| `command-imports-no-other-command`               | `src/commands/<a>/**` never imports `src/commands/<b>/**`; logic two commands share goes to `core/` |
+| `commander-in-command-files-only`                | `commander` only in `*.command.ts` and `cli.ts`                                                     |
+| `clack-in-ui-layer-only`                         | `@clack/prompts` only in `*.ui.ts`, `*.command.ts` and `cli.ts`                                     |
+| `output-in-ui-layer-only`                        | `process.stdout`, `process.stderr`, `console.` only in `*.ui.ts`, `*.command.ts` and `cli.ts`       |
+| `child-process-in-runner-only`                   | `node:child_process` only in `core/utils/run-command.util.ts`                                       |
+| `runner-in-adapters-only`                        | the command runner is called only by an adapter                                                     |
+| `no-process-exit-outside-entry-point`            | `process.exit` only in `cli.ts`                                                                     |
+| `no-global-process-handlers-outside-entry-point` | global process handlers only in `cli.ts`                                                            |
 
 ## Entry point
 
-`src/cli.ts` is the whole program, and it is the only place allowed to make process-level decisions.
+`src/cli.ts` builds the program and owns every process-level decision. A module attaches a command
+to it; it never replaces it.
 
 ```
 node dist/cli.mjs --help
   -> src/cli.ts  main()
        -> createProgram()        builds a commander program, runs nothing
+       -> registerDoctorCommand()  attaches the command folders
        -> program.parseAsync()    commander writes help, version, errors and exit codes
 ```
 
-Three exports, each with one job:
+Four exports, each with one job:
 
 - `createProgram(options)` builds the program without running it, so tests can drive it in-process.
   `options.exitOverride` makes commander reject instead of exiting, which is how the exit codes are
@@ -23,10 +66,103 @@ Three exports, each with one job:
   command handler.
 - `reportFatalError(error)` writes one line to stderr, adds the stack when `JSS_DEBUG=1`, and sets
   `process.exitCode = 1`.
+- `runProgram(program, argv)` parses and turns whatever escapes into an exit code. It is exported
+  so a test can run a program that throws, which is how the `CliError` path is covered.
 
-`main()` runs only when the module is the process entry. The check resolves `process.argv[1]` with
-`realpathSync` before comparing it with `import.meta.filename`, because bin shims and installers run
-the CLI through a symlink: unresolved, the two paths differ and the CLI would do nothing and exit 0.
+Commander reports an unknown command itself now that a subcommand exists, so `src/cli.ts` no longer
+carries a fallback for it. `main` runs only when the module is the process entry. The check resolves
+`process.argv[1]` with `realpathSync` before comparing it with `import.meta.filename`, because bin
+shims and installers run the CLI through a symlink: unresolved, the two paths differ and the CLI
+would do nothing and exit 0.
+
+## Terminal output
+
+`src/core/ui/terminal.ui.ts` is the only place that renders the terminal, and it owns the cases
+`@clack/prompts` does not cover. The library was measured against inquirer, listr2, ora and ink on
+2026-10-20; the measurement is in
+[the research report](../plans/reports/researcher-261020-0023-tui-framework.md) and the decision in
+[0004](./decisions/0004-cli-parser-and-prompts.md).
+
+| Primitive            | On a terminal outside CI                 | Piped, captured or in CI                                         |
+| -------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| `createSpinner()`    | the animated spinner                     | `log.step` at the start, `log.success` or `log.error` at the end |
+| `runTasks()`         | one animated spinner per task            | one `log.step` per task, a result line after it                  |
+| `renderError(error)` | `log.error` on stderr, the hint under it | the same                                                         |
+| prompts              | not written yet                          | not written yet                                                  |
+
+`isInteractive(context)` is the one rule for the output: stdout is a terminal and no CI marker is
+set. Clack writes cursor codes even when the output is piped, so the animated primitives never run
+outside a terminal. The prompt guard, which refuses to prompt when there is no terminal to answer,
+ships with the first prompt: on a closed stdin a clack prompt never settles and the process exits 13
+without a message ([bombshell-dev/clack#615](https://github.com/bombshell-dev/clack/issues/615)).
+That guard also asks whether stdin is a terminal, which is a different question from the one this
+rule answers.
+
+A failed task ends the run and the failure is passed on. The task list says which task failed; the
+reason belongs to the error path, which renders it on stderr, so the message never lands on stdout.
+
+Colour is Node's, not the layer's: `styleText` decides from the environment and from stdout, so a
+run with `FORCE_COLOR` set keeps its colour codes and a run with `NO_COLOR` set loses them. The
+layer only guarantees that the animation, and with it the cursor codes, never reaches a piped
+output.
+
+The animated spinner is drawn in `src/core/ui/animated-spinner.ui.ts` and not by clack. Clack's
+spinner registers global process handlers while it runs: the `unhandledRejection` one swallows a
+detached rejection, so the process ends with exit 0, and the `SIGINT` one makes Ctrl+C print
+"Canceled" and carry on. Measured on 2026-10-20, on the same task and with only the branch
+differing. The layer therefore owns no process state at all: no handlers, no hidden cursor, and
+Ctrl+C ends the CLI the way it ends any other program. The frames and the colours are clack's, so
+the look is the same.
+
+`CliError` carries the exit code and the hint that says what to do about the failure. `src/cli.ts`
+renders it through `renderError` and ends with its exit code. An unexpected error is a crash, not
+an expected failure: it stays a bare line on stderr, with the stack under `JSS_DEBUG=1`.
+
+## Banner
+
+`src/core/ui/banner.ui.ts` draws the JSS block letters from
+`src/core/constants/banner.constant.ts`, with the name, the version, the description, the Node
+version and the platform in a column beside them. The art is six lines of 24 columns, so the whole
+banner fits in 80 columns.
+
+`src/cli.ts` puts it above the root help and above `-v, --version`, on a terminal only: the help hook
+returns it when the help is not an error, and a listener registered before `.version()` writes it
+before the version. Piped, captured or in CI there is no banner, so `--version` is exactly
+`x.y.z`, which is what `scripts/install.sh` reads.
+
+## Package facts
+
+`src/cli.ts` holds no package literal. `scripts/package-info.mjs` reads `package.json` once and
+returns the name the CLI is called by, its description, its version and the Node floor;
+`tsdown.config.ts` and `vitest.config.ts` inject that object as `__JSS_PACKAGE__`, and
+`src/core/constants/package.constant.ts` is the only place that declares it and exports it as
+`PACKAGE`. The banner builds its info from `PACKAGE` once, in `src/core/ui/banner.ui.ts`, so every
+command shows the same banner.
+
+## The doctor command
+
+`jss-devtools doctor` is the first command, and it is the shape the others follow: the command
+folder holds the wiring, the service, the checks and the types, and `core/` holds everything
+shared.
+
+It runs three checks in a fixed order and reports each with its id, its detail and, when it fails,
+the fix:
+
+| Id               | What it checks                                                          |
+| ---------------- | ----------------------------------------------------------------------- |
+| `node.version`   | the running Node against `PACKAGE.nodeFloor`                            |
+| `git.installed`  | the adapter's version, failing with an install hint when git is missing |
+| `git.repository` | whether the working directory is inside a work tree                     |
+
+`git --version` runs once, before the checks, and its outcome is in the context: git that is not
+installed, git that exits non-zero and git that answers are three different results, and only the
+third passes `git.installed`. The repository check reads the same outcome, so a missing git is
+reported once: `git.repository` is skipped, with no second install hint.
+
+A failed check is a result, not an exception: the service runs every check and returns the results
+in order. The command renders them through clack and ends with a `CliError` when any failed, so the
+failure reaches stderr and the exit code is 1. On a terminal the command opens with the banner, the
+same as the root help.
 
 ## Exit codes
 
@@ -34,6 +170,7 @@ the CLI through a symlink: unresolved, the two paths differ and the CLI would do
 | ------------------------------------------- | --------- |
 | Help or version                             | 0         |
 | Success                                     | 0         |
+| No command                                  | 0         |
 | Unknown command, bad option, failed command | 1         |
 | Unhandled error escaping a command handler  | 1         |
 
@@ -41,28 +178,32 @@ Nothing in this repository may turn a failure into a success. The previous relea
 installed a global `uncaughtException` handler that did exactly that, so process exit and global
 process handlers are limited to `src/cli.ts` and enforced by a test.
 
+## Running without a command
+
+`jss-devtools` with no argument is the same as `jss-devtools --help`: the help on stdout, the
+banner on a terminal, and exit 0. Commander would show the help on stderr and exit 1, because a
+subcommand is required, so `src/cli.ts` takes the help path itself before it parses.
+
 ## Unknown commands
 
-Commander only reports an unknown command when the command has subcommands, and only offers a
-"Did you mean" suggestion once there is something to suggest. `main()` therefore registers a
-`command:*` fallback, but only while the program has no subcommands, and only at parse time, because
-command modules attach after `createProgram()` returns.
+Commander reports an unknown command itself once the program has subcommands, and offers a "Did you
+mean" suggestion when there is something to suggest. `jss-devtools nope` therefore exits 1 and names
+the command, with the suggestion commander builds from the registered commands.
 
-Today that fallback reports `error: unknown command 'inti'` itself, exit 1. The moment the first
-product command exists, the fallback is not registered and commander produces both the error and the
-suggestion on its own. No suggestion text is written today, because the CLI has no commands to
-suggest from.
+`src/cli.ts` carried a fallback for this while the program had no subcommands, because commander
+reports "too many arguments" in that case. `doctor` is the first command, so the fallback is gone.
 
 ## Build
 
 tsdown produces a single file, `dist/cli.mjs`:
 
-| Setting             | Value                           | Why                                                                                |
-| ------------------- | ------------------------------- | ---------------------------------------------------------------------------------- |
-| Format              | ESM                             | `type: module`, and Node runs ESM natively                                         |
-| Platform / target   | node, Node 22                   | The consumer floor, not the development runtime                                    |
-| `deps.alwaysBundle` | Every package in `dependencies` | Native install ships no `node_modules`                                             |
-| `define`            | `__JSS_VERSION__`               | The version comes from `package.json` at build time, never a second hardcoded copy |
+| Setting              | Value                           | Why                                                                                     |
+| -------------------- | ------------------------------- | --------------------------------------------------------------------------------------- |
+| Format               | ESM                             | `type: module`, and Node runs ESM natively                                              |
+| Platform / target    | node, Node 24                   | The major line of the Node floor                                                        |
+| `deps.alwaysBundle`  | Every package in `dependencies` | Native install ships no `node_modules`                                                  |
+| `inputOptions.onLog` | `UNRESOLVED_IMPORT` is an error | An import that does not resolve fails the build instead of warning into a broken bundle |
+| `define`             | `__JSS_PACKAGE__`               | The package facts come from `package.json` at build time, never a second hardcoded copy |
 
 `tsdown.config.ts` reads `package.json` and derives both the version and the list of dependencies to
 inline, so adding a runtime dependency cannot silently leave it external.
@@ -71,20 +212,28 @@ inline, so adding a runtime dependency cannot silently leave it external.
 
 `pnpm test` is self-contained: a vitest `globalSetup` runs the tsdown build once, then the suites run.
 
-| Suite                        | Question it answers                                                           |
-| ---------------------------- | ----------------------------------------------------------------------------- |
-| `tests/cli.test.ts`          | Does the program produce the right output and the right exit code?            |
-| `tests/bundle.test.ts`       | Does the shipped file work on a machine with no `node_modules`?               |
-| `tests/architecture.test.ts` | Are the boundary rules still true, and do the rules still detect a violation? |
+| Suite                         | Question it answers                                                           |
+| ----------------------------- | ----------------------------------------------------------------------------- |
+| `tests/cli.test.ts`           | Does the program produce the right output and the right exit code?            |
+| `tests/check-list.ui.test.ts` | Does the check list align its rows and nest the hint under its row?           |
+| `tests/terminal-ui.test.ts`   | Does the terminal layer stay plain when the output is piped?                  |
+| `tests/bundle.test.ts`        | Does the shipped file work on a machine with no `node_modules`?               |
+| `tests/install.test.ts`       | Does the served installer install a working CLI, and refuse what it must?     |
+| `tests/architecture.test.ts`  | Are the boundary rules still true, and do the rules still detect a violation? |
 
 The bundle suite copies `dist/cli.mjs` into an OS temp directory and runs it there. A temp directory
 outside the repository is the point: inside the repo, Node would resolve `node_modules` by walking
 up and the test would prove nothing. It also runs the bundle through a symlink, which is how an
 installed CLI is reached.
 
-CI adds one check the suites cannot: the `consumer-floor` job runs the bundle built by the gating job
-on the exact version in `engines.node`, directly and through a symlink. The matrix only proves the
-latest patch of each line, and the toolchain cannot install on the floor itself.
+The install suite starts a Node `http` server on 127.0.0.1 that serves the built bundle and a
+checksums file under the same paths the site serves them at, then runs `scripts/install.sh` with a
+temp `HOME`, base URL and bin dir. The mismatch case proves the failure leaves no install behind,
+and the old-Node case runs the installer with a fake `node` that reports v18, proving the floor is
+checked before anything is downloaded.
+
+CI runs every suite on one Node, the exact version in `engines.node`, so the bundle suite's direct
+and symlinked runs prove the shipped bundle on the oldest Node anyone may use.
 
 Architecture rules are data, not prose. `tests/support/architecture-rules.ts` holds the rule table,
 each rule carries a fixture path, and the suite asserts both directions: `src/` is clean, and each
@@ -95,28 +244,59 @@ fixture trips exactly its own rule. Adding a boundary means adding a row and a b
 `__JSS_VERSION__` is injected by both `tsdown.config.ts` and `vitest.config.ts`, so the tests
 assert against the same value the build ships instead of a copy that can drift.
 
+## Install site and deploy
+
+One nginx image carries the install path end to end, and the server never builds:
+
+```
+push to main
+  -> CI gate (checks, on the exact Node floor)
+  -> image job:  stage release/ -> build -> smoke the container -> push GHCR
+  -> deploy job: POST the push event to the Dokploy webhook
+       -> Dokploy: pull :latest, run docker/docker-compose.yml behind Traefik
+```
+
+- `scripts/install.sh` checks the Node floor (`MIN_NODE_VERSION`, equal to `engines.node`), downloads
+  `cli.mjs` and `checksums.txt` from `$JSS_DEVTOOLS_BASE_URL`, verifies the sha256, runs
+  `node cli.mjs --version`, and only then writes the bundle and the wrapper. Everything runs inside
+  `main "$@"`, the last line, so a truncated `curl | sh` runs nothing.
+- `scripts/stage-release.mjs` is the one writer of the checksum format the installer reads.
+- `docker/Dockerfile` copies the built bundle; `docker/nginx.conf` is the routing table: the home
+  page at `/`, the installer and the release files, and 404 for everything else.
+- `docker/docker-compose.yml` is what Dokploy runs: external `dokploy-network`, `pull_policy:
+always`, Traefik labels for `jss-devtools.jjuidev.com`, `wget` healthcheck.
+- `ci/smoke-site-image.sh` proves the routing table against a running image and installs from it end
+  to end; the CI `image` job runs it before anything is pushed.
+
+The details, the one-time setup and rollback are in
+[deployment-guide.md](./deployment-guide.md). The decisions behind the shape are
+[0018](./decisions/0018-javascript-bundle-artifact.md),
+[0019](./decisions/0019-artifact-lives-in-the-site-image.md),
+[0020](./decisions/0020-version-0-0-1-during-development.md) and
+[0021](./decisions/0021-temporary-nginx-home-and-install-script-location.md).
+
 ## Where each fact is declared
 
 One fact, one home. Nothing is written twice in two files that can drift.
 
-| Fact                         | Declared in                                      | Read by                                    |
-| ---------------------------- | ------------------------------------------------ | ------------------------------------------ |
-| CLI version                  | `package.json`                                   | `tsdown.config.ts`, `vitest.config.ts`     |
-| Dependencies to inline       | `package.json` `dependencies`                    | `tsdown.config.ts` `deps.alwaysBundle`     |
-| Runtime dependencies bundled | Same list                                        | `tests/bundle.test.ts`, as the real guard  |
-| Consumer Node floor          | `package.json` `engines.node`, `>=22.12.0`       | Consumers, pnpm, the `consumer-floor` job  |
-| Development Node floor       | `package.json` `devEngines.runtime`, `>=22.13.0` | pnpm locally, `pnpm/setup` in CI           |
-| CI Node for the gating job   | `.github/workflows/ci.yml` `runtime: node@24`    | `pnpm/setup`                               |
-| CI Node for the matrix       | `.github/workflows/ci.yml` `matrix.node`         | `pnpm/setup`                               |
-| Package manager              | `package.json` `packageManager`                  | `pnpm/setup` in CI, pnpm locally           |
-| Shared formatting            | `.editorconfig`                                  | Prettier, EditorConfig-aware editors       |
-| Other formatting             | `.prettierrc.json`                               | Prettier, `pnpm lint`, `pnpm format:check` |
-| pnpm behaviour               | `pnpm-workspace.yaml`                            | pnpm                                       |
+| Fact                           | Declared in                                        | Read by                                                                  |
+| ------------------------------ | -------------------------------------------------- | ------------------------------------------------------------------------ |
+| CLI name, description, version | `package.json`, read by `scripts/package-info.mjs` | `__JSS_PACKAGE__`, injected by `tsdown.config.ts` and `vitest.config.ts` |
+| Import alias                   | `tsconfig.json` `paths`, `@/*` to `src/*`          | every import that leaves its folder, ESLint, the architecture scanner    |
+| Dependencies to inline         | `package.json` `dependencies`                      | `tsdown.config.ts` `deps.alwaysBundle`                                   |
+| Runtime dependencies bundled   | Same list                                          | `tests/bundle.test.ts`, as the real guard                                |
+| Node floor                     | `package.json` `engines.node`, `>=24.11.0`         | pnpm (`engineStrict`), consumers, both CI jobs, `PACKAGE.nodeFloor`      |
+| Interactive-terminal rule      | `src/core/ui/terminal.ui.ts` `isInteractive`       | the terminal layer                                                       |
+| Banner art                     | `src/core/constants/banner.constant.ts`            | `src/core/ui/banner.ui.ts`                                               |
+| Exit codes                     | `src/core/constants/exit-code.constant.ts`         | `CliError`, the commands that end with their own code                    |
+| Installer and home-page floor  | `scripts/install.sh`, `docker/home.html`           | `tests/install.test.ts`, which proves both equal the floor               |
+| Release checksum format        | `scripts/stage-release.mjs`                        | `scripts/install.sh`                                                     |
+| Site routing table             | `docker/nginx.conf`                                | `ci/smoke-site-image.sh`, as the real guard                              |
+| Package manager                | `package.json` `packageManager`                    | `pnpm/setup` in CI, pnpm locally                                         |
+| Shared formatting              | `.editorconfig`                                    | Prettier, EditorConfig-aware editors                                     |
+| Other formatting               | `.prettierrc.json`                                 | Prettier, `pnpm lint`, `pnpm format:check`                               |
+| pnpm behaviour                 | `pnpm-workspace.yaml`                              | pnpm                                                                     |
 
-The two Node floors are different numbers because different packages set them, so they are stated
-separately rather than rounded to one. The Node a given CI job runs is a third fact and lives in the
-workflow: a developer floor and a test target are not the same thing, and leaving the gating job to
-resolve a range would let it drift to whatever the newest Node happens to be.
-
-`devEngines.runtime` is `onFail: error`, so the declared floor is enforced at install rather than
-warned about. See [decisions/0015](./decisions/0015-no-npmrc-no-nvmrc.md).
+There is one Node floor, and CI reads it from `package.json` and installs exactly that version
+instead of naming a version in the workflow. See
+[decisions/0022](./decisions/0022-one-node-floor.md).

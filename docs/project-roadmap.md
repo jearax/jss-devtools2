@@ -8,7 +8,7 @@ Plan: [../plans/261019-1055-phase-0-source-foundation/plan.md](../plans/261019-1
 
 - Repository, pinned toolchain, and git hooks. The first commit is the toolchain, the second is the
   CLI entry point.
-- A CLI with `--help` and `--version`, a single self-contained `dist/cli.mjs`, and tests for exit
+- A CLI with `-h, --help` and `-v, --version`, a single self-contained `dist/cli.mjs`, and tests for exit
   codes, the standalone bundle and the first architecture rules.
 - This documentation set and the decision records.
 
@@ -25,8 +25,7 @@ Journal for the ten commits after it:
   config, the lint scripts, lint-staged and tsconfig.
 - Config files carry no comments that restate their contents, and code comments only where the
   code does not already say it.
-- ESLint stayed on 10 because the reference's 9 is end-of-life. The development Node floor is
-  22.13 and the consumer floor 22.12, which are different facts set by different packages.
+- ESLint stayed on 10 because the reference's 9 is end-of-life.
 
 ## Done: phase 0 review fixes
 
@@ -39,7 +38,51 @@ Review: [../plans/reports/code-reviewer-261019-1519-phase-0-and-toolchain-review
 - lint-staged keys no longer overlap, and every tool a hook runs is pinned.
 - `.env` variants are ignored; formatting facts shared by Prettier and the editor
   are declared only in `.editorconfig`.
-- The consumer floor, Node 22.12.0, is exercised by CI on the shipped bundle.
+- One Node floor, 24.11.0, and CI runs only that version
+  ([decision 0026](./decisions/0026-node-floor-24.md)).
+
+## Done: the install site on Dokploy
+
+Plan:
+[../plans/261019-1619-dokploy-install-site/plan.md](../plans/261019-1619-dokploy-install-site/plan.md).
+How it runs: [deployment-guide.md](./deployment-guide.md).
+
+- `curl -fsSL https://jss-devtools.jjuidev.com/install.sh | sh` installs the CLI, and
+  `https://jss-devtools.jjuidev.com/` answers with a minimal page.
+- The installer checks the Node floor, verifies the sha256 and writes the wrapper; the install suite
+  runs it against a local release server.
+- One nginx image carries the page, the installer and the bundle CI tested. CI smoke-runs every
+  route against the container before it pushes, and calls the Dokploy webhook after.
+
+## Done: the terminal UI layer
+
+Report:
+[../plans/reports/researcher-261020-0023-tui-framework.md](../plans/reports/researcher-261020-0023-tui-framework.md).
+
+- `@clack/prompts` stays the rendering library, behind `src/core/ui/terminal.ui.ts`.
+- The animated primitives fall back to plain lines when the output is piped or in CI, so a captured
+  run carries no escape byte, and a failure is rendered on stderr with its fix hint.
+- The animated spinner is drawn by the layer, not by clack, because clack's registers global
+  process handlers while it runs and one of them turns a failure into exit 0.
+- The guard that refuses to prompt without a terminal ships with the first prompt, because a clack
+  prompt on a closed stdin never settles.
+
+## Done: the core layout and the doctor command
+
+Decisions:
+[0023](./decisions/0023-exit-codes.md),
+[0024](./decisions/0024-core-and-command-layout.md).
+
+- `src/` has a shared `core/` and one folder per command under `commands/`, and a file name says what
+  the file is: `.command.ts`, `.ui.ts`, `.service.ts`, `.check.ts`, `.adapter.ts`, `.util.ts`,
+  `.constant.ts`, `.error.ts`, `.type.ts`.
+- The boundaries are rules with a negative fixture each, so a rule that catches nothing is a comment
+  rather than a rule.
+- The exit codes are 0 and 1. A failed check throws `CliError`, which carries the exit code and the
+  fix.
+- `jss-devtools doctor` is the first command: it checks the Node version, whether git is installed and
+  whether the directory is inside a repository, and each failure carries its fix.
+- The package facts reach the CLI through one build define, so `src/cli.ts` holds no package literal.
 
 ## Not started
 
@@ -47,22 +90,19 @@ Each of these needs its own plan before implementation. Open questions that will
 collected in
 [../plans/261019-1050-jss-devtools-rewrite/open-questions.md](../plans/261019-1050-jss-devtools-rewrite/open-questions.md).
 
-| Area                     | What it covers                                                                                | Open questions |
-| ------------------------ | --------------------------------------------------------------------------------------------- | -------------- |
-| Core module layout       | Where `core`, `commands` and `modules` live, and what may import what                         | X2             |
-| Toolchain module         | The `init` command, framework presets, the version table                                      | T1, T2, T3, T4 |
-| Harness module           | Managed files, first-run bootstrap, review trigger, curation                                  | H1 to H12      |
-| Release and installation | First-release version, release workflow, checksums, `install.sh`, the install site on Dokploy | F8, X3         |
-| Cross-cutting            | Exit-code scheme, which decisions carry over from the old prototype                           | X1, X2, X3     |
+| Area             | What it covers                                               | Open questions |
+| ---------------- | ------------------------------------------------------------ | -------------- |
+| Toolchain module | The `init` command, framework presets, the version table     | T1 to T5       |
+| Harness module   | Managed files, first-run bootstrap, review trigger, curation | H1 to H12      |
+| Cross-cutting    | Which decisions carry over from the old prototype            | X2, X3         |
 
 ## Dependencies between these
 
-The core module layout comes first: the toolchain module needs somewhere to put commands, and the
-harness module needs the same. When it adds the first command, the zero-command unknown-command
-fallback in `src/cli.ts` stops being registered and should be deleted in the same change. The release plan comes last, because there is nothing to install
-until the toolchain module exists.
+The core layout came first: the toolchain command needs somewhere to live, and the harness command
+needs the same. The zero-command unknown-command fallback in `src/cli.ts` is gone, because `doctor`
+is the first command. The release path exists, so a command can ship the moment it is merged to
+`main`.
 
 ## Not committed to yet
 
-The first-release version number, and the shape of the module layout. Both are recorded as open
-rather than assumed here.
+The first-release version number. It is recorded as open rather than assumed here.
