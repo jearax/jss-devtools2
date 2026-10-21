@@ -20,9 +20,10 @@ run ends with "Nothing to set up": the flow is a separate plan, still open.
   does nothing yet. The block is the thing the flow has to meet, so the test compares the whole
   output byte for byte, from the bundle and in process.
 - **A subcommand does not inherit the root's `exitOverride`.** Commander copies that setting when
-  the subcommand is created, and the root sets it after the commands are registered, so an
-  in-process test of `init --help` would call `process.exit` and take the worker with it. The
-  tests give each subcommand its own override instead of changing the program.
+  the subcommand is created, and the root set it after the commands were registered, so an
+  in-process test of `init --help` called `process.exit` and took the worker with it. The root now
+  sets the override before it attaches the commands, and a test of `doctor --help` keeps that from
+  coming back.
 - **The action is not async.** Nothing in it awaits, and the lint rule says so. The doctor's action
   is async because it awaits its checks.
 - **The examples need a leading newline.** Commander's `addHelpText('after', …)` appends the text
@@ -33,8 +34,7 @@ run ends with "Nothing to set up": the flow is a separate plan, still open.
 - `doctor` keeps neither shared flag, so `jss-devtools doctor --yes` is an unknown option and
   exits 1.
 - The flag strings appear once in `src/`, in the constant.
-- No comment was added in `src/`: the code says what it does. The one comment in the test file
-  hides the exit-override trap.
-- The gate is green on Node 24.11.0: lint, typecheck, 12 files with 105 tests, build, format.
+- No comment was added in `src/`, except the one line that says why the exit override comes first.
+- The gate is green on Node 24.11.0: lint, typecheck, 12 files with 106 tests, build, format.
 
 > Historical work record — not durable authority. Prefer docs/specs/ADRs for current decisions.

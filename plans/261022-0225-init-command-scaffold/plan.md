@@ -108,7 +108,7 @@ These are decided. The scaffold only parses the flags; their effect lands with t
 - The flag strings appear once in `src/`, in `common-option.constant.ts`
   (`git grep -n -- "'-y, --yes'" src` prints one line). **True on 2026-10-22.**
 - `pnpm lint && pnpm typecheck && pnpm test && pnpm build` green on Node 24.11.0, with the real output
-  reported. **True on 2026-10-22:** lint, typecheck, 12 files with 105 tests, build.
+  reported. **True on 2026-10-22:** lint, typecheck, 12 files with 106 tests, build.
 
 ## Non-goals
 
@@ -143,7 +143,7 @@ Done on 2026-10-22. `jss-devtools init` is registered with the shared flags `-y,
 `src/core/constants/common-option.constant.ts` and attached by the command that needs them. Every run
 ends with "Nothing to set up": the flow is not part of this plan.
 
-Two things the plan did not say. The action is not async, because nothing in it awaits. And a
-subcommand does not inherit the root's `exitOverride`, because commander copies that setting when
-the subcommand is created, so the in-process tests give each subcommand its own override; without
-it, a test of a subcommand's help would exit the worker.
+Two things the plan did not say. The action is not async, because nothing in it awaits. And the
+exit override has to be applied before the commands are attached: commander copies that setting into
+a subcommand when the subcommand is created, so an override set afterwards never reaches `doctor` or
+`init`, and an in-process test of a subcommand's help would exit the worker.

@@ -30,7 +30,7 @@ F1 is answered. F2 to F12 now block the first step, setting up a clean source fo
 | T1 | Dependency versions: an explicit tested table or live registry resolution? | JSS resolves from the registry (non-deterministic). H0 decision 0010 chose an explicit table. | explicit table | open |
 | T2 | Scaffold an empty folder (git init, package.json, README), or only overlay an existing repo? | JSS roadmap says scaffolding is out of scope. H0 decisions 0019 and 0020 scaffold. | overlay only | open |
 | T3 | Which presets ship first, and in what order? | Roadmap: react (Vite), next, nest, rn (Expo). | none yet | open |
-| T4 | Keep the current `init` flags and the JSON result as a contract? | Has consumers only if someone scripts it. | none yet | open |
+| T4 | Keep the current `init` flags and the JSON result as a contract? | Has consumers only if someone scripts it. | none yet | answered (user, 2026-10-22): no JSON output at all, "Bỏ hết mọi thứ liên quan --json, vì usecase k thực tế."; the first flag batch is `--help`, `--dry-run`, `-y, --yes`, recorded in [the init flow decision log](../261022-0141-init-flow-discussion/decision-log.md) |
 | T5 | Which parts of `checkpoint/init-reference` does `init` generate, and which stay specific to this repo? | User expects `init` output to be 80 to 90% of this repo (2026-10-19). | generate the toolchain (package.json scripts and devDependencies, tsconfig, ESLint, Prettier, EditorConfig, VS Code, husky, commitlint, lint-staged, pnpm-workspace, .gitignore, CI checks); leave out `src/`, `tests/`, `docs/`, `plans/`, tsdown and the consumer-floor job, which exist because this repo ships a CLI | open |
 
 ## Harness module

@@ -9,8 +9,8 @@ date: 2026-10-22
 
 ## Context
 
-`init` is the toolchain command, and the first batch of its flags was decided before its flow. Two
-of them are not `init`'s own: a command that asks a question needs a way not to ask, and a command
+`init` initializes a project, and the first batch of its flags was decided before its flow. Two of
+them are not `init`'s own: a command that asks a question needs a way not to ask, and a command
 that writes needs a way to show what it would write. Deciding them once, in `core/`, keeps the next
 command from inventing its own spelling.
 
@@ -55,5 +55,3 @@ import, because only a command file may import commander.
   the same meaning: no question, every default.
 - The help examples describe what the flags will do. Today every `init` run says "Nothing to set
   up", because the flow is not built yet. The examples are the contract the flow has to meet.
-- The scope of "toàn command" is still open: whether `-y` reaches a question that has no default is
-  a flow decision, not a flag decision.
