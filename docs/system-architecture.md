@@ -11,15 +11,18 @@ src/
 ├─ cli.ts                     the program, the exit code, the global handlers
 ├─ core/                      shared; imports no command and no commander
 │  ├─ adapters/git.adapter.ts the only file that knows git's command line
-│  ├─ constants/              the banner art, the exit codes, the package facts
+│  ├─ constants/              the banner art, the exit codes, the package facts, the shared flags
 │  ├─ errors/cli.error.ts     an expected failure with an exit code and a hint
 │  ├─ ui/                     the banner, the terminal layer, the check list, the spinner frames
 │  └─ utils/                  the command runner, the version comparison
 └─ commands/
-   └─ doctor/                 one folder per command
-      ├─ doctor.command.ts    commander wiring and rendering
-      ├─ doctor.service.ts    the checks, no I/O
-      ├─ checks/              one file per check
+   ├─ doctor/                 one folder per command
+   │  ├─ doctor.command.ts    commander wiring and rendering
+   │  ├─ doctor.service.ts    the checks, no I/O
+   │  ├─ checks/              one file per check
+   │  └─ types/               the types the command shares
+   └─ init/                   one folder per command
+      ├─ init.command.ts      commander wiring, the shared flags, the help examples
       └─ types/               the types the command shares
 ```
 
@@ -164,6 +167,26 @@ in order. The command renders them through clack and ends with a `CliError` when
 failure reaches stderr and the exit code is 1. On a terminal the command opens with the banner, the
 same as the root help.
 
+## The init command
+
+`jss-devtools init` is the toolchain command. What ships today is its scaffold: the command, the
+shared flags and the help. It writes nothing, so every run ends with "Nothing to set up".
+
+The flags are declared once, as plain data in `src/core/constants/common-option.constant.ts`, and a
+command attaches the ones it needs in its own `*.command.ts`. Core holds no commander import,
+because only a command file may import commander.
+
+| Flag         | Meaning                                                   |
+| ------------ | --------------------------------------------------------- |
+| `-y, --yes`  | do not ask; take the default answers                      |
+| `--dry-run`  | show the changes, write nothing                           |
+| `-h, --help` | commander's usage and options, plus an `Examples` section |
+
+`doctor` asks nothing, so it has neither flag, and `jss-devtools doctor --yes` is an unknown
+option. The contracts of the flags, and what the flow will do with them, are in
+[0029](./decisions/0029-shared-command-flags.md) and the
+[init flow decision log](../plans/261022-0141-init-flow-discussion/decision-log.md).
+
 ## Exit codes
 
 | Situation                                   | Exit code |
@@ -217,6 +240,7 @@ inline, so adding a runtime dependency cannot silently leave it external.
 | `tests/cli.test.ts`           | Does the program produce the right output and the right exit code?            |
 | `tests/check-list.ui.test.ts` | Does the check list align its rows and nest the hint under its row?           |
 | `tests/terminal-ui.test.ts`   | Does the terminal layer stay plain when the output is piped?                  |
+| `tests/init.command.test.ts`  | Does init print its help byte for byte, and take the shared flags?            |
 | `tests/bundle.test.ts`        | Does the shipped file work on a machine with no `node_modules`?               |
 | `tests/install.test.ts`       | Does the served installer install a working CLI, and refuse what it must?     |
 | `tests/architecture.test.ts`  | Are the boundary rules still true, and do the rules still detect a violation? |

@@ -1,7 +1,7 @@
 ---
 title: "init command scaffold"
 description: "Register `jss-devtools init` with the shared flags `-y, --yes` and `--dry-run`, declared once in core, and its help with examples. The flow itself (what init creates, preflight, conflicts, confirmation) is not part of this plan."
-status: pending
+status: done
 priority: P1
 effort: 1h
 branch: main
@@ -88,23 +88,27 @@ These are decided. The scaffold only parses the flags; their effect lands with t
 
 1. Commit this plan, the decision log folder `plans/261022-0141-init-flow-discussion/` and the
    English translation of `plans/reports/code-reviewer-261019-1519-phase-0-and-toolchain-review.md`
-   as one docs commit, before any code.
-2. Add the constant, the type, the command and the registration.
-3. Add the tests.
-4. Add decision 0029 and the doc updates.
-5. Run the full gate and commit as a second commit.
+   as one docs commit, before any code. **Done (2026-10-22)**, commit `5f0f0c0`.
+2. Add the constant, the type, the command and the registration. **Done (2026-10-22).**
+3. Add the tests. **Done (2026-10-22).**
+4. Add decision 0029 and the doc updates. **Done (2026-10-22).**
+5. Run the full gate and commit as a second commit. **Done (2026-10-22).**
 
 ## Acceptance
 
-- `jss-devtools init --help` prints the block above, exit 0.
+- `jss-devtools init --help` prints the block above, exit 0. **True on 2026-10-22:** the output is
+  byte for byte the block above, from the bundle and in process.
 - `jss-devtools init`, `init -y`, `init --dry-run` and `init -y --dry-run` each end with
-  "Nothing to set up", exit 0, and leave the working directory unchanged.
-- `jss-devtools init --dryrun` exits 1 and suggests `--dry-run`.
+  "Nothing to set up", exit 0, and leave the working directory unchanged. **True on 2026-10-22:**
+  the bundle run in an empty temp directory leaves it empty.
+- `jss-devtools init --dryrun` exits 1 and suggests `--dry-run`. **True on 2026-10-22:** commander
+  prints `(Did you mean --dry-run?)`.
 - `jss-devtools doctor --yes` exits 1 with "unknown option": `doctor` does not take the shared flags.
+  **True on 2026-10-22.**
 - The flag strings appear once in `src/`, in `common-option.constant.ts`
-  (`git grep -n -- "'-y, --yes'" src` prints one line).
+  (`git grep -n -- "'-y, --yes'" src` prints one line). **True on 2026-10-22.**
 - `pnpm lint && pnpm typecheck && pnpm test && pnpm build` green on Node 24.11.0, with the real output
-  reported.
+  reported. **True on 2026-10-22:** lint, typecheck, 12 files with 105 tests, build.
 
 ## Non-goals
 
@@ -131,3 +135,15 @@ These are decided. The scaffold only parses the flags; their effect lands with t
 
 - None for this plan. The init flow questions (T2 above all, with "Usecase chính của CLI này chủ yếu
   là init repo, kiểu như vite create á") are in the decision log.
+
+## Outcome
+
+Done on 2026-10-22. `jss-devtools init` is registered with the shared flags `-y, --yes` and
+`--dry-run`, and its help carries the `Examples` section. The flags are declared once in
+`src/core/constants/common-option.constant.ts` and attached by the command that needs them. Every run
+ends with "Nothing to set up": the flow is not part of this plan.
+
+Two things the plan did not say. The action is not async, because nothing in it awaits. And a
+subcommand does not inherit the root's `exitOverride`, because commander copies that setting when
+the subcommand is created, so the in-process tests give each subcommand its own override; without
+it, a test of a subcommand's help would exit the worker.

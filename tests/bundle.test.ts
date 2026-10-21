@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { copyFile, readFile, symlink } from 'node:fs/promises';
+import { copyFile, readdir, readFile, symlink } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -183,5 +183,38 @@ describe('standalone bundle', () => {
 
 		expect(stdout).not.toContain('██');
 		expect(stdout).not.toContain('\u001b[?25l');
+	});
+
+	it('prints the init help with the shared flags and the examples', async () => {
+		const { stdout, code } = await cli('init', '--help');
+
+		expect(code).toBe(0);
+		expect(stdout).toBe(`Usage: jss-devtools init [options]
+
+initialize a project
+
+Options:
+  -y, --yes   do not ask; take the default answers
+  --dry-run   show the changes, write nothing
+  -h, --help  display help for command
+
+Examples:
+  $ jss-devtools init              ask before writing
+  $ jss-devtools init --dry-run    show what would change
+  $ jss-devtools init --yes        write without asking, e.g. in CI
+`);
+	});
+
+	it('sets nothing up and leaves the working directory unchanged', async () => {
+		const empty = await makeEmptyDir();
+
+		const { stdout, stderr, code } = await runEntry('cli.mjs', ['init'], empty);
+
+		expect(code).toBe(0);
+		expect(stdout).toContain('Nothing to set up');
+		expect(stderr).toBe('');
+		expect(await readdir(empty)).toEqual([]);
+
+		await removeDir(empty);
 	});
 });

@@ -84,6 +84,18 @@ Decisions:
   whether the directory is inside a repository, and each failure carries its fix.
 - The package facts reach the CLI through one build define, so `src/cli.ts` holds no package literal.
 
+## Done: the init command scaffold
+
+Plan: [../plans/261022-0225-init-command-scaffold/plan.md](../plans/261022-0225-init-command-scaffold/plan.md).
+Decision: [0029](./decisions/0029-shared-command-flags.md).
+
+- `jss-devtools init` exists, with the shared flags `-y, --yes` and `--dry-run` and a help with an
+  `Examples` section. It writes nothing yet: every run ends with "Nothing to set up".
+- The shared flags are declared once in `src/core/constants/`, so the next command that asks a
+  question attaches the same flags. `doctor` asks nothing and has neither.
+- The flow that fills `init` is still open, and is drawn in the
+  [init flow decision log](../plans/261022-0141-init-flow-discussion/decision-log.md).
+
 ## Not started
 
 Each of these needs its own plan before implementation. Open questions that will shape them are

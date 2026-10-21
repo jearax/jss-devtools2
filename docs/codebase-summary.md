@@ -27,19 +27,20 @@ only Node floor is `engines.node` in `package.json`, which `engineStrict` enforc
 
 ## Source
 
-| Path                                 | Purpose                                                                                                                                      |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/cli.ts`                         | The entry point: builds the commander program, registers the module commands, owns the exit code                                             |
-| `src/core/constants/`                | `banner.constant.ts`, the JSS art and the platform names; `exit-code.constant.ts`, the exit codes; `package.constant.ts`, the package facts  |
-| `src/core/errors/cli.error.ts`       | `CliError`, a failure with an exit code and a fix hint                                                                                       |
-| `src/core/ui/banner.ui.ts`           | The banner: the art with the name, the version, the description and the platform beside it                                                   |
-| `src/core/ui/terminal.ui.ts`         | The terminal layer: plain lines when piped, the animated spinner on a terminal, errors on stderr                                             |
-| `src/core/ui/animated-spinner.ui.ts` | The frames of the animated spinner, drawn here so the layer owns no process state                                                            |
-| `src/core/ui/check-list.ui.ts`       | The check list: one aligned row per check, with the fix hint nested under its row                                                            |
-| `src/core/utils/run-command.util.ts` | The only spawner: `execFile` without a shell, and a missing command as a result, not a throw                                                 |
-| `src/core/utils/version.util.ts`     | Parses a version and compares two of them numerically                                                                                        |
-| `src/core/adapters/git.adapter.ts`   | The only file that knows git's command line                                                                                                  |
-| `src/commands/doctor/`               | The first command: `doctor.command.ts` wires it, `doctor.service.ts` runs the checks, `checks/` holds one file per check, `types/` the types |
+| Path                                 | Purpose                                                                                                                                                                                            |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/cli.ts`                         | The entry point: builds the commander program, registers `doctor` and `init`, owns the exit code                                                                                                   |
+| `src/core/constants/`                | `banner.constant.ts`, the JSS art and the platform names; `exit-code.constant.ts`, the exit codes; `package.constant.ts`, the package facts; `common-option.constant.ts`, the shared command flags |
+| `src/core/errors/cli.error.ts`       | `CliError`, a failure with an exit code and a fix hint                                                                                                                                             |
+| `src/core/ui/banner.ui.ts`           | The banner: the art with the name, the version, the description and the platform beside it                                                                                                         |
+| `src/core/ui/terminal.ui.ts`         | The terminal layer: plain lines when piped, the animated spinner on a terminal, errors on stderr                                                                                                   |
+| `src/core/ui/animated-spinner.ui.ts` | The frames of the animated spinner, drawn here so the layer owns no process state                                                                                                                  |
+| `src/core/ui/check-list.ui.ts`       | The check list: one aligned row per check, with the fix hint nested under its row                                                                                                                  |
+| `src/core/utils/run-command.util.ts` | The only spawner: `execFile` without a shell, and a missing command as a result, not a throw                                                                                                       |
+| `src/core/utils/version.util.ts`     | Parses a version and compares two of them numerically                                                                                                                                              |
+| `src/core/adapters/git.adapter.ts`   | The only file that knows git's command line                                                                                                                                                        |
+| `src/commands/doctor/`               | The first command: `doctor.command.ts` wires it, `doctor.service.ts` runs the checks, `checks/` holds one file per check, `types/` the types                                                       |
+| `src/commands/init/`                 | The toolchain command: `init.command.ts` wires it and attaches the shared flags, `types/` the types it reads. It writes nothing yet                                                                |
 
 `core/` is shared and imports no command; `commands/` holds one folder per command. A file name
 says what the file is, and the architecture suite enforces it. The rules are in
@@ -63,24 +64,25 @@ says what the file is, and the architecture suite enforces it. The rules are in
 
 ## Tests
 
-| Path                                  | Purpose                                                                                                                                                   |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tests/cli.test.ts`                   | In-process tests over `main()`: help, version, unknown command named and non-zero, non-zero exit on failure                                               |
-| `tests/doctor.service.test.ts`        | The doctor checks with a fake context: all pass, Node below the floor, git missing, git failing, not a repository                                         |
-| `tests/version.util.test.ts`          | Version parsing and numeric comparison                                                                                                                    |
-| `tests/run-command.util.test.ts`      | The command runner: the output, the exit code, and a command that does not exist                                                                          |
-| `tests/git-adapter.test.ts`           | The git adapter against a temporary repository, a temporary directory that is not one, and a stub that fails                                              |
-| `tests/banner.test.ts`                | The banner: the info column lines up, it fits in eighty columns, and it shows on a terminal only                                                          |
-| `tests/terminal-ui.test.ts`           | The terminal layer: plain lines and no escape byte when piped, an animated spinner on a terminal, errors on stderr                                        |
-| `tests/check-list.ui.test.ts`         | The check list: the labels line up, the hint sits under its row, and no escape byte when piped                                                            |
-| `tests/bundle.test.ts`                | Runs the built `dist/cli.mjs` from a temp directory with no `node_modules`, directly and through a symlink, and runs `doctor` in and out of a repository  |
-| `tests/install.test.ts`               | Runs `scripts/install.sh` against a local release server: the good path, a checksum mismatch, a Node below the floor, and the floor equals `engines.node` |
-| `tests/architecture.test.ts`          | Proves each boundary rule has a negative fixture it detects, and that `src/` is clean                                                                     |
-| `tests/support/architecture-rules.ts` | The rule table and the source scanner                                                                                                                     |
-| `tests/support/capture-stream.ts`     | Captures what a stream receives, so a test can assert on output it would otherwise print                                                                  |
-| `tests/support/tmp-dir.ts`            | Temp-directory helpers used by the bundle suite                                                                                                           |
-| `tests/setup/global-setup.ts`         | Runs the tsdown build once before the suites, so `pnpm test` is self-contained                                                                            |
-| `tests/fixtures/architecture/`        | One file per rule, each breaking exactly that rule, under a tree that mirrors `src/`                                                                      |
+| Path                                  | Purpose                                                                                                                                                                                    |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `tests/cli.test.ts`                   | In-process tests over `main()`: help, version, unknown command named and non-zero, non-zero exit on failure                                                                                |
+| `tests/doctor.service.test.ts`        | The doctor checks with a fake context: all pass, Node below the floor, git missing, git failing, not a repository                                                                          |
+| `tests/init.command.test.ts`          | The init command: its help block byte for byte, the four flag combinations, the misspelled flag with its suggestion, and the shared flags refused on doctor                                |
+| `tests/version.util.test.ts`          | Version parsing and numeric comparison                                                                                                                                                     |
+| `tests/run-command.util.test.ts`      | The command runner: the output, the exit code, and a command that does not exist                                                                                                           |
+| `tests/git-adapter.test.ts`           | The git adapter against a temporary repository, a temporary directory that is not one, and a stub that fails                                                                               |
+| `tests/banner.test.ts`                | The banner: the info column lines up, it fits in eighty columns, and it shows on a terminal only                                                                                           |
+| `tests/terminal-ui.test.ts`           | The terminal layer: plain lines and no escape byte when piped, an animated spinner on a terminal, errors on stderr                                                                         |
+| `tests/check-list.ui.test.ts`         | The check list: the labels line up, the hint sits under its row, and no escape byte when piped                                                                                             |
+| `tests/bundle.test.ts`                | Runs the built `dist/cli.mjs` from a temp directory with no `node_modules`, directly and through a symlink, and runs `doctor` in and out of a repository, and `init` in an empty directory |
+| `tests/install.test.ts`               | Runs `scripts/install.sh` against a local release server: the good path, a checksum mismatch, a Node below the floor, and the floor equals `engines.node`                                  |
+| `tests/architecture.test.ts`          | Proves each boundary rule has a negative fixture it detects, and that `src/` is clean                                                                                                      |
+| `tests/support/architecture-rules.ts` | The rule table and the source scanner                                                                                                                                                      |
+| `tests/support/capture-stream.ts`     | Captures what a stream receives, so a test can assert on output it would otherwise print                                                                                                   |
+| `tests/support/tmp-dir.ts`            | Temp-directory helpers used by the bundle suite                                                                                                                                            |
+| `tests/setup/global-setup.ts`         | Runs the tsdown build once before the suites, so `pnpm test` is self-contained                                                                                                             |
+| `tests/fixtures/architecture/`        | One file per rule, each breaking exactly that rule, under a tree that mirrors `src/`                                                                                                       |
 
 ## Docs and plans
 

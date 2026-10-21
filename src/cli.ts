@@ -3,6 +3,7 @@ import { realpathSync } from 'node:fs';
 import { Command, CommanderError } from 'commander';
 
 import { registerDoctorCommand } from '@/commands/doctor/doctor.command';
+import { registerInitCommand } from '@/commands/init/init.command';
 import { PACKAGE } from '@/core/constants/package.constant';
 import { CliError } from '@/core/errors/cli.error';
 import { bannerText, showBanner } from '@/core/ui/banner.ui';
@@ -38,6 +39,7 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 	});
 
 	registerDoctorCommand(program);
+	registerInitCommand(program);
 
 	if (exitOverride) {
 		program.exitOverride();
