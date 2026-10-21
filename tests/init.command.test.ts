@@ -4,8 +4,6 @@ import { createProgram, runProgram } from '@/cli';
 
 import { capture } from './support/capture-stream';
 
-import type { Command } from 'commander';
-
 const HELP_BLOCK = `Usage: jss-devtools init [options]
 
 initialize a project
@@ -27,19 +25,8 @@ afterEach(() => {
 	process.exitCode = originalExitCode;
 });
 
-// A subcommand copies the exit override when it is created, so the root's later override never reaches it.
-const createTestProgram = (): Command => {
-	const program = createProgram({ exitOverride: true });
-
-	for (const command of program.commands) {
-		command.exitOverride();
-	}
-
-	return program;
-};
-
 const runInit = async (...args: readonly string[]): Promise<{ stdout: string; stderr: string }> => {
-	const program = createTestProgram();
+	const program = createProgram({ exitOverride: true });
 	let stderr = '';
 
 	const stdout = await capture(process.stdout, async () => {
@@ -97,7 +84,7 @@ describe('the init command', () => {
 	});
 
 	it('refuses the shared flags on doctor', async () => {
-		const program = createTestProgram();
+		const program = createProgram({ exitOverride: true });
 		let stderr = '';
 
 		await capture(process.stdout, async () => {

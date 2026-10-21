@@ -66,6 +66,15 @@ describe('cli program', () => {
 		expect(output).toContain('Usage: jss-devtools');
 		expect(process.exitCode).toBe(0);
 	});
+
+	it('shows the help of a subcommand and exits 0', async () => {
+		const output = await capture(process.stdout, () => {
+			return main(['node', 'jss-devtools', 'doctor', '--help'], { exitOverride: true });
+		});
+
+		expect(output).toContain('Usage: jss-devtools doctor');
+		expect(process.exitCode).toBe(0);
+	});
 });
 
 describe('command failures', () => {

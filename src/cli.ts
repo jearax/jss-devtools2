@@ -17,6 +17,11 @@ export type ProgramOptions = {
 export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Command => {
 	const program = new Command();
 
+	// A subcommand copies this setting when it is created, so it has to be set before the commands attach.
+	if (exitOverride) {
+		program.exitOverride();
+	}
+
 	// Before `.version()`, so the banner comes before the version it belongs to.
 	program.on('option:version', () => {
 		showBanner();
@@ -40,10 +45,6 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 
 	registerDoctorCommand(program);
 	registerInitCommand(program);
-
-	if (exitOverride) {
-		program.exitOverride();
-	}
 
 	return program;
 };
