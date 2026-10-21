@@ -2,10 +2,10 @@ import { stripVTControlCharacters } from 'node:util';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { PACKAGE } from '@/core/constants/package.constant.js';
-import { renderBanner, showBanner } from '@/core/ui/banner.ui.js';
+import { PACKAGE } from '@/core/constants/package.constant';
+import { renderBanner, showBanner } from '@/core/ui/banner.ui';
 
-import { capture } from './support/capture-stream.js';
+import { capture } from './support/capture-stream';
 
 const info = {
 	name: 'jss-devtools',

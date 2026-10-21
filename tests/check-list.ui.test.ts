@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { renderCheckList } from '@/core/ui/check-list.ui.js';
+import { renderCheckList } from '@/core/ui/check-list.ui';
 
-import { capture } from './support/capture-stream.js';
+import { capture } from './support/capture-stream';
 
 const ESC = '\u001b';
 

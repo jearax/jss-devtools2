@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { makeEmptyDir, removeDir } from './support/tmp-dir.js';
+import { makeEmptyDir, removeDir } from './support/tmp-dir';
 
 const run = promisify(execFile);
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');

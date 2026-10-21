@@ -92,6 +92,10 @@ const eslintConfig = defineConfig(
 						{
 							group: ['../*'],
 							message: 'Import through the @/ alias, not a parent-relative path.'
+						},
+						{
+							regex: '^(?:@/|\\.{1,2}/).+\\.(?:js|ts)$',
+							message: 'Import without the file extension.'
 						}
 					]
 				}

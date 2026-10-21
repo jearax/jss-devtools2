@@ -38,9 +38,11 @@ Adopt the design-system configuration as the base, trimmed to what a Node CLI ne
 
 - Formatting is now a lint concern as well as a Prettier concern, so `pnpm lint` alone proves both.
 - Semicolons are back on, matching the reference. This rewrote every source file once.
-- `moduleResolution` stays `NodeNext` rather than the reference's `Bundler`. This repository ships a
-  real Node ESM artifact, and `NodeNext` is what proves import extensions are correct. This is the
-  one deliberate deviation, recorded here so it does not read as an oversight.
+- `moduleResolution` stayed `NodeNext` rather than the reference's `Bundler`. This repository ships a
+  real Node ESM artifact, and `NodeNext` was what proved import extensions were correct. This was
+  the one deliberate deviation, recorded here so it does not read as an oversight. Superseded by
+  [decision 0028](./0028-extensionless-imports.md): the resolution is `Bundler` now, and an import
+  carries no extension.
 - Adding typed lint rules surfaced two real defects immediately, one of which was a reach into a
   commander's private method. Both are fixed rather than suppressed.
 - The `no-restricted-syntax` ban on `enum` was added with the first version of this config and later

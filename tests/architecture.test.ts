@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { findViolations, listSourceFiles, rules } from './support/architecture-rules.js';
+import { findViolations, listSourceFiles, rules } from './support/architecture-rules';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -49,7 +49,7 @@ describe('the alias in the scanner', () => {
 	it('sees an aliased import of another command', () => {
 		const broken = rule?.check?.(
 			'commands/doctor/doctor.service.ts',
-			"import { other } from '@/commands/other/other.service.js';"
+			"import { other } from '@/commands/other/other.service';"
 		);
 
 		expect(broken).toBe(true);
@@ -58,7 +58,7 @@ describe('the alias in the scanner', () => {
 	it('leaves an aliased import of core alone', () => {
 		const broken = rule?.check?.(
 			'commands/doctor/doctor.service.ts',
-			"import { PACKAGE } from '@/core/constants/package.constant.js';"
+			"import { PACKAGE } from '@/core/constants/package.constant';"
 		);
 
 		expect(broken).toBe(false);

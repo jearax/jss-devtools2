@@ -4,10 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createProgram, main, reportFatalError, runProgram } from '@/cli.js';
-import { CliError } from '@/core/errors/cli.error.js';
+import { createProgram, main, reportFatalError, runProgram } from '@/cli';
+import { CliError } from '@/core/errors/cli.error';
 
-import { capture } from './support/capture-stream.js';
+import { capture } from './support/capture-stream';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 

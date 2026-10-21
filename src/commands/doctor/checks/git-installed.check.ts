@@ -1,4 +1,4 @@
-import type { DoctorCheck } from '@/commands/doctor/types/doctor-check.type.js';
+import type { DoctorCheck } from '@/commands/doctor/types/doctor-check.type';
 
 const CHECK_ID = 'git.installed';
 

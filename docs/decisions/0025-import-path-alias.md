@@ -26,7 +26,8 @@ One alias, `@/`, mapped to `src/` in `tsconfig.json`:
 
 - An import that leaves its folder goes through `@/`; an import in the same folder stays `./`.
 - A parent-relative `../` import is rejected by ESLint, so the alias is the only way up.
-- The `.js` extension stays: `@/core/errors/cli.error.js` is the file `src/core/errors/cli.error.ts`.
+- Imports carry no file extension: `@/core/errors/cli.error` is the file
+  `src/core/errors/cli.error.ts` ([0028](./0028-extensionless-imports.md)).
 - The alias is declared once. TypeScript, tsdown and vitest read it from `tsconfig.json`; ESLint
   learns it through `import-x/internal-regex`, and the architecture scanner maps `@/x` to the
   logical path `x` so a rule sees an aliased import the same as a relative one.

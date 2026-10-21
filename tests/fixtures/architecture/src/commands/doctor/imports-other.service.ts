@@ -1,4 +1,4 @@
-import { other } from '../other/other.service.js';
+import { other } from '../other/other.service';
 
 export const read = (): string => {
 	return other();

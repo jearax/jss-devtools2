@@ -1,7 +1,7 @@
-import { PACKAGE } from '@/core/constants/package.constant.js';
-import { isVersionAtLeast } from '@/core/utils/version.util.js';
+import { PACKAGE } from '@/core/constants/package.constant';
+import { isVersionAtLeast } from '@/core/utils/version.util';
 
-import type { DoctorCheck } from '@/commands/doctor/types/doctor-check.type.js';
+import type { DoctorCheck } from '@/commands/doctor/types/doctor-check.type';
 
 const CHECK_ID = 'node.version';
 

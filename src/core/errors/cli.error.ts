@@ -1,4 +1,4 @@
-import { ExitCode } from '@/core/constants/exit-code.constant.js';
+import { ExitCode } from '@/core/constants/exit-code.constant';
 
 export type CliErrorOptions = {
 	exitCode?: ExitCode;

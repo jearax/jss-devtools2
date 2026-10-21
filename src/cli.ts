@@ -2,11 +2,11 @@ import { realpathSync } from 'node:fs';
 
 import { Command, CommanderError } from 'commander';
 
-import { registerDoctorCommand } from '@/commands/doctor/doctor.command.js';
-import { PACKAGE } from '@/core/constants/package.constant.js';
-import { CliError } from '@/core/errors/cli.error.js';
-import { bannerText, showBanner } from '@/core/ui/banner.ui.js';
-import { isInteractive, renderError } from '@/core/ui/terminal.ui.js';
+import { registerDoctorCommand } from '@/commands/doctor/doctor.command';
+import { PACKAGE } from '@/core/constants/package.constant';
+import { CliError } from '@/core/errors/cli.error';
+import { bannerText, showBanner } from '@/core/ui/banner.ui';
+import { isInteractive, renderError } from '@/core/ui/terminal.ui';
 
 export type ProgramOptions = {
 	exitOverride?: boolean;

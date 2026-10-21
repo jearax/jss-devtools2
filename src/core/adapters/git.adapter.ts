@@ -1,4 +1,4 @@
-import { runCommand } from '@/core/utils/run-command.util.js';
+import { runCommand } from '@/core/utils/run-command.util';
 
 export type GitVersion =
 	{ status: 'ok'; output: string } | { status: 'missing'; problem: string } | { status: 'failed'; problem: string };

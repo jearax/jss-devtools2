@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { runDoctorChecks } from '@/commands/doctor/doctor.service.js';
-import { PACKAGE } from '@/core/constants/package.constant.js';
+import { runDoctorChecks } from '@/commands/doctor/doctor.service';
+import { PACKAGE } from '@/core/constants/package.constant';
 
-import type { DoctorContext, DoctorResult, GitProbe } from '@/commands/doctor/types/doctor-check.type.js';
+import type { DoctorContext, DoctorResult, GitProbe } from '@/commands/doctor/types/doctor-check.type';
 
 const gitUsable: GitProbe = {
 	version: {

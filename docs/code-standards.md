@@ -185,12 +185,12 @@ later `--verbose` cannot use it.
 
 - `strict`, plus `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch` and
   `exactOptionalPropertyTypes`.
-- `module` and `moduleResolution` are `NodeNext`, so relative imports carry a `.js` extension. This
-  is stricter than the design-system's `Bundler` resolution, and deliberately so: this repo ships a
-  real Node ESM artifact, and `NodeNext` is what proves the extensions are right.
+- `module` is `Preserve` and `moduleResolution` is `Bundler`, so an import carries no file
+  extension: `@/core/errors/cli.error` is the file `src/core/errors/cli.error.ts`. This is the
+  design-system's resolution rather than the stricter `NodeNext` that decision 0014 chose; decision
+  0028 records why, and ESLint rejects an extension from then on.
 - An import that leaves its folder goes through the `@/` alias, which `tsconfig.json` maps to `src/`.
-  An import in the same folder stays `./`, and ESLint rejects a parent-relative `../` import. The
-  `.js` extension stays: `@/core/errors/cli.error.js` is the file `src/core/errors/cli.error.ts`.
+  An import in the same folder stays `./`, and ESLint rejects a parent-relative `../` import.
 - `verbatimModuleSyntax` is on: type-only imports must use `import type`.
 - `noEmit`. tsdown builds; `tsc` only checks.
 - `allowJs` and `checkJs` are off, so the `.mjs` config files are not type-checked and the repository

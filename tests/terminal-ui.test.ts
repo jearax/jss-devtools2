@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { CliError } from '@/core/errors/cli.error.js';
-import { createSpinner, isInteractive, renderError, runTasks } from '@/core/ui/terminal.ui.js';
+import { CliError } from '@/core/errors/cli.error';
+import { createSpinner, isInteractive, renderError, runTasks } from '@/core/ui/terminal.ui';
 
-import { capture } from './support/capture-stream.js';
+import { capture } from './support/capture-stream';
 
 const piped = {
 	isTTY: false,

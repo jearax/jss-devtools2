@@ -2,9 +2,9 @@ import { styleText } from 'node:util';
 
 import { log } from '@clack/prompts';
 
-import { CliError } from '@/core/errors/cli.error.js';
+import { CliError } from '@/core/errors/cli.error';
 
-import { createAnimatedSpinner } from './animated-spinner.ui.js';
+import { createAnimatedSpinner } from './animated-spinner.ui';
 
 /** `isTTY` is stdout, not stderr. */
 export type TerminalContext = {

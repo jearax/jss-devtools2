@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { runCommand } from '@/core/utils/run-command.util.js';
+import { runCommand } from '@/core/utils/run-command.util';
 
 describe('running a command', () => {
 	it('returns the output and the exit code of a command that works', async () => {

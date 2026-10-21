@@ -2,12 +2,12 @@ import { styleText } from 'node:util';
 
 import { intro, outro } from '@clack/prompts';
 
-import { PACKAGE } from '@/core/constants/package.constant.js';
-import { CliError } from '@/core/errors/cli.error.js';
-import { showBanner } from '@/core/ui/banner.ui.js';
-import { renderCheckList } from '@/core/ui/check-list.ui.js';
+import { PACKAGE } from '@/core/constants/package.constant';
+import { CliError } from '@/core/errors/cli.error';
+import { showBanner } from '@/core/ui/banner.ui';
+import { renderCheckList } from '@/core/ui/check-list.ui';
 
-import { createDoctorContext, runDoctorChecks } from './doctor.service.js';
+import { createDoctorContext, runDoctorChecks } from './doctor.service';
 
 import type { Command } from 'commander';
 

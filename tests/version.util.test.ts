@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { compareVersions, isVersionAtLeast, parseVersion } from '@/core/utils/version.util.js';
+import { compareVersions, isVersionAtLeast, parseVersion } from '@/core/utils/version.util';
 
 describe('parsing a version', () => {
 	it('reads the numbers out of a node version', () => {

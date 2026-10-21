@@ -1,9 +1,9 @@
-import { gitInstalledCheck } from '@/commands/doctor/checks/git-installed.check.js';
-import { gitRepositoryCheck } from '@/commands/doctor/checks/git-repository.check.js';
-import { nodeVersionCheck } from '@/commands/doctor/checks/node-version.check.js';
-import { gitVersion, isInsideWorkTree } from '@/core/adapters/git.adapter.js';
+import { gitInstalledCheck } from '@/commands/doctor/checks/git-installed.check';
+import { gitRepositoryCheck } from '@/commands/doctor/checks/git-repository.check';
+import { nodeVersionCheck } from '@/commands/doctor/checks/node-version.check';
+import { gitVersion, isInsideWorkTree } from '@/core/adapters/git.adapter';
 
-import type { DoctorCheck, DoctorContext, DoctorResult } from '@/commands/doctor/types/doctor-check.type.js';
+import type { DoctorCheck, DoctorContext, DoctorResult } from '@/commands/doctor/types/doctor-check.type';
 
 export const doctorChecks: readonly DoctorCheck[] = [nodeVersionCheck, gitInstalledCheck, gitRepositoryCheck];
 

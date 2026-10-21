@@ -8,7 +8,7 @@ and is reachable from a command in [../README.md](../README.md).
 | Path                                                   | Purpose                                                                                                                        |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
 | `package.json`                                         | Name `@jjuidev/jss-devtools`, ESM, `bin` points at `dist/cli.mjs`, scripts, `engines`, `packageManager`, exact dependency pins |
-| `tsconfig.json`                                        | Strict TypeScript, `NodeNext` resolution, the `@/` alias to `src/`, `noEmit`                                                   |
+| `tsconfig.json`                                        | Strict TypeScript, `Bundler` resolution, the `@/` alias to `src/`, `noEmit`                                                    |
 | `tsdown.config.ts`                                     | Bundles `src/cli.ts` to `dist/cli.mjs`, ESM, target Node 24, runtime dependencies inlined                                      |
 | `vitest.config.ts`                                     | Node environment, `tests/**/*.test.ts`, injects the package facts, resolves the alias, wires global setup                      |
 | `eslint.config.mjs`                                    | Flat config: recommended plus autofix, `import-x`, `prefer-arrow-functions`, typed TS rules, Prettier, the `../` import ban    |

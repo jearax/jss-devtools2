@@ -1,9 +1,9 @@
 import { styleText } from 'node:util';
 
-import { BANNER_ART, PLATFORM_NAMES } from '@/core/constants/banner.constant.js';
-import { PACKAGE } from '@/core/constants/package.constant.js';
+import { BANNER_ART, PLATFORM_NAMES } from '@/core/constants/banner.constant';
+import { PACKAGE } from '@/core/constants/package.constant';
 
-import { isInteractive, type TerminalContext } from './terminal.ui.js';
+import { isInteractive, type TerminalContext } from './terminal.ui';
 
 export type BannerInfo = {
 	name: string;

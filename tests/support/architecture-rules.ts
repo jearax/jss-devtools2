@@ -171,7 +171,7 @@ export const rules: readonly ArchitectureRule[] = [
 		scope: (logicalPath) => {
 			return !logicalPath.endsWith('.adapter.ts');
 		},
-		pattern: /from\s+['"][^'"]*run-command\.util\.js['"]/,
+		pattern: /from\s+['"][^'"]*run-command\.util(?:\.js)?['"]/,
 		allow: [],
 		reason: 'the command runner is called only by an adapter',
 		fixture: 'tests/fixtures/architecture/src/commands/doctor/uses-runner.service.ts'

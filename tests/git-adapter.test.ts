@@ -5,9 +5,9 @@ import { promisify } from 'node:util';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { gitVersion, isInsideWorkTree } from '@/core/adapters/git.adapter.js';
+import { gitVersion, isInsideWorkTree } from '@/core/adapters/git.adapter';
 
-import { makeEmptyDir, removeDir } from './support/tmp-dir.js';
+import { makeEmptyDir, removeDir } from './support/tmp-dir';
 
 const run = promisify(execFile);
 

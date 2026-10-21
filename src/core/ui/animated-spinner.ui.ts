@@ -2,7 +2,7 @@ import { styleText } from 'node:util';
 
 import { S_BAR, S_ERROR, S_STEP_SUBMIT } from '@clack/prompts';
 
-import type { TerminalSpinner } from './terminal.ui.js';
+import type { TerminalSpinner } from './terminal.ui';
 
 const FIRST_FRAME = '◒';
 

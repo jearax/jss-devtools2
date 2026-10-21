@@ -1,4 +1,4 @@
-import type { GitVersion } from '@/core/adapters/git.adapter.js';
+import type { GitVersion } from '@/core/adapters/git.adapter';
 
 export type DoctorResult = {
 	id: string;
