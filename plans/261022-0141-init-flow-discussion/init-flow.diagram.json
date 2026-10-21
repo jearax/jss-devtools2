@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "jss-devtools init: the whole flow",
+    "subtitle": "Nothing here is decided. Each tag is an open decision point.",
+    "description": "Two exits before any write (a failed preflight; a dry run or a declined confirm). Every stage after Confirm changes the repository.",
+    "visual_preset": "classic",
+    "theme": "light",
+    "animation": "trace",
+    "views": [
+      { "id": "ch1-flags", "title": "1. Flags and use cases", "narrative": "Which situations does init serve, and which flags does each one need? D1, T4.", "focus_nodes": ["start", "parse", "x-badflag"] },
+      { "id": "ch2-preflight", "title": "2. Preflight", "narrative": "What must be true before init touches the folder? Depends on T2 (overlay vs scaffold). D2, D5.", "focus_nodes": ["preflight", "x-preflight"] },
+      { "id": "ch3-plan", "title": "3. Preset and plan", "narrative": "Which preset, which versions, which files, and how package.json is changed. T3, T1, T5, D3.", "focus_nodes": ["preset", "plan", "x-nochange"] },
+      { "id": "ch4-gates", "title": "4. Preview, dry run, confirm", "narrative": "The last gates before writing. D4, --dry-run, --yes, no terminal.", "focus_nodes": ["preview", "dryrun", "confirm", "x-dryrun", "x-noterm", "x-declined"] },
+      { "id": "ch5-write", "title": "5. Writes and after", "narrative": "Apply, install, hooks, manifest, outro, and what happens when a step fails half way. T2, H2, H3.", "focus_nodes": ["apply", "install", "hooks", "manifest", "outro", "x-midfail", "x-done"] }
+    ]
+  },
+  "lanes": [
+    { "id": "user", "label": "User / terminal", "role": "user" },
+    { "id": "read", "label": "CLI, read only", "role": "orchestrator" },
+    { "id": "write", "label": "CLI, writes the repo", "role": "worker" },
+    { "id": "exit", "label": "Exit", "role": "system" }
+  ],
+  "steps": [
+    { "id": "start", "label": "jss-devtools init [flags]", "lane": "user", "kind": "start" },
+    { "id": "parse", "label": "1 Parse flags", "description": "D1 which flags ship; T4 is --json a contract", "lane": "read", "kind": "decision", "tags": ["D1", "T4"] },
+    { "id": "preflight", "label": "2 Preflight", "description": "Node floor, git; repo? clean tree? package.json? monorepo? foreign linter?", "lane": "read", "kind": "decision", "tags": ["D2", "T2", "D5"] },
+    { "id": "preset", "label": "3 Preset + versions", "description": "Which framework preset; versions from a tested table or the registry", "lane": "read", "kind": "action", "tags": ["T3", "T1"] },
+    { "id": "plan", "label": "4 Plan (pure)", "description": "Each file: create, update, unchanged (conflict?)", "lane": "read", "kind": "decision", "tags": ["D3", "T5"] },
+    { "id": "preview", "label": "5 Preview", "description": "+ new file, ~ changed file", "lane": "user", "kind": "action" },
+    { "id": "dryrun", "label": "--dry-run?", "lane": "read", "kind": "decision" },
+    { "id": "confirm", "label": "6 Confirm", "description": "One question for all changes; skipped by --yes", "lane": "user", "kind": "decision", "tags": ["D4"] },
+    { "id": "apply", "label": "7 Apply files", "description": "Atomic write per file; package.json merged or replaced", "lane": "write", "kind": "action", "tags": ["D3"] },
+    { "id": "install", "label": "8 pnpm install", "lane": "write", "kind": "subprocess" },
+    { "id": "hooks", "label": "9 Git hooks (husky)", "description": "Needs a repository", "lane": "write", "kind": "subprocess", "tags": ["T2"] },
+    { "id": "manifest", "label": "10 Manifest", "description": "Record what was written, for a later update", "lane": "write", "kind": "action", "tags": ["H2"] },
+    { "id": "outro", "label": "11 Outro", "description": "Next steps and the suggested commit; the CLI does not commit", "lane": "user", "kind": "action", "tags": ["H3"] },
+    { "id": "x-badflag", "label": "exit 1 + help", "lane": "exit", "kind": "terminal-failure" },
+    { "id": "x-preflight", "label": "exit 1 + every failed check with its fix", "lane": "exit", "kind": "terminal-failure" },
+    { "id": "x-nochange", "label": "exit 0 Nothing to change", "lane": "exit", "kind": "terminal-success" },
+    { "id": "x-dryrun", "label": "exit 0 nothing written", "lane": "exit", "kind": "terminal-success" },
+    { "id": "x-noterm", "label": "exit 1 pass --yes", "lane": "exit", "kind": "terminal-failure" },
+    { "id": "x-declined", "label": "exit 1 declined, nothing written", "lane": "exit", "kind": "terminal-failure" },
+    { "id": "x-midfail", "label": "exit 1 half applied: files stay, git is the rollback?", "lane": "exit", "kind": "terminal-failure" },
+    { "id": "x-done", "label": "exit 0", "lane": "exit", "kind": "terminal-success" }
+  ],
+  "transitions": [
+    { "from": "start", "to": "parse" },
+    { "from": "parse", "to": "preflight", "label": "valid", "kind": "branch-true" },
+    { "from": "parse", "to": "x-badflag", "label": "bad flag", "kind": "branch-false" },
+    { "from": "preflight", "to": "preset", "label": "all pass", "kind": "branch-true" },
+    { "from": "preflight", "to": "x-preflight", "label": "any fails", "kind": "branch-false" },
+    { "from": "preset", "to": "plan" },
+    { "from": "plan", "to": "preview", "label": "has changes", "kind": "branch-true" },
+    { "from": "plan", "to": "x-nochange", "label": "no change", "kind": "branch-false" },
+    { "from": "preview", "to": "dryrun" },
+    { "from": "dryrun", "to": "x-dryrun", "label": "yes", "kind": "branch-true" },
+    { "from": "dryrun", "to": "confirm", "label": "no", "kind": "branch-false" },
+    { "from": "confirm", "to": "apply", "label": "yes or --yes", "kind": "branch-true" },
+    { "from": "confirm", "to": "x-declined", "label": "declined / Ctrl+C", "kind": "branch-false" },
+    { "from": "confirm", "to": "x-noterm", "label": "no terminal, no --yes", "kind": "exception" },
+    { "from": "apply", "to": "install" },
+    { "from": "install", "to": "hooks" },
+    { "from": "hooks", "to": "manifest" },
+    { "from": "manifest", "to": "outro" },
+    { "from": "outro", "to": "x-done" },
+    { "from": "install", "to": "x-midfail", "label": "fails", "kind": "exception" },
+    { "from": "hooks", "to": "x-midfail", "label": "fails", "kind": "exception" }
+  ]
+}
