@@ -96,17 +96,35 @@ Decision: [0029](./decisions/0029-shared-command-flags.md).
 - The flow that fills `init` is still open, and is drawn in the
   [init flow decision log](../plans/261022-0141-init-flow-discussion/decision-log.md).
 
+## Done: the init node preset
+
+Plan: [../plans/261027-1541-init-node-preset/plan.md](../plans/261027-1541-init-node-preset/plan.md).
+Decision: [0030](./decisions/0030-init-node-preset.md); the discussion history is the
+[init flow decision log](../plans/261022-0141-init-flow-discussion/decision-log.md).
+
+- `jss-devtools init <dir>` creates a TypeScript node project that installs, lints, typechecks,
+  builds and runs (`node dist/main.js`), with git hooks active; `jss-devtools init` sets up an
+  existing repository, merging what the user owns and stopping with the owned-file list unless
+  `--force`. Every check runs in preflight, before the first write.
+- The preset ships ESLint, Prettier, EditorConfig, husky, lint-staged, commitlint and VS Code
+  settings, with versions pinned in the CLI by `scripts/pin-node-preset.mjs` and written as caret
+  ranges. For pnpm it writes `pnpm-workspace.yaml`; existing mode manages only its `allowBuilds`
+  entries, never `strictPeerDependencies` or `engineStrict`.
+- `tests/init.e2e.test.ts` proves a created project with each manager on `PATH` (npm and pnpm
+  required; yarn 1 and bun skipped where absent), gated behind `INIT_E2E=1` because it installs
+  from the registry.
+
 ## Not started
 
 Each of these needs its own plan before implementation. Open questions that will shape them are
 collected in
 [../plans/261019-1050-jss-devtools-rewrite/open-questions.md](../plans/261019-1050-jss-devtools-rewrite/open-questions.md).
 
-| Area             | What it covers                                               | Open questions |
-| ---------------- | ------------------------------------------------------------ | -------------- |
-| Toolchain module | The `init` command, framework presets, the version table     | T1 to T5       |
-| Harness module   | Managed files, first-run bootstrap, review trigger, curation | H1 to H12      |
-| Cross-cutting    | Which decisions carry over from the old prototype            | X2, X3         |
+| Area             | What it covers                                                  | Open questions |
+| ---------------- | --------------------------------------------------------------- | -------------- |
+| Toolchain module | Framework presets beyond `node` (`react`, `rn`, `next`, `nest`) | T1 to T5       |
+| Harness module   | Managed files, first-run bootstrap, review trigger, curation    | H1 to H12      |
+| Cross-cutting    | Which decisions carry over from the old prototype               | X2, X3         |
 
 ## Dependencies between these
 

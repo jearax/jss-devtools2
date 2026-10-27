@@ -4,10 +4,14 @@ import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { NODE_PRESET_DEPENDENCIES } from '@/commands/init/constants/node-preset-dependency.constant';
+import { mergePnpmWorkspaceYaml } from '@/commands/init/merge.service';
 import { buildInitPlan, renderPlan } from '@/commands/init/plan.service';
 import { eslintConfigMjsTemplate } from '@/commands/init/templates/eslint-config-mjs.template';
 import { LINT_STAGED } from '@/commands/init/templates/package-json.template';
-import { pnpmWorkspaceYamlTemplate } from '@/commands/init/templates/pnpm-workspace-yaml.template';
+import {
+	pnpmWorkspaceYamlExistingTemplate,
+	pnpmWorkspaceYamlTemplate
+} from '@/commands/init/templates/pnpm-workspace-yaml.template';
 import { localBinCommandLine } from '@/core/adapters/package-manager.adapter';
 
 import { makeEmptyDir, removeDir } from './support/tmp-dir';
@@ -337,5 +341,106 @@ describe('the plan, existing mode', () => {
 		expect(rendered).toContain(`~ package.json`);
 		expect(rendered).toContain('+ .editorconfig');
 		expect(rendered).not.toContain('- ');
+	});
+});
+
+describe('merging pnpm-workspace.yaml, existing mode with pnpm', () => {
+	const pnpmPreflight = (dir: string) => {
+		return {
+			...existingPreflight(dir, BASIC_PACKAGE_JSON),
+			pm: 'pnpm' as const
+		};
+	};
+
+	it('adds esbuild: true to the template, create mode writes all four entries', () => {
+		expect(pnpmWorkspaceYamlTemplate()).toContain('esbuild: true');
+		expect(pnpmWorkspaceYamlExistingTemplate()).not.toContain('strictPeerDependencies');
+		expect(pnpmWorkspaceYamlExistingTemplate()).not.toContain('engineStrict');
+	});
+
+	it('creates the file when absent, with only the allowBuilds entries', async () => {
+		const dir = await makeProject(BASIC_EXISTING);
+		const plan = buildInitPlan(pnpmPreflight(dir), {});
+
+		expect(entryFor(plan, 'pnpm-workspace.yaml')).toEqual({
+			action: 'create',
+			path: 'pnpm-workspace.yaml',
+			content: pnpmWorkspaceYamlExistingTemplate()
+		});
+	});
+
+	it('adds each missing allowBuilds entry and keeps user values', async () => {
+		const raw = 'allowBuilds:\n  esbuild: false\n\nstrictPeerDependencies: true\n';
+
+		const dir = await makeProject({
+			...BASIC_EXISTING,
+			'pnpm-workspace.yaml': raw
+		});
+
+		const plan = buildInitPlan(pnpmPreflight(dir), {});
+
+		expect(entryFor(plan, 'pnpm-workspace.yaml')).toEqual({
+			action: 'update',
+			path: 'pnpm-workspace.yaml',
+			content: 'allowBuilds:\n  esbuild: false\n  unrs-resolver: true\n\nstrictPeerDependencies: true\n'
+		});
+	});
+
+	it('plans nothing when both entries are already there', async () => {
+		const dir = await makeProject({
+			...BASIC_EXISTING,
+			'pnpm-workspace.yaml': 'allowBuilds:\n  esbuild: true\n  unrs-resolver: true\n'
+		});
+
+		const plan = buildInitPlan(pnpmPreflight(dir), {});
+
+		expect(entryFor(plan, 'pnpm-workspace.yaml')).toBeUndefined();
+	});
+
+	it('adds the allowBuilds block when the file holds other keys only', () => {
+		expect(mergePnpmWorkspaceYaml('strictPeerDependencies: true\n')).toEqual({
+			action: 'merged',
+			content: 'strictPeerDependencies: true\nallowBuilds:\n  esbuild: true\n  unrs-resolver: true\n'
+		});
+	});
+
+	it('reports flow style as unmergeable', () => {
+		expect(mergePnpmWorkspaceYaml('allowBuilds: { esbuild: true }\n').action).toBe('unmergeable');
+	});
+});
+
+describe('merging pnpm-workspace.yaml placeholders and indentation', () => {
+	it('replaces the pnpm placeholder with true, for both allowBuilds entries', () => {
+		expect(
+			mergePnpmWorkspaceYaml(
+				'allowBuilds:\n  esbuild: set this to true or false\n  unrs-resolver: set this to true or false\n'
+			)
+		).toEqual({
+			action: 'merged',
+			content: 'allowBuilds:\n  esbuild: true\n  unrs-resolver: true\n'
+		});
+	});
+
+	it('keeps the child indent the file already uses', () => {
+		expect(mergePnpmWorkspaceYaml('allowBuilds:\n    sharp: true\n')).toEqual({
+			action: 'merged',
+			content: 'allowBuilds:\n    sharp: true\n    esbuild: true\n    unrs-resolver: true\n'
+		});
+	});
+
+	it('replaces one placeholder and appends the other entry with the same indent', () => {
+		expect(mergePnpmWorkspaceYaml('allowBuilds:\n    esbuild: set this to true or false\n')).toEqual({
+			action: 'merged',
+			content: 'allowBuilds:\n    esbuild: true\n    unrs-resolver: true\n'
+		});
+	});
+
+	it('keeps a false the user set and adds only the other entry', () => {
+		const merged = mergePnpmWorkspaceYaml('allowBuilds:\n  esbuild: false\n');
+
+		expect(merged).toEqual({
+			action: 'merged',
+			content: 'allowBuilds:\n  esbuild: false\n  unrs-resolver: true\n'
+		});
 	});
 });

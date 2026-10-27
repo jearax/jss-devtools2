@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "End-to-end test, decision record and docs"
-status: pending
+status: completed
 priority: P1
 effort: "5h"
 dependencies: [4]
@@ -12,6 +12,21 @@ dependencies: [4]
 ## Goal
 
 Prove a generated project installs, lints, typechecks, builds and runs with each package manager, then record the decision and update the docs.
+
+## Fixes before the end-to-end test
+
+Found by running the phase 4 bundle with pnpm 11.24.0, decided 2026-10-27 (decision log, "Existing
+mode with pnpm" and the `pnpm-workspace.yaml` row):
+
+1. The `pnpm-workspace.yaml` template adds `esbuild: true` under `allowBuilds`.
+2. Existing-mode preflight treats `pnpm-workspace.yaml` as a monorepo only when it has a top-level
+   `packages` field.
+3. Existing mode with pnpm merges `pnpm-workspace.yaml` as a shared file: created when absent with
+   `allowBuilds` holding `esbuild: true` and `unrs-resolver: true`, otherwise each missing entry
+   added, user values kept. It never adds `strictPeerDependencies` or `engineStrict` (create mode
+   only). A file whose `allowBuilds` cannot be extended line by line (flow style, for example) stops
+   in preflight with exit 1, naming the entries to add by hand. No YAML dependency unless line-based
+   merging proves wrong.
 
 ## End-to-end test
 
@@ -49,10 +64,12 @@ report, the bundle size before and after.
 
 ## Tasks & Steps
 
-- [ ] `tests/init.e2e.test.ts`: create with each manager on `PATH` (npm and pnpm required), then lint, typecheck, build, `node dist/main.js`
-- [ ] Assert hooks path `.husky/_`, branch `main`, sorted `package.json`, and that the files present are exactly the decided list
-- [ ] Existing mode: set up, rerun (exit 1 list), rerun with `-f` (exit 0)
-- [ ] Write `docs/decisions/0030-init-node-preset.md`
-- [ ] Update `README.md`, `docs/codebase-summary.md`, `docs/system-architecture.md`, `docs/project-roadmap.md`
-- [ ] Close the plan with its outcome; add a journal
-- [ ] Run the full gate on Node 24.11.0; report output, e2e duration and bundle size; commit
+- [x] Fixes before the end-to-end test: template `esbuild`, monorepo by `packages`, existing-mode `pnpm-workspace.yaml` merge, each with tests
+- [x] `tests/init.e2e.test.ts`: create with each manager on `PATH` (npm and pnpm required), then lint, typecheck, build, `node dist/main.js`
+- [x] Assert hooks path `.husky/_`, branch `main`, sorted `package.json`, and that the files present are exactly the decided list
+- [x] Existing mode: set up, rerun (exit 1 list), rerun with `-f` (exit 0)
+- [x] Write `docs/decisions/0030-init-node-preset.md`
+- [x] Update `README.md`, `docs/codebase-summary.md`, `docs/system-architecture.md`, `docs/project-roadmap.md`
+- [x] Close the plan with its outcome; add a journal
+- [x] Run the full gate on Node 24.11.0; report output, e2e duration and bundle size
+- [x] commit (the planner commits)

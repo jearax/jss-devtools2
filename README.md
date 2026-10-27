@@ -2,8 +2,8 @@
 
 A rewrite of `@jjuidev/jss-devtools`: a command-line tool for JavaScript-stack repositories.
 
-This repository is at its foundation stage. The CLI exists and is tested, `jss-devtools doctor` is
-its first command and `jss-devtools init` its second. See
+The CLI exists and is tested; `jss-devtools doctor` is its first command and `jss-devtools init`
+its second, shipping the `node` preset. See
 [docs/project-roadmap.md](./docs/project-roadmap.md) for what comes next and
 [docs/system-architecture.md](./docs/system-architecture.md) for how the current code is put together.
 
@@ -24,7 +24,8 @@ runtime is declared once in `package.json`.
 node dist/cli.mjs --help      # usage
 node dist/cli.mjs -v          # the version from package.json (also --version)
 node dist/cli.mjs doctor      # check the environment, exit 1 with a fix hint when a check fails
-node dist/cli.mjs init        # set up a project; the scaffold writes nothing yet
+node dist/cli.mjs init my-app # create a TypeScript node project
+node dist/cli.mjs init        # set up the current project
 node dist/cli.mjs nope        # error plus help, exit code 1
 ```
 
@@ -49,10 +50,14 @@ After the install, `jss-devtools doctor` checks the environment: the Node versio
 whether git is installed, and whether the working directory is inside a repository. Each check that
 fails carries the fix, and the command exits 1.
 
-`jss-devtools init` sets up a project. What ships today is its scaffold: the command, the shared
-`-y, --yes` and `--dry-run` flags, and the help with its examples. It writes nothing yet: every run
-ends with "Nothing to set up". The flow that fills it is being worked out
-([decision log](./plans/261022-0141-init-flow-discussion/decision-log.md)).
+`jss-devtools init my-app` creates a folder holding a TypeScript node project that installs, lints,
+typechecks, builds and runs (`node dist/main.js`), with git hooks active. `jss-devtools init` in an
+existing TypeScript repository adds the same toolchain, merging what the user owns and stopping with
+exit 1 and the list when a config init owns is already there (`--force` replaces them). Every check
+runs before the first write; after it, `git init`, the install and the `package.json` sort can each
+still exit 1, and nothing is rolled back.
+[decision 0030](./docs/decisions/0030-init-node-preset.md) records the flow; the full discussion
+history is the [decision log](./plans/261022-0141-init-flow-discussion/decision-log.md).
 
 ## Development
 

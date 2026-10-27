@@ -22,7 +22,14 @@ src/
    │  ├─ checks/              one file per check
    │  └─ types/               the types the command shares
    └─ init/                   one folder per command
-      ├─ init.command.ts      commander wiring, the shared flags, the help examples
+      ├─ init.command.ts      commander wiring, the questions, the shared flags, the help examples
+      ├─ init.service.ts      the argument rules and the mode
+      ├─ preflight.service.ts the checks that run before the first write
+      ├─ plan.service.ts      the file plan for create and existing mode
+      ├─ merge.service.ts     the shared-file merges (package.json, ignore files, hooks, pnpm-workspace.yaml)
+      ├─ write.service.ts     applies the plan: git init, the writes, the deletions
+      ├─ constants/           the pinned version table and the config-name table
+      ├─ templates/           the content of one generated file, per file
       └─ types/               the types the command shares
 ```
 
@@ -169,22 +176,50 @@ same as the root help.
 
 ## The init command
 
-`jss-devtools init` is the toolchain command. What ships today is its scaffold: the command, the
-shared flags and the help. It writes nothing, so every run ends with "Nothing to set up".
+`jss-devtools init` is the toolchain command, shipping the `node` preset
+([0030](./decisions/0030-init-node-preset.md)). `init <dir>` creates a TypeScript node project;
+`init` sets up the current one. The syntax picks the mode; every edge case exits 1 with the finding
+and the next step.
+
+A run moves through services in one direction:
+
+```
+validateInitArguments -> preflightInit -> buildInitPlan -> renderPlan -> confirm -> applyInitPlan -> installPackages -> sort
+```
+
+`preflightInit` runs every check before the first write: the mode's argument rules, package.json,
+the monorepo check (`pnpm-workspace.yaml` counts only with a top-level `packages` field),
+`tsconfig.json`, git (installed, root here, hooks not owned by another manager), the package
+manager (detected in existing mode), and the owned-file conflicts. `buildInitPlan` turns the
+preflight into `+` create, `~` update and `-` delete entries; existing mode merges the shared files
+(package.json scripts and devDependencies, the ignore lists, the husky hooks, and for pnpm
+`pnpm-workspace.yaml`, where only `allowBuilds` entries are managed) and replaces the owned configs,
+whose other documented names are deleted with `-f`. `applyInitPlan` writes creates and updates
+first, deletions last; in create mode it makes the folder and `git init -q -b main` before them.
+The install then runs with inherited stdio, and `prettier-package-json` and `prettier` sort the
+manifest through the project's own local bins.
+
+The file contents live in `templates/`, one export per file, and the pinned devDependency versions
+in `constants/node-preset-dependency.constant.ts`, written by `scripts/pin-node-preset.mjs`.
 
 The flags are declared once, as plain data in `src/core/constants/common-option.constant.ts`, and a
 command attaches the ones it needs in its own `*.command.ts`. Core holds no commander import,
 because only a command file may import commander.
 
-| Flag         | Meaning                                                   |
-| ------------ | --------------------------------------------------------- |
-| `-y, --yes`  | do not ask; take the default answers                      |
-| `--dry-run`  | show the changes, write nothing                           |
-| `-h, --help` | commander's usage and options, plus an `Examples` section |
+| Flag                 | Meaning                                                                        |
+| -------------------- | ------------------------------------------------------------------------------ |
+| `-y, --yes`          | do not ask; take the default answers                                           |
+| `--dry-run`          | run preflight, show `+`, `~` and `-`, write nothing                            |
+| `-f, --force`        | replace the configs init owns, and delete their other documented names         |
+| `--pm <name>`        | package manager for a new project; detected in existing mode, where it exits 1 |
+| `--framework <name>` | the preset; only `node` is built, another value exits 1                        |
+| `--no-vscode`        | do not write `.vscode/`                                                        |
+| `-h, --help`         | commander's usage and options, plus an `Examples` section                      |
 
-`doctor` asks nothing, so it has neither flag, and `jss-devtools doctor --yes` is an unknown
-option. The contracts of the flags, and what the flow will do with them, are in
-[0029](./decisions/0029-shared-command-flags.md) and the
+`doctor` asks nothing, so it has neither shared flag, and `jss-devtools doctor --yes` is an unknown
+option. The contracts of the flags are in
+[0029](./decisions/0029-shared-command-flags.md); the full init decision record is
+[0030](./decisions/0030-init-node-preset.md), and the discussion history is the
 [init flow decision log](../plans/261022-0141-init-flow-discussion/decision-log.md).
 
 ## Exit codes
@@ -240,10 +275,15 @@ inline, so adding a runtime dependency cannot silently leave it external.
 | `tests/cli.test.ts`           | Does the program produce the right output and the right exit code?            |
 | `tests/check-list.ui.test.ts` | Does the check list align its rows and nest the hint under its row?           |
 | `tests/terminal-ui.test.ts`   | Does the terminal layer stay plain when the output is piped?                  |
-| `tests/init.command.test.ts`  | Does init print its help byte for byte, and take the shared flags?            |
+| `tests/init.command.test.ts`  | Does init print its help byte for byte, and handle the flag and mode paths?   |
+| `tests/init.e2e.test.ts`      | Does a created project lint, typecheck, build and run with each manager?      |
 | `tests/bundle.test.ts`        | Does the shipped file work on a machine with no `node_modules`?               |
 | `tests/install.test.ts`       | Does the served installer install a working CLI, and refuse what it must?     |
 | `tests/architecture.test.ts`  | Are the boundary rules still true, and do the rules still detect a violation? |
+
+The init end-to-end suite needs the network for its installs and every package manager on `PATH`,
+so it runs alone with `INIT_E2E=1 pnpm vitest run tests/init.e2e.test.ts` and reports skipped in
+the default `pnpm test`; npm and pnpm are required, yarn 1 and bun are skipped when missing.
 
 The bundle suite copies `dist/cli.mjs` into an OS temp directory and runs it there. A temp directory
 outside the repository is the point: inside the repo, Node would resolve `node_modules` by walking

@@ -59,6 +59,12 @@ This replaces an earlier draft where the folder's content picked the mode.
 | `init` | | | `workspaces` in `package.json`, or `pnpm-workspace.yaml` next to it: "monorepos are not supported yet" |
 
 A folder with files and no `package.json` fails both commands, so it needs no rule of its own.
+Narrowed on 2026-10-27: `pnpm-workspace.yaml` counts as a monorepo only when it has a `packages`
+field ("1 OK", user). Since pnpm 10 the file also holds settings for a single package, pnpm 11 writes
+it on its own to record `allowBuilds` placeholders, and a project `init --pm pnpm` creates has one;
+the pnpm docs: "If the `packages` field is omitted, only the root package is included in the
+workspace."
+
 Known limit: a package inside a monorepo has its own `package.json` and no workspace file, so it is
 set up as a single repository. Accepted for the first version. Narrowed on 2026-10-27: such a
 package has no `.git` of its own, so the git check under "Git in an existing repository" stops it
@@ -565,7 +571,22 @@ The user's list, plus what the decisions above make necessary (marked *added*):
 | `.husky/pre-commit`, `.husky/commit-msg` | user's list (`.husky/`); content above |
 | `commitlint.config.mjs` *added* | required by `commit-msg` |
 | `.vscode/settings.json`, `.vscode/extensions.json` | user's list; skipped with `--no-vscode` |
-| `pnpm-workspace.yaml` *added*, pnpm only | the reference allowed `unrs-resolver`'s install script there for pnpm 11; to be re-checked against the chosen ESLint plugins |
+| `pnpm-workspace.yaml` *added*, pnpm only | `allowBuilds` for `unrs-resolver` (from `eslint-plugin-import-x`) and `esbuild` (from `tsx`) |
+
+`esbuild: true` in `allowBuilds`, decided 2026-10-27: "Do dùng tsx, nên cho allowBuilds esbuild: true
+đi, là xong cho case này." (user). Measured on pnpm 11.24.0 in a project created by `init --pm pnpm`:
+without the entry, `pnpm install` exits 1 with `ERR_PNPM_IGNORED_BUILDS` for `esbuild@0.28.2`, and so
+does every `pnpm exec` and `pnpm run` afterwards, because pnpm re-checks the dependencies before each
+one. With `esbuild: true` the postinstall runs, and `pnpm exec tsx src/main.ts` works.
+
+Existing mode with pnpm, decided 2026-10-27: `pnpm-workspace.yaml` becomes a shared file, merged
+like `.gitignore`: created when absent, otherwise `allowBuilds.esbuild` and `allowBuilds.unrs-resolver`
+are each added only when absent, and a value the user set is kept, `false` included. Existing mode
+does not add `strictPeerDependencies` or `engineStrict`; create mode writes both. Asked whether
+existing mode should add them, the user chose "Không thêm": with `strictPeerDependencies: true` a
+project whose dependencies already disagree on peers would start failing to install. An earlier
+reading of "OK, nhưng tôi thấy còn có quản lý 2 fields này" as a request to add them was the
+planner's misreading; the user was asking, and this answer replaces it.
 
 `.prettierignore` *added* on 2026-10-27, correcting an earlier "not needed": Prettier 3 skips what
 `.gitignore` lists, but lockfiles are committed, and the `format` script copied from `main` runs

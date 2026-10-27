@@ -6,6 +6,7 @@ import { detectPackageManager, packageManagerVersion } from '@/core/adapters/pac
 import { CliError } from '@/core/errors/cli.error';
 
 import { CONFIG_NAMES } from './constants/config-name.constant';
+import { mergePnpmWorkspaceYaml } from './merge.service';
 
 import type { PackageManagerName } from './templates/package-json.template';
 import type { InitOptions } from './types/init-options.type';
@@ -83,6 +84,24 @@ const parsePackageJson = (cwd: string): Record<string, unknown> => {
 	}
 };
 
+// pnpm 11 writes this file for a single package too (allowBuilds placeholders), so only a top-level
+// packages field says monorepo.
+const isMonorepoWorkspace = (cwd: string): boolean => {
+	const path = join(cwd, 'pnpm-workspace.yaml');
+
+	return existsSync(path) && /^packages:/m.test(readFileSync(path, 'utf8'));
+};
+
+const ensurePnpmWorkspaceMergeable = (cwd: string): void => {
+	const raw = readFileSync(join(cwd, 'pnpm-workspace.yaml'), 'utf8');
+
+	if (mergePnpmWorkspaceYaml(raw).action === 'unmergeable') {
+		throw new CliError(
+			'pnpm-workspace.yaml cannot be extended line by line; add these entries by hand: allowBuilds.esbuild: true, allowBuilds.unrs-resolver: true'
+		);
+	}
+};
+
 const ownedConflicts = (cwd: string, withVscode: boolean): readonly string[] => {
 	const names = [
 		...CONFIG_NAMES.eslint.files,
@@ -100,7 +119,7 @@ const ownedConflicts = (cwd: string, withVscode: boolean): readonly string[] => 
 const preflightExisting = async (cwd: string, options: InitOptions): Promise<InitPreflight> => {
 	const parsed = parsePackageJson(cwd);
 
-	if ('workspaces' in parsed || existsSync(join(cwd, 'pnpm-workspace.yaml'))) {
+	if ('workspaces' in parsed || isMonorepoWorkspace(cwd)) {
 		throw new CliError('monorepos are not supported yet');
 	}
 
@@ -137,6 +156,10 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 
 	const pm = (detected === null ? 'npm' : detected.name) as PackageManagerName;
 	const pmVersion = await installedVersion(pm, cwd, false);
+
+	if (pm === 'pnpm' && existsSync(join(cwd, 'pnpm-workspace.yaml'))) {
+		ensurePnpmWorkspaceMergeable(cwd);
+	}
 
 	const fileConflicts = ownedConflicts(cwd, options.vscode !== false);
 

@@ -1,7 +1,7 @@
 ---
 title: "init: the node preset, create and existing modes"
 description: "Fill the shipped init scaffold with the decided flow: init <dir> creates a TypeScript node project, init sets up the current one, both with ESLint, Prettier, EditorConfig, husky, lint-staged, commitlint and VS Code settings, versions pinned in the CLI."
-status: pending
+status: done
 priority: P1
 effort: 3d
 branch: main
@@ -18,7 +18,8 @@ created: 2026-10-27
 `jss-devtools init my-app` creates a folder holding a TypeScript node project that installs, lints,
 typechecks, builds and runs (`node dist/main.js`), with git hooks active. `jss-devtools init` in an
 existing TypeScript repository adds the same toolchain, or stops with exit 1 and the next step. Every
-check runs before the first write; only the install can fail after it, and nothing is rolled back.
+check runs before the first write; after it, `git init`, the install and the `package.json` sort
+can each still exit 1, and nothing is rolled back.
 
 ## Input
 
@@ -85,3 +86,26 @@ the decision log, `init-flow.diagram.json`, `init-flow.html` and the `open-quest
 
 - The preset's file contents are provisional (25a): the user reviews the phase 2 table at commit.
 - None blocking phase 1: the two new roles were approved on 2026-10-27.
+
+## Outcome
+
+Done on 2026-10-27, cooked on Linux (Node 24.21.0, pnpm 11.24.0; no yarn or bun on this machine, so
+their end-to-end rows report skipped here and the planner reruns the suite on the Mac, which has all
+four). `init <dir>` creates a TypeScript node project that installs, lints, typechecks, builds and
+runs, with git hooks on `main`; `init` sets up an existing repository, merges the shared files, and
+stops on the owned-file list without `-f`. Every check runs before the first write.
+
+Three fixes joined phase 5, all found by running the phase 4 bundle with pnpm 11.24.0 and decided
+on 2026-10-27: `esbuild: true` in the `pnpm-workspace.yaml` template, the monorepo check keyed on
+the file's top-level `packages` field, and the existing-mode `pnpm-workspace.yaml` merge (allowBuilds
+entries only; the planner corrected an early reading that also added `strictPeerDependencies` and
+`engineStrict` there — existing mode never does).
+
+Four things the plan did not say. The end-to-end suite is gated behind `INIT_E2E=1` and run alone
+(`INIT_E2E=1 pnpm vitest run tests/init.e2e.test.ts`), because it installs from the registry and
+needs every manager on `PATH`; the default `pnpm test` reports it skipped, keeping the gate fast and
+offline. The sorted-`package.json` check replays the decided two-bin order (`prettier-package-json`
+then `prettier`), because either bin alone rewrites the other's bytes and would always differ. The
+"files present are exactly the decided list" check excludes `.husky/_`, which husky itself fills on
+install, and the manager's lockfile, which neither is init's writing. And `docs/decisions/0029`
+lost its stale "Nothing to set up" consequence line, retired by this plan.

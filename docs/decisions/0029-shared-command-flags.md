@@ -53,5 +53,6 @@ import, because only a command file may import commander.
 
 - A new command that asks a question attaches `COMMON_OPTIONS.yes` and gets the same spelling and
   the same meaning: no question, every default.
-- The help examples describe what the flags will do. Today every `init` run says "Nothing to set
-  up", because the flow is not built yet. The examples are the contract the flow has to meet.
+- The help examples describe what the flags do, decided with the flow in
+  [0030](./0030-init-node-preset.md): `init --dry-run` previews the plan, and `init -y` takes every
+  default, so a CI run never prompts.

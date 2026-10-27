@@ -183,7 +183,6 @@ const { JAVASCRIPT_FILES, TYPESCRIPT_FILES, CODE_FILES } = (() => {
 	const TYPESCRIPT_FILES = [\`{\${SOURCE_FOLDERS}}/**/*.{\${TYPESCRIPT_EXTENSIONS}}\`, \`*.{\${TYPESCRIPT_EXTENSIONS}}\`];
 	const CODE_FILES = [\`{\${SOURCE_FOLDERS}}/**/*.{\${CODE_EXTENSIONS}}\`, \`*.{\${CODE_EXTENSIONS}}\`];
 
-
 	return {
 		JAVASCRIPT_FILES,
 		TYPESCRIPT_FILES,
@@ -589,6 +588,7 @@ exports[`node preset templates > renders package.json per package manager > pack
 
 exports[`node preset templates > renders pnpm-workspace.yaml 1`] = `
 "allowBuilds:
+  esbuild: true
   unrs-resolver: true
 
 strictPeerDependencies: true

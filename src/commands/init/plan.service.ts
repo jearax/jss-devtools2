@@ -5,7 +5,7 @@ import { localBinCommandLine } from '@/core/adapters/package-manager.adapter';
 import { PACKAGE } from '@/core/constants/package.constant';
 
 import { CONFIG_NAMES } from './constants/config-name.constant';
-import { mergeHook, mergeLines, mergePackageJson } from './merge.service';
+import { mergeHook, mergeLines, mergePackageJson, mergePnpmWorkspaceYaml } from './merge.service';
 import { commitlintConfigMjsTemplate } from './templates/commitlint-config-mjs.template';
 import { editorconfigTemplate } from './templates/editorconfig.template';
 import { eslintConfigMjsTemplate } from './templates/eslint-config-mjs.template';
@@ -13,7 +13,7 @@ import { gitignoreTemplate } from './templates/gitignore.template';
 import { huskyCommitMsgTemplate } from './templates/husky-commit-msg.template';
 import { huskyPreCommitTemplate } from './templates/husky-pre-commit.template';
 import { packageJsonTemplate } from './templates/package-json.template';
-import { pnpmWorkspaceYamlTemplate } from './templates/pnpm-workspace-yaml.template';
+import { pnpmWorkspaceYamlExistingTemplate, pnpmWorkspaceYamlTemplate } from './templates/pnpm-workspace-yaml.template';
 import { prettierignoreTemplate } from './templates/prettierignore.template';
 import { prettierrcJsonTemplate } from './templates/prettierrc-json.template';
 import { srcMainTemplate } from './templates/src-main.template';
@@ -140,6 +140,28 @@ const existingModeEntries = (preflight: InitPreflight, options: InitOptions): re
 	addShared('.prettierignore', prettierignoreTemplate(), null);
 	addShared('.husky/pre-commit', huskyPreCommitTemplate({ command: commands.preCommit }), commands.preCommit);
 	addShared('.husky/commit-msg', huskyCommitMsgTemplate({ command: commands.commitMsg }), commands.commitMsg);
+
+	if (pm === 'pnpm') {
+		const raw = readIfExists(targetDir, 'pnpm-workspace.yaml');
+
+		if (raw === null) {
+			entries.push({
+				action: 'create',
+				path: 'pnpm-workspace.yaml',
+				content: pnpmWorkspaceYamlExistingTemplate()
+			});
+		} else {
+			const merged = mergePnpmWorkspaceYaml(raw);
+
+			if (merged.action === 'merged') {
+				entries.push({
+					action: 'update',
+					path: 'pnpm-workspace.yaml',
+					content: merged.content
+				});
+			}
+		}
+	}
 
 	const owned: readonly (readonly [string, string])[] = [
 		['eslint.config.mjs', eslintConfigMjsTemplate()],

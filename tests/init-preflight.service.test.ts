@@ -235,6 +235,36 @@ describe('preflight, existing mode', () => {
 		expectUnchanged(dir, before);
 	});
 
+	it('accepts a pnpm-workspace.yaml without a top-level packages field', async () => {
+		const dir = await makeGitProject({
+			...EXISTING_PROJECT,
+			'pnpm-workspace.yaml': 'allowBuilds:\n  esbuild: true\n  unrs-resolver: true\n'
+		});
+
+		const result = await preflightInit(dir, [], {});
+
+		expect(result.mode).toBe('existing');
+	});
+
+	it('exits 1 when pnpm-workspace.yaml cannot be extended line by line', async () => {
+		const dir = await makeGitProject({
+			...EXISTING_PROJECT,
+			'package.json': '{"name":"x","packageManager":"pnpm@11.24.0"}',
+			'pnpm-workspace.yaml': 'allowBuilds: { esbuild: true }\n'
+		});
+
+		const before = snapshotDir(dir);
+
+		expect(
+			await failureMessage(() => {
+				return preflightInit(dir, [], {});
+			})
+		).toBe(
+			'pnpm-workspace.yaml cannot be extended line by line; add these entries by hand: allowBuilds.esbuild: true, allowBuilds.unrs-resolver: true'
+		);
+		expectUnchanged(dir, before);
+	});
+
 	it('exits 1 for a pnpm-workspace.yaml', async () => {
 		const dir = await makeGitProject({
 			...EXISTING_PROJECT,

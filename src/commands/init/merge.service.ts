@@ -100,3 +100,109 @@ export const mergeHook = (raw: string, command: string): string | null => {
 
 	return `${ensureTrailingNewline(raw)}${command}\n`;
 };
+
+export type PnpmWorkspaceMerge =
+	{ action: 'merged'; content: string } | { action: 'unchanged' } | { action: 'unmergeable' };
+
+const WORKSPACE_BUILDS = ['esbuild', 'unrs-resolver'] as const;
+
+// pnpm 11 writes this after a failed install; it is a prompt to choose, not a value the user set.
+const PLACEHOLDER = 'set this to true or false';
+
+// Line-based on purpose: the merge must keep the user's bytes and the template layout is fixed.
+export const mergePnpmWorkspaceYaml = (raw: string): PnpmWorkspaceMerge => {
+	const lines = raw.split('\n');
+
+	const allowLine = lines.findIndex((line) => {
+		return line.startsWith('allowBuilds:');
+	});
+
+	if (allowLine !== -1 && !/^allowBuilds:\s*$/.test(lines[allowLine] ?? '')) {
+		return { action: 'unmergeable' };
+	}
+
+	const children = new Map<string, { line: number; indent: string; placeholder: boolean }>();
+	let insertAfter = allowLine;
+
+	if (allowLine !== -1) {
+		for (let i = allowLine + 1; i < lines.length; i++) {
+			const line = lines[i] ?? '';
+
+			if (line.trim() === '') {
+				continue;
+			}
+
+			if (!/^\s/.test(line)) {
+				break;
+			}
+
+			const match = /^(\s+)([A-Za-z0-9.-]+):(?:[ \t]+(.*))?/.exec(line);
+			const indent = match?.[1];
+			const key = match?.[2];
+
+			if (indent === undefined || key === undefined) {
+				continue;
+			}
+
+			children.set(key, {
+				line: i,
+				indent,
+				placeholder: match?.[3] === PLACEHOLDER
+			});
+			insertAfter = i;
+		}
+	}
+
+	const missing = WORKSPACE_BUILDS.filter((name) => {
+		const child = children.get(name);
+
+		return child === undefined || child.placeholder;
+	});
+
+	if (missing.length === 0) {
+		return { action: 'unchanged' };
+	}
+
+	const merged = [...lines];
+
+	for (const name of missing) {
+		const child = children.get(name);
+
+		if (child !== undefined) {
+			merged[child.line] = `${child.indent}${name}: true`;
+		}
+	}
+
+	const appended = missing.filter((name) => {
+		return !children.has(name);
+	});
+
+	if (appended.length > 0) {
+		// take the indent from the first existing child; 2 spaces when the block has none yet
+		const indent = children.values().next().value?.indent ?? '  ';
+
+		const added = appended.map((name) => {
+			return `${indent}${name}: true`;
+		});
+
+		if (allowLine === -1) {
+			merged.splice(
+				lines.findLastIndex((line) => {
+					return line.trim() !== '';
+				}) + 1,
+				0,
+				'allowBuilds:',
+				...added
+			);
+		} else {
+			merged.splice(insertAfter + 1, 0, ...added);
+		}
+	}
+
+	const content = `${merged.join('\n').replace(/\n*$/, '')}\n`;
+
+	return {
+		action: 'merged',
+		content
+	};
+};
