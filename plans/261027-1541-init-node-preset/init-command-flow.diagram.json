@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "jss-devtools init: command flow across modules",
+    "subtitle": "As plan 261027-1541-init-node-preset builds it. Create mode first, then what existing mode checks instead.",
+    "description": "Every check is read only and runs before the first write. Errors are drawn as red returns; each one is an exit 1 with what was found and the next step.",
+    "visual_preset": "classic",
+    "theme": "light",
+    "animation": "trace",
+    "views": [
+      { "id": "ch1-args", "title": "1. Arguments and mode", "narrative": "init.command.ts parses with commander and rejects a wrong-mode flag or an unbuilt framework before any I/O.", "focus_nodes": ["user", "command"] },
+      { "id": "ch2-create", "title": "2. Create-mode preflight", "narrative": "The package manager is asked (or --pm, or npm with -y), then the folder, git and <pm> --version are checked.", "focus_nodes": ["command", "service", "git", "pm", "fs"] },
+      { "id": "ch3-existing", "title": "3. Existing-mode preflight", "narrative": "package.json, monorepo, tsconfig.json, .git here, core.hooksPath, the detected manager, and the owned config names, in that order.", "focus_nodes": ["service", "git", "pm", "fs"] },
+      { "id": "ch4-gates", "title": "4. Plan, dry run, confirm", "narrative": "The service returns a plan of + ~ - entries. --dry-run renders it and exits 0; otherwise the user confirms or the run exits 1.", "focus_nodes": ["user", "command", "service"] },
+      { "id": "ch5-write", "title": "5. Write, install, sort", "narrative": "git init (create only), the writes with deletions last, the install with its output passed through, then prettier-package-json and prettier from the project itself.", "focus_nodes": ["service", "git", "pm", "fs"] }
+    ]
+  },
+  "participants": [
+    { "id": "user", "label": "User / terminal", "role": "client" },
+    { "id": "command", "label": "init.command.ts", "role": "gateway" },
+    { "id": "service", "label": "init.service.ts", "role": "service" },
+    { "id": "git", "label": "git.adapter.ts", "role": "external" },
+    { "id": "pm", "label": "package-manager.adapter.ts", "role": "external" },
+    { "id": "fs", "label": "File system", "role": "database" }
+  ],
+  "messages": [
+    { "id": "m01", "from": "user", "to": "command", "label": "init my-app [--pm] [-y] [--dry-run] [--no-vscode]", "kind": "sync-call" },
+    { "id": "m02", "from": "command", "to": "command", "label": "parse: framework node? --pm/-f in the right mode?", "kind": "self-call" },
+    { "id": "m03", "from": "command", "to": "user", "label": "exit 1: wrong flag for this mode / react not supported yet", "kind": "error" },
+    { "id": "m04", "from": "command", "to": "user", "label": "select package manager (no --pm; -y takes npm)", "kind": "sync-call" },
+    { "id": "m05", "from": "user", "to": "command", "label": "pnpm", "kind": "return" },
+    { "id": "m06", "from": "command", "to": "service", "label": "preflight(create, my-app, pnpm)", "kind": "sync-call" },
+    { "id": "m07", "from": "service", "to": "fs", "label": "my-app missing or empty?", "kind": "sync-call" },
+    { "id": "m08", "from": "fs", "to": "service", "label": "empty", "kind": "return" },
+    { "id": "m09", "from": "service", "to": "git", "label": "gitVersion()", "kind": "sync-call" },
+    { "id": "m10", "from": "git", "to": "service", "label": "ok", "kind": "return" },
+    { "id": "m11", "from": "service", "to": "pm", "label": "packageManagerVersion(pnpm)", "kind": "sync-call" },
+    { "id": "m12", "from": "pm", "to": "service", "label": "11.24.0", "kind": "return" },
+    { "id": "m13", "from": "service", "to": "command", "label": "failed check: what was found + next step", "kind": "error" },
+    { "id": "m14", "from": "service", "to": "service", "label": "existing mode instead: package.json, no monorepo, tsconfig.json, .git here, hooksPath, detect pm (stopDir), owned names or -f", "kind": "self-call" },
+    { "id": "m15", "from": "service", "to": "service", "label": "build plan: + create, ~ merge, - delete (-f)", "kind": "self-call" },
+    { "id": "m16", "from": "service", "to": "command", "label": "plan", "kind": "return" },
+    { "id": "m17", "from": "command", "to": "user", "label": "render + ~ - list; --dry-run: exit 0, nothing written", "kind": "sync-call" },
+    { "id": "m18", "from": "command", "to": "user", "label": "confirm: write N files to my-app and install? (-y: yes)", "kind": "sync-call" },
+    { "id": "m19", "from": "user", "to": "command", "label": "yes  (no / Ctrl+C: exit 1 cancelled; no terminal: exit 1)", "kind": "return" },
+    { "id": "m20", "from": "command", "to": "service", "label": "apply(plan)", "kind": "sync-call" },
+    { "id": "m21", "from": "service", "to": "fs", "label": "mkdir my-app", "kind": "sync-call" },
+    { "id": "m22", "from": "service", "to": "git", "label": "gitInit: git init -q -b main (create only)", "kind": "sync-call" },
+    { "id": "m23", "from": "service", "to": "fs", "label": "write entries, merge shared files, deletions last", "kind": "sync-call" },
+    { "id": "m24", "from": "service", "to": "pm", "label": "installPackages: pnpm install, stdio inherited; prepare: husky", "kind": "sync-call" },
+    { "id": "m25", "from": "pm", "to": "service", "label": "install failed: files kept, exit 1 'cd my-app && pnpm install'", "kind": "error" },
+    { "id": "m26", "from": "service", "to": "pm", "label": "runLocalBin: prettier-package-json --write, then prettier --write package.json", "kind": "sync-call" },
+    { "id": "m27", "from": "service", "to": "command", "label": "done", "kind": "return" },
+    { "id": "m28", "from": "command", "to": "user", "label": "outro: cd my-app && pnpm run dev; exit 0", "kind": "return" }
+  ]
+}
