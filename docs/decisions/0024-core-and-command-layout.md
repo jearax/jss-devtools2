@@ -59,6 +59,15 @@ exactly that rule:
 H0 decision 0010's rule, one adapter per external tool, carries over: the strings `git --version` and
 `git rev-parse` appear only in `src/core/adapters/git.adapter.ts`.
 
+## Amendment 2026-10-27: two command-owned roles
+
+Approved by the user on 2026-10-27 for the init command. The record keeps its original date.
+
+| Suffix         | Folder                       | Role                                                                     |
+| -------------- | ---------------------------- | ------------------------------------------------------------------------ |
+| `.constant.ts` | `commands/<name>/constants/` | constant values one command owns, such as the version table              |
+| `.template.ts` | `commands/<name>/templates/` | the content of one file a command generates, as a function of its inputs |
+
 ## In the user's words
 
 > "Cần modular hoá kiểu nestjs theo phân loại file nha, ví dụ: src/core/utils/abc.util.ts" (user,

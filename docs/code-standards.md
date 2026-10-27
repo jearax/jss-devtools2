@@ -160,17 +160,19 @@ stays one line, and a padding paragraph stays gone no matter how true it is.
 A file under `src/` carries a suffix that states its role, and the suffix is the one its folder
 allows. The architecture suite enforces this, and a rule with no fixture is a comment, not a rule.
 
-| Suffix         | Folder              | Role                                                             |
-| -------------- | ------------------- | ---------------------------------------------------------------- |
-| `.command.ts`  | command folder root | commander wiring, argument parsing, rendering through clack      |
-| `.ui.ts`       | `ui/`               | terminal rendering built on `@clack/prompts`, shared by commands |
-| `.service.ts`  | command folder root | the command's logic; returns data, prints nothing                |
-| `.check.ts`    | `checks/`           | one doctor check                                                 |
-| `.adapter.ts`  | `adapters/`         | the only knowledge of one external tool's command line           |
-| `.util.ts`     | `utils/`            | stateless helpers                                                |
-| `.constant.ts` | `constants/`        | constant values                                                  |
-| `.error.ts`    | `errors/`           | error classes                                                    |
-| `.type.ts`     | `types/`            | types only                                                       |
+| Suffix         | Folder                       | Role                                                                                  |
+| -------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| `.command.ts`  | command folder root          | commander wiring, argument parsing, rendering through clack                           |
+| `.ui.ts`       | `ui/`                        | terminal rendering built on `@clack/prompts`, shared by commands                      |
+| `.service.ts`  | command folder root          | the command's logic; returns data, prints nothing                                     |
+| `.check.ts`    | `checks/`                    | one doctor check                                                                      |
+| `.adapter.ts`  | `adapters/`                  | the only knowledge of one external tool's command line                                |
+| `.util.ts`     | `utils/`                     | stateless helpers                                                                     |
+| `.constant.ts` | `constants/`                 | constant values                                                                       |
+| `.constant.ts` | `commands/<name>/constants/` | constant values one command owns, such as the version table and the config-name table |
+| `.template.ts` | `commands/<name>/templates/` | the content of one file a command generates, as a function of its inputs              |
+| `.error.ts`    | `errors/`                    | error classes                                                                         |
+| `.type.ts`     | `types/`                     | types only                                                                            |
 
 `src/cli.ts` is the only file without a suffix: it is the entry point. A new role needs an entry in
 this table, in the rules and in

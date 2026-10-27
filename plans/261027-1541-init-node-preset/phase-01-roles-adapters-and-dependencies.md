@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Roles, adapters and dependencies"
-status: pending
+status: completed
 priority: P1
 effort: "4h"
 dependencies: []
@@ -75,10 +75,10 @@ its non-zero code.
 
 ## Tasks & Steps
 
-- [ ] Add `constants/` and `templates/` roles to `ROLE_SUFFIXES`, each with a negative fixture
-- [ ] Amend the role table in decision 0024 and in `docs/code-standards.md`
-- [ ] Add `gitInit`, `gitHooksPath`, `gitTopLevel` to `git.adapter.ts`, with real-git tests (branch `main` even with `init.defaultBranch=trunk`)
-- [ ] Add the stdio-inheriting option to `run-command.util.ts`; test that a failing command still returns its non-zero code
-- [ ] Create `package-manager.adapter.ts`: version, install, local bin, detect with `stopDir`, commands from `resolveCommand`
-- [ ] Add `package-manager-detector` 1.9.0 (exact) to `dependencies`; report the bundle size before and after
-- [ ] Run the full gate; commit
+- [x] Add `constants/` and `templates/` roles to `ROLE_SUFFIXES`, each with a negative fixture
+- [x] Amend the role table in decision 0024 and in `docs/code-standards.md`
+- [x] Add `gitInit`, `gitHooksPath`, `gitTopLevel` to `git.adapter.ts`, with real-git tests (branch `main` even with `init.defaultBranch=trunk`)
+- [x] Add the stdio-inheriting option to `run-command.util.ts`; test that a failing command still returns its non-zero code
+- [x] Create `package-manager.adapter.ts`: version, install, local bin, detect with `stopDir`, commands from `resolveCommand`
+- [x] Add `package-manager-detector` 1.9.0 (exact) to `dependencies`; report the bundle size before and after
+- [x] Run the full gate; commit

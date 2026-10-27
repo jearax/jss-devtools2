@@ -16,10 +16,12 @@ describe('architecture rules', () => {
 	});
 
 	it.each(
-		rules.map((rule) => {
-			return [rule.id, rule.fixture] as const;
+		rules.flatMap((rule) => {
+			return rule.fixtures.map((fixture) => {
+				return [rule.id, fixture] as const;
+			});
 		})
-	)('detects %s from its fixture', async (id, fixture) => {
+	)('detects %s from %s', async (id, fixture) => {
 		const violations = await findViolations(repoRoot, [fixture]);
 
 		expect(violations).toEqual([
@@ -30,14 +32,13 @@ describe('architecture rules', () => {
 		]);
 	});
 
-	it('has one fixture per rule', () => {
-		expect(
-			new Set(
-				rules.map((rule) => {
-					return rule.fixture;
-				})
-			).size
-		).toBe(rules.length);
+	it('has one fixture per rule entry', () => {
+		const fixtures = rules.flatMap((rule) => {
+			return rule.fixtures;
+		});
+
+		expect(new Set(fixtures).size).toBe(fixtures.length);
+		expect(fixtures.length).toBeGreaterThanOrEqual(rules.length);
 	});
 });
 

@@ -40,3 +40,21 @@ export const isInsideWorkTree = async (cwd: string): Promise<boolean> => {
 
 	return result.code === 0 && result.stdout.trim() === 'true';
 };
+
+export const gitInit = async (cwd: string): Promise<boolean> => {
+	const result = await runCommand('git', ['init', '-q', '-b', 'main'], { cwd });
+
+	return result.code === 0;
+};
+
+export const gitHooksPath = async (cwd: string): Promise<string | null> => {
+	const result = await runCommand('git', ['config', '--get', 'core.hooksPath'], { cwd });
+
+	return result.code === 0 ? result.stdout.trim() : null;
+};
+
+export const gitTopLevel = async (cwd: string): Promise<string | null> => {
+	const result = await runCommand('git', ['rev-parse', '--show-toplevel'], { cwd });
+
+	return result.code === 0 ? result.stdout.trim() : null;
+};

@@ -8,7 +8,7 @@ export type ArchitectureRule = {
 	check?: (logicalPath: string, content: string) => boolean;
 	allow: readonly string[];
 	reason: string;
-	fixture: string;
+	fixtures: readonly string[];
 };
 
 export type Violation = {
@@ -27,6 +27,8 @@ const ROLE_SUFFIXES: readonly (readonly [RegExp, readonly string[]])[] = [
 	[/^core\/errors\//, ['.error.ts']],
 	[/^core\/ui\//, ['.ui.ts']],
 	[/^core\/utils\//, ['.util.ts']],
+	[/^commands\/[^/]+\/constants\//, ['.constant.ts']],
+	[/^commands\/[^/]+\/templates\//, ['.template.ts']],
 	[/^commands\/[^/]+\/checks\//, ['.check.ts']],
 	[/^commands\/[^/]+\/types\//, ['.type.ts']],
 	[/^commands\/[^/]+\//, ['.command.ts', '.service.ts']]
@@ -104,7 +106,11 @@ export const rules: readonly ArchitectureRule[] = [
 		},
 		allow: [],
 		reason: 'every file under src/ carries the suffix that states its role',
-		fixture: 'tests/fixtures/architecture/src/core/utils/legacy-helper.ts'
+		fixtures: [
+			'tests/fixtures/architecture/src/core/utils/legacy-helper.ts',
+			'tests/fixtures/architecture/src/commands/init/constants/legacy-helper.ts',
+			'tests/fixtures/architecture/src/commands/init/templates/legacy-helper.ts'
+		]
 	},
 	{
 		id: 'core-imports-no-command',
@@ -114,7 +120,7 @@ export const rules: readonly ArchitectureRule[] = [
 		pattern: /from\s+['"][^'"]*commands\//,
 		allow: [],
 		reason: 'src/core is shared and imports no command',
-		fixture: 'tests/fixtures/architecture/src/core/utils/imports-command.util.ts'
+		fixtures: ['tests/fixtures/architecture/src/core/utils/imports-command.util.ts']
 	},
 	{
 		id: 'command-imports-no-other-command',
@@ -124,7 +130,7 @@ export const rules: readonly ArchitectureRule[] = [
 		check: importsOtherCommand,
 		allow: [],
 		reason: 'a command imports nothing from another command',
-		fixture: 'tests/fixtures/architecture/src/commands/doctor/imports-other.service.ts'
+		fixtures: ['tests/fixtures/architecture/src/commands/doctor/imports-other.service.ts']
 	},
 	{
 		id: 'commander-in-command-files-only',
@@ -134,7 +140,7 @@ export const rules: readonly ArchitectureRule[] = [
 		pattern: /from\s+['"]commander['"]/,
 		allow: [],
 		reason: 'commander is wired in *.command.ts and in cli.ts',
-		fixture: 'tests/fixtures/architecture/src/commands/doctor/uses-commander.service.ts'
+		fixtures: ['tests/fixtures/architecture/src/commands/doctor/uses-commander.service.ts']
 	},
 	{
 		id: 'clack-in-ui-layer-only',
@@ -144,7 +150,7 @@ export const rules: readonly ArchitectureRule[] = [
 		pattern: /from\s+['"]@clack\/prompts['"]/,
 		allow: [],
 		reason: '@clack/prompts is rendered in *.ui.ts, in *.command.ts and in cli.ts',
-		fixture: 'tests/fixtures/architecture/src/commands/doctor/uses-clack.service.ts'
+		fixtures: ['tests/fixtures/architecture/src/commands/doctor/uses-clack.service.ts']
 	},
 	{
 		id: 'output-in-ui-layer-only',
@@ -154,7 +160,7 @@ export const rules: readonly ArchitectureRule[] = [
 		pattern: /\b(?:process\.(?:stdout|stderr)|console\.)/,
 		allow: [],
 		reason: 'the terminal is written in *.ui.ts, in *.command.ts and in cli.ts',
-		fixture: 'tests/fixtures/architecture/src/commands/doctor/writes-output.service.ts'
+		fixtures: ['tests/fixtures/architecture/src/commands/doctor/writes-output.service.ts']
 	},
 	{
 		id: 'child-process-in-runner-only',
@@ -164,7 +170,7 @@ export const rules: readonly ArchitectureRule[] = [
 		pattern: /from\s+['"]node:child_process['"]/,
 		allow: [],
 		reason: 'node:child_process is spawned only by core/utils/run-command.util.ts',
-		fixture: 'tests/fixtures/architecture/src/commands/doctor/spawns.service.ts'
+		fixtures: ['tests/fixtures/architecture/src/commands/doctor/spawns.service.ts']
 	},
 	{
 		id: 'runner-in-adapters-only',
@@ -174,7 +180,7 @@ export const rules: readonly ArchitectureRule[] = [
 		pattern: /from\s+['"][^'"]*run-command\.util(?:\.js)?['"]/,
 		allow: [],
 		reason: 'the command runner is called only by an adapter',
-		fixture: 'tests/fixtures/architecture/src/commands/doctor/uses-runner.service.ts'
+		fixtures: ['tests/fixtures/architecture/src/commands/doctor/uses-runner.service.ts']
 	},
 	{
 		id: 'no-process-exit-outside-entry-point',
@@ -184,7 +190,7 @@ export const rules: readonly ArchitectureRule[] = [
 		pattern: /\bprocess\s*\.\s*exit\s*\(/,
 		allow: ['cli.ts'],
 		reason: 'set process.exitCode in src/cli.ts instead, so failures stay non-zero',
-		fixture: 'tests/fixtures/architecture/src/commands/doctor/forbidden-process-exit.service.ts'
+		fixtures: ['tests/fixtures/architecture/src/commands/doctor/forbidden-process-exit.service.ts']
 	},
 	{
 		id: 'no-global-process-handlers-outside-entry-point',
@@ -194,7 +200,7 @@ export const rules: readonly ArchitectureRule[] = [
 		pattern: /\bprocess\s*\.\s*on\s*\(\s*['"](uncaughtException|unhandledRejection)['"]/,
 		allow: ['cli.ts'],
 		reason: 'global process handlers live in src/cli.ts and must not swallow failures',
-		fixture: 'tests/fixtures/architecture/src/commands/doctor/forbidden-global-handler.service.ts'
+		fixtures: ['tests/fixtures/architecture/src/commands/doctor/forbidden-global-handler.service.ts']
 	}
 ];
 

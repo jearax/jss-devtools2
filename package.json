@@ -23,7 +23,8 @@
 	},
 	"dependencies": {
 		"@clack/prompts": "1.8.1",
-		"commander": "15.0.0"
+		"commander": "15.0.0",
+		"package-manager-detector": "1.9.0"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "21.2.4",
