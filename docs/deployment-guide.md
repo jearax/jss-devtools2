@@ -91,6 +91,17 @@ Dokploy deploys only a GitHub push event for the service's branch, and answers a
 
 ## Verifying a deploy
 
+## What a deploy costs
+
+Each redeploy answers 404 for about 2 seconds (measured 2026-10-28 on a local copy of this compose
+file behind Traefik 3.6.4; production runs Traefik 3.6.7). Traefik routes only to healthy
+containers, so the gap is the time for Dokploy to stop the old container, start the new one
+(fixed `container_name`, so they swap one at a time), and its first healthcheck to pass — the
+healthcheck uses `start_interval: 1s` during `start_period: 30s` to keep that first pass near
+instant. Before the fix the first check waited `interval: 30s`, so the gap was ~30s.
+
+## Verifying a deploy
+
 ```bash
 curl -sI https://jss-devtools.jjuidev.com/
 curl -sI https://jss-devtools.jjuidev.com/install.sh

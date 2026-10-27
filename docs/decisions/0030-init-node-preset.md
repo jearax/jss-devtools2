@@ -106,6 +106,18 @@ it writes, through the project's own installed copy.
 > Asked whether existing mode should also add `strictPeerDependencies` and `engineStrict`, the user
 > chose "Không thêm" (2026-10-27).
 
+## Known limits
+
+**Native Windows is not supported.** Decided 2026-10-28: nothing is built for it; WSL is Linux and
+works as tested. "Windows: chỉ notes lại, không xử lý." (user). Native Windows hits:
+
+- The only installer is a POSIX sh script (the package is private, so there is no npm install).
+- `init` runs npm, pnpm and yarn through `execFile`, which the Node docs say cannot launch their
+  `.cmd` shims, so it reports "npm is not installed".
+- The `cd` hints use POSIX quoting.
+- A generated project has no `.gitattributes`, so a Windows clone with `core.autocrlf=true` gets
+  CRLF files that Prettier's `lf` rejects.
+
 ## Consequences
 
 - The pinned version table in `src/commands/init/constants/node-preset-dependency.constant.ts` is

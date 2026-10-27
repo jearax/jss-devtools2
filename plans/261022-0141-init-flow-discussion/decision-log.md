@@ -643,3 +643,13 @@ là my-app" (user). The derivation: lowercase; every run of characters outside `
 `.`, `_` becomes one `-`; leading `.`, `_` and `-` and trailing `-` are trimmed; at most 214
 characters. A folder name with nothing left after that (only non-Latin letters, for example) exits 1
 before any write, naming the folder and asking for a name with Latin letters or digits.
+
+## Windows
+
+Decided 2026-10-28: native Windows is not supported and nothing is built for it; the limits are
+written down. "Windows: chỉ notes lại, không xử lý." (user). WSL is Linux and works as tested. What
+native Windows hits, found in the code review: the only installer is POSIX sh (the package is
+private, so there is no npm install); `init` runs npm, pnpm and yarn through `execFile`, which the
+Node docs say cannot launch their `.cmd` shims, so it reports "npm is not installed"; the `cd`
+hints use POSIX quoting; and a generated project has no `.gitattributes`, so a Windows clone with
+`core.autocrlf=true` gets CRLF files that Prettier's `lf` rejects.

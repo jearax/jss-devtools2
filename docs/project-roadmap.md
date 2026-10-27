@@ -136,3 +136,6 @@ is the first command. The release path exists, so a command can ship the moment 
 ## Not committed to yet
 
 The first-release version number. It is recorded as open rather than assumed here.
+
+Native Windows support: not planned; the tool is built for Linux and macOS, Windows users use WSL
+([0030](./decisions/0030-init-node-preset.md)).

@@ -18,6 +18,9 @@ pnpm is pinned through `packageManager`, so `corepack` selects the right version
 `.npmrc` and no `.nvmrc`: pnpm reads its settings from `pnpm-workspace.yaml`, and the development
 runtime is declared once in `package.json`.
 
+Windows is not supported natively; use WSL (Windows Subsystem for Linux). The reasons are in
+[docs/decisions/0030-init-node-preset.md](./docs/decisions/0030-init-node-preset.md).
+
 ## What the CLI does today
 
 ```bash
