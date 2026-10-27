@@ -178,7 +178,6 @@ export const mergePnpmWorkspaceYaml = (raw: string): PnpmWorkspaceMerge => {
 	});
 
 	if (appended.length > 0) {
-		// take the indent from the first existing child; 2 spaces when the block has none yet
 		const indent = children.values().next().value?.indent ?? '  ';
 
 		const added = appended.map((name) => {

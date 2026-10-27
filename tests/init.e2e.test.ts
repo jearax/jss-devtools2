@@ -108,7 +108,6 @@ describe.runIf(enabled)('init end to end', () => {
 		'creates a %s project that lints, typechecks, builds and runs',
 		async (pm: Manager) => {
 			if (!(await available(pm))) {
-				// npm and pnpm are required; yarn 1 and bun are reported and skipped when missing.
 				if (pm === 'npm' || pm === 'pnpm') {
 					throw new Error(`${pm} is required but not on PATH`);
 				}
@@ -179,7 +178,6 @@ describe.runIf(enabled)('init end to end', () => {
 		async () => {
 			const source = join(root, 'my-app-pnpm');
 
-			// the create test above always builds my-app-pnpm, because pnpm is required
 			expect(existsSync(source), 'the pnpm create test should have left my-app-pnpm behind').toBe(true);
 
 			const copy = join(root, 'existing-app');

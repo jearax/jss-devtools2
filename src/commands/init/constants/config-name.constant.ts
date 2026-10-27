@@ -3,11 +3,7 @@ export type ConfigNames = {
 	packageJsonKeys: readonly string[];
 };
 
-/**
- * Every file name and package.json key each tool's docs list as a configuration source.
- * Preflight detects these; with `-f` all but the owned file are deleted. Names from the
- * decision log's tables, read from the ESLint, Prettier and commitlint docs on 2026-10-27.
- */
+// Names read from the ESLint, Prettier and commitlint docs on 2026-10-27.
 export const CONFIG_NAMES: Readonly<Record<'eslint' | 'prettier' | 'commitlint', ConfigNames>> = {
 	eslint: {
 		files: [

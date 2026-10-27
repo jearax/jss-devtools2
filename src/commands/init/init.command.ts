@@ -61,7 +61,6 @@ export const registerInitCommand = (program: Command): void => {
 };
 
 const askPackageManager = async (dirGiven: boolean, options: InitOptions): Promise<PackageManagerName | undefined> => {
-	// existing mode detects the manager in preflight; no answered question feeds it
 	if (!dirGiven) {
 		return undefined;
 	}
@@ -153,7 +152,6 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 		return;
 	}
 
-	// -y takes the default answer, which is yes
 	if (options.yes !== true) {
 		const confirmed = await confirm({
 			message: `write ${plan.entries.length} files to ${preflight.projectName} and install?`,
