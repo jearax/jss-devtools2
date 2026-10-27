@@ -1,5 +1,7 @@
 import { execFileSync } from 'node:child_process';
 
+import { readPackageInfo } from './package-info.mjs';
+
 const PACKAGES = [
 	'@commitlint/cli',
 	'@commitlint/config-conventional',
@@ -22,7 +24,7 @@ const PACKAGES = [
 	'typescript-eslint'
 ];
 
-const NODE_FLOOR = '24.11.0';
+const NODE_FLOOR = readPackageInfo().nodeFloor;
 const TYPES_NODE_MAJOR = Number(NODE_FLOOR.split('.')[0]);
 const MIN_AGE_MINUTES = 1440;
 

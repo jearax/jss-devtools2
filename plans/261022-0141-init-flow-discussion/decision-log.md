@@ -633,3 +633,13 @@ user: `--no-install`, `--no-linter`, `--no-commitlint`, `--import-alias`. Not pr
 `--no-hooks`. Decided: `-f, --force`, see "Files that already exist". `--cwd` is dropped: "Chốt bỏ --cwd" (user,
 2026-10-27). `init <dir>` names the folder in create mode, and existing mode runs where the user
 `cd`s to.
+
+## Package name in create mode
+
+Decided 2026-10-27, after the code review found `init "My App"` writing `"name": "My App"`: the
+folder keeps the name the user typed, and `package.json` gets a valid npm name derived from it,
+without asking. "Xử lý ngầm behaivior được không, tên folder vẫn có thể là "My App" nhưng pkg name
+là my-app" (user). The derivation: lowercase; every run of characters outside `a-z`, `0-9`, `-`,
+`.`, `_` becomes one `-`; leading `.`, `_` and `-` and trailing `-` are trimmed; at most 214
+characters. A folder name with nothing left after that (only non-Latin letters, for example) exits 1
+before any write, naming the folder and asking for a name with Latin letters or digits.

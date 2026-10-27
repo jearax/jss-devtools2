@@ -183,6 +183,26 @@ describe('preflight, create mode', () => {
 			expectUnchanged(dir, before);
 		});
 	});
+
+	it('exits 1 for yarn 2 and newer in create mode, and the folder is unchanged', async () => {
+		const dir = await makeEmptyDir();
+
+		dirs.push(dir);
+		const stub = await stubOnPath('yarn', '#!/bin/sh\necho "4.9.0"\n');
+
+		await writeFile(join(stub, 'git'), '#!/bin/sh\necho "git version 2.40.0"\n', { mode: 0o755 });
+
+		await withPath([stub], async () => {
+			const before = snapshotDir(dir);
+
+			expect(
+				await failureMessage(() => {
+					return preflightInit(process.cwd(), [dir], { pm: 'yarn' });
+				})
+			).toBe('yarn 4.9.0 is not supported; supported: npm, yarn 1, pnpm, bun');
+			expectUnchanged(dir, before);
+		});
+	});
 });
 
 describe('preflight, existing mode', () => {

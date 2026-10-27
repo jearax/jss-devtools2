@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { localBinCommandLine } from '@/core/adapters/package-manager.adapter';
 import { PACKAGE } from '@/core/constants/package.constant';
+import { CliError } from '@/core/errors/cli.error';
 
 import { CONFIG_NAMES } from './constants/config-name.constant';
 import { mergeHook, mergeLines, mergePackageJson, mergePnpmWorkspaceYaml } from './merge.service';
@@ -32,8 +33,25 @@ const hookCommands = (pm: PackageManagerName): { preCommit: string; commitMsg: s
 	};
 };
 
+export const derivePackageName = (folder: string): string => {
+	const name = folder
+		.toLowerCase()
+		.replace(/[^a-z0-9._-]+/g, '-')
+		.replace(/^[._-]+/, '')
+		.replace(/-+$/, '')
+		.slice(0, 214)
+		.replace(/-+$/, '');
+
+	if (name === '') {
+		throw new CliError(`${folder} has no valid npm package name; use a folder name with Latin letters or digits`);
+	}
+
+	return name;
+};
+
 const createModeEntries = (preflight: InitPreflight, options: InitOptions): readonly PlanEntry[] => {
 	const { pm, projectName, pmVersion } = preflight;
+	const packageName = derivePackageName(projectName);
 	const commands = hookCommands(pm);
 
 	const at = (path: string, content: string): PlanEntry => {
@@ -48,7 +66,7 @@ const createModeEntries = (preflight: InitPreflight, options: InitOptions): read
 		at(
 			'package.json',
 			packageJsonTemplate({
-				projectName,
+				projectName: packageName,
 				packageManager: pm,
 				packageManagerVersion: pmVersion,
 				nodeFloor: PACKAGE.nodeFloor

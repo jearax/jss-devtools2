@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createProgram, runProgram } from '@/cli';
+import { sortFailureMessage } from '@/commands/init/init.command';
 
 import { capture } from './support/capture-stream';
 import { snapshotDir } from './support/fs-snapshot';
@@ -206,6 +207,18 @@ describe('the init command', () => {
 		expect(existsSync(join(dir, 'my-app', 'eslint.config.mjs'))).toBe(true);
 	}, 120_000);
 
+	it('names the cwd-relative path in the next step, quoting what the shell would split', async () => {
+		const dir = await useCwd();
+
+		useDeadRegistry();
+
+		const { stderr } = await runInit(join('apps', 'My App'), '-y');
+
+		expect(stderr).toContain("To finish: cd 'apps/My App' && npm install");
+		expect(process.exitCode).toBe(1);
+		expect(existsSync(join(dir, 'apps', 'My App', 'src', 'main.ts'))).toBe(true);
+	}, 120_000);
+
 	it('asks for the package manager in create mode when the terminal is interactive', async () => {
 		await useCwd();
 
@@ -277,5 +290,45 @@ describe('the init command', () => {
 
 		expect(stderr).toContain("error: unknown option '--yes'");
 		expect(process.exitCode).toBe(1);
+	});
+});
+
+describe('the sort failure message', () => {
+	it('includes the failing tool stderr, then the finish command', () => {
+		expect(
+			sortFailureMessage(
+				'prettier',
+				{
+					stdout: '',
+					stderr: 'Prettier 3.9.10\n'
+				},
+				'cd my-app && npm exec prettier --write package.json'
+			)
+		).toBe(
+			'prettier failed; the files are written.\nPrettier 3.9.10\nTo finish: cd my-app && npm exec prettier --write package.json'
+		);
+	});
+
+	it('falls back to stdout when stderr is empty, and stays on one line without output', () => {
+		expect(
+			sortFailureMessage(
+				'prettier-package-json',
+				{
+					stdout: 'boom\n',
+					stderr: ''
+				},
+				'npm exec prettier-package-json'
+			)
+		).toBe('prettier-package-json failed; the files are written.\nboom\nTo finish: npm exec prettier-package-json');
+		expect(
+			sortFailureMessage(
+				'prettier',
+				{
+					stdout: '',
+					stderr: ''
+				},
+				'npm exec prettier'
+			)
+		).toBe('prettier failed; the files are written. To finish: npm exec prettier');
 	});
 });

@@ -61,6 +61,11 @@ const preflightCreate = async (dirArg: string, options: InitOptions): Promise<In
 	const pm = options.pm ?? 'npm';
 	const pmVersion = await installedVersion(pm, process.cwd(), true);
 
+	// yarn 2+ defaults to Plug n Play, outside the yarn 1 scope this preset is tested against.
+	if (pm === 'yarn' && Number.parseInt(pmVersion, 10) >= 2) {
+		throw new CliError(`yarn ${pmVersion} is not supported; supported: npm, yarn 1, pnpm, bun`);
+	}
+
 	return {
 		mode: 'create',
 		targetDir,

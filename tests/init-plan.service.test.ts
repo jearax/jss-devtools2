@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { NODE_PRESET_DEPENDENCIES } from '@/commands/init/constants/node-preset-dependency.constant';
-import { mergePnpmWorkspaceYaml } from '@/commands/init/merge.service';
+import { mergePackageJson, mergePnpmWorkspaceYaml } from '@/commands/init/merge.service';
 import { buildInitPlan, renderPlan } from '@/commands/init/plan.service';
 import { eslintConfigMjsTemplate } from '@/commands/init/templates/eslint-config-mjs.template';
 import { LINT_STAGED } from '@/commands/init/templates/package-json.template';
@@ -442,5 +442,72 @@ describe('merging pnpm-workspace.yaml placeholders and indentation', () => {
 			action: 'merged',
 			content: 'allowBuilds:\n  esbuild: false\n  unrs-resolver: true\n'
 		});
+	});
+});
+
+describe('the package name in create mode', () => {
+	it('derives the npm name for package.json and keeps the folder name in src/main.ts', () => {
+		const plan = buildInitPlan(
+			{
+				...createPreflight('/tmp/nowhere'),
+				projectName: 'My App'
+			},
+			{}
+		);
+
+		expect(entryFor(plan, 'package.json')?.content).toContain('"name": "my-app"');
+		expect(entryFor(plan, 'src/main.ts')?.content).toContain('Hello from My App');
+	});
+
+	it('collapses each run of invalid characters into one dash', () => {
+		const plan = buildInitPlan(
+			{
+				...createPreflight('/tmp/nowhere'),
+				projectName: '  a  b__c  '
+			},
+			{}
+		);
+
+		expect(entryFor(plan, 'package.json')?.content).toContain('"name": "a-b__c"');
+	});
+
+	it('exits 1 when the folder name has no Latin letters or digits, before any write', () => {
+		expect(() => {
+			buildInitPlan(
+				{
+					...createPreflight('/tmp/nowhere'),
+					projectName: 'برنامج'
+				},
+				{}
+			);
+		}).toThrow('برنامج has no valid npm package name; use a folder name with Latin letters or digits');
+	});
+});
+
+describe('merging package.json dependencies', () => {
+	const mergeInput = {
+		pm: 'npm' as const,
+		pmVersion: '11.10.0',
+		force: false
+	};
+
+	it('does not re-add a package that is already a dependency in any section', () => {
+		const merged = mergePackageJson(
+			{
+				name: 'x',
+				dependencies: { typescript: '^6.0.3' },
+				peerDependencies: { eslint: '^10.0.0' },
+				optionalDependencies: { prettier: '^3.0.0' }
+			},
+			mergeInput
+		);
+
+		const parsed = JSON.parse(merged ?? '{}') as Record<string, Record<string, string>>;
+
+		expect(parsed['devDependencies']?.['typescript']).toBeUndefined();
+		expect(parsed['devDependencies']?.['eslint']).toBeUndefined();
+		expect(parsed['devDependencies']?.['prettier']).toBeUndefined();
+		expect(parsed['dependencies']?.['typescript']).toBe('^6.0.3');
+		expect(parsed['devDependencies']?.['husky']).toBeDefined();
 	});
 });

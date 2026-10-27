@@ -1,3 +1,4 @@
+import { relative } from 'node:path';
 import { styleText } from 'node:util';
 
 import { confirm, intro, isCancel, log, outro, select } from '@clack/prompts';
@@ -99,13 +100,28 @@ const withPm = (options: InitOptions, pm: PackageManagerName | undefined): InitO
 			};
 };
 
-const nextStep = (preflight: InitPreflight, command: string): string => {
-	const cd = preflight.mode === 'create' ? `cd ${preflight.projectName} && ` : '';
+const shellQuote = (path: string): string => {
+	return /^[\w@%+=:,./-]+$/.test(path) ? path : `'${path.replaceAll(`'`, `'\\''`)}'`;
+};
+
+const nextStep = (preflight: InitPreflight, target: string, command: string): string => {
+	const cd = preflight.mode === 'create' ? `cd ${target} && ` : '';
 
 	return `${cd}${command}`;
 };
 
-const sortPackageJson = async (preflight: InitPreflight, cwd: string): Promise<void> => {
+export const sortFailureMessage = (
+	bin: string,
+	result: { stdout: string; stderr: string },
+	finishCommand: string
+): string => {
+	const output = result.stderr.trim() || result.stdout.trim();
+	const reported = output === '' ? ' ' : `\n${output}\n`;
+
+	return `${bin} failed; the files are written.${reported}To finish: ${finishCommand}`;
+};
+
+const sortPackageJson = async (preflight: InitPreflight, target: string, cwd: string): Promise<void> => {
 	const bins = [
 		['prettier-package-json', ['--write', 'package.json']],
 		['prettier', ['--write', 'package.json']]
@@ -116,15 +132,15 @@ const sortPackageJson = async (preflight: InitPreflight, cwd: string): Promise<v
 
 		if (result.code !== 0) {
 			throw new CliError(
-				`${bin} failed; the files are written. To finish: ${nextStep(preflight, localBinCommandLine(preflight.pm, bin, [...args]))}`
+				sortFailureMessage(bin, result, nextStep(preflight, target, localBinCommandLine(preflight.pm, bin, [...args])))
 			);
 		}
 	}
 };
 
-const installError = (preflight: InitPreflight): CliError => {
+const installError = (preflight: InitPreflight, target: string): CliError => {
 	return new CliError(
-		`install failed; the files are written. To finish: ${nextStep(preflight, `${preflight.pm} install`)}`
+		`install failed; the files are written. To finish: ${nextStep(preflight, target, `${preflight.pm} install`)}`
 	);
 };
 
@@ -142,6 +158,7 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 
 	const pm = await askPackageManager(dirArg !== undefined, options);
 	const preflight = await preflightInit(process.cwd(), positional, withPm(options, pm));
+	const target = shellQuote(relative(process.cwd(), preflight.targetDir) || '.');
 	const plan = buildInitPlan(preflight, withPm(options, pm));
 
 	log.message(renderPlan(plan));
@@ -168,10 +185,10 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 	const code = await installPackages(preflight.pm, plan.targetDir);
 
 	if (code !== 0) {
-		throw installError(preflight);
+		throw installError(preflight, target);
 	}
 
-	await sortPackageJson(preflight, plan.targetDir);
+	await sortPackageJson(preflight, target, plan.targetDir);
 
-	outro(preflight.mode === 'create' ? `next: cd ${preflight.projectName}, ${preflight.pm} run dev` : 'done');
+	outro(preflight.mode === 'create' ? `next: cd ${target}, ${preflight.pm} run dev` : 'done');
 };

@@ -31,7 +31,11 @@ top-level `packages` field.
 `.editorconfig`, `.gitignore`, `.prettierignore`, `commitlint.config.mjs`, `.husky/pre-commit`,
 `.husky/commit-msg`, `.vscode/settings.json`, `.vscode/extensions.json` (skipped with `--no-vscode`),
 and `pnpm-workspace.yaml` for pnpm only, with `allowBuilds` for `esbuild` and `unrs-resolver` plus
-`strictPeerDependencies` and `engineStrict`. With pnpm 11, a missing `allowBuilds.esbuild` makes
+`strictPeerDependencies` and `engineStrict`. The folder keeps the name the user typed;
+`package.json` gets an npm name derived from it: lowercase, each run of characters outside `a-z`
+`0-9` `-` `.` `_` becomes one `-`, leading `.` `_` `-` and trailing `-` trimmed, at most 214
+characters; nothing left exits 1 before any write, naming the folder. With pnpm 11, a missing
+`allowBuilds.esbuild` makes
 every install and `pnpm exec` fail with `ERR_PNPM_IGNORED_BUILDS`, so the entry ships in the
 template.
 
@@ -48,16 +52,22 @@ missing entries added once, values the user set kept. Owned files (the ESLint, P
 and `.editorconfig` configs, plus `.vscode/`) stop with exit 1 and the list; `-f, --force` replaces
 them and deletes the other documented config names. Existing mode never touches `tsconfig.json`,
 the alias, or the `dev`/`build` scripts, and never adds `strictPeerDependencies` or `engineStrict`
-to `pnpm-workspace.yaml` — create mode only. A `pnpm-workspace.yaml` whose `allowBuilds` cannot be
+to `pnpm-workspace.yaml` — create mode only. Merging skips a preset package that is already in any
+`package.json` dependency section (`dependencies`, `devDependencies`, `peerDependencies`,
+`optionalDependencies`). A `pnpm-workspace.yaml` whose `allowBuilds` cannot be
 extended line by line (flow style) stops in preflight naming the entries to add by hand.
 
 **Preflight before the first write.** In order: the argument rules, package.json parse, monorepo
 check, `tsconfig.json` presence, git (installed, root here, hooks not owned by another manager),
 package manager (detected for existing mode, `--pm` or the question for create), version check,
-owned-file conflicts. `git init -q -b main` runs in create mode before the install, because
+owned-file conflicts. Create mode accepts yarn 1 only: a yarn major of 2 or newer exits 1, because
+Plug n Play is outside the scope this preset is tested against. `git init -q -b main` runs in create
+mode before the install, because
 `prepare: husky` needs `.git`. After the writes, three steps can still exit 1: `git init` (create
 mode), the install, and the `package.json` sort. Nothing is rolled back; each message names the
-next step — the manual install, or re-running the sort bin.
+next step — the manual install, or re-running the sort bin — with the path relative to where init
+ran, quoted when a shell would split or expand it, and the sort message includes the failing tool's
+output (stderr, else stdout).
 
 **Two questions, nothing else.** The package manager (create mode, when `--pm` is absent) and the
 confirmation after the plan is shown. `-y, --yes` takes every default; `--dry-run` runs preflight,

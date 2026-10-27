@@ -42,8 +42,16 @@ export const mergePackageJson = (parsed: Record<string, unknown>, input: Package
 			? { ...(merged['devDependencies'] as Record<string, unknown>) }
 			: {};
 
+	const installed = new Set(
+		(['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const).flatMap((key) => {
+			const section = merged[key];
+
+			return typeof section === 'object' && section !== null ? Object.keys(section) : [];
+		})
+	);
+
 	for (const [name, version] of Object.entries(NODE_PRESET_DEPENDENCIES)) {
-		if (devDependencies[name] === undefined) {
+		if (!installed.has(name)) {
 			devDependencies[name] = `^${version}`;
 			changed = true;
 		}

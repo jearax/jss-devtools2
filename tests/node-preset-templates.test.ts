@@ -15,9 +15,10 @@ import { tsconfigJsonTemplate } from '@/commands/init/templates/tsconfig-json.te
 import { vscodeExtensionsJsonTemplate } from '@/commands/init/templates/vscode-extensions-json.template';
 import { vscodeSettingsJsonTemplate } from '@/commands/init/templates/vscode-settings-json.template';
 import { localBinCommandLine } from '@/core/adapters/package-manager.adapter';
+import { PACKAGE } from '@/core/constants/package.constant';
 
 const PROJECT_NAME = 'my-app';
-const NODE_FLOOR = '24.11.0';
+const NODE_FLOOR = PACKAGE.nodeFloor;
 
 describe('node preset templates', () => {
 	it('renders package.json per package manager', () => {
