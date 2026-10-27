@@ -189,30 +189,47 @@ describe('standalone bundle', () => {
 		const { stdout, code } = await cli('init', '--help');
 
 		expect(code).toBe(0);
-		expect(stdout).toBe(`Usage: jss-devtools init [options]
+		expect(stdout).toBe(`Usage: jss-devtools init [options] [dir]
 
-initialize a project
+create a project, or set up the current one
+
+Arguments:
+  dir                 create a new project in this folder (missing or empty);
+                      without it, set up the project in the current folder
 
 Options:
-  -y, --yes   do not ask; take the default answers
-  --dry-run   show the changes, write nothing
-  -h, --help  display help for command
+  --framework <name>  the preset to apply; only node is built so far (choices:
+                      "node", "react", "rn", "next", "nest", default: "node")
+  --pm <name>         package manager for a new project; asked when omitted, npm
+                      with --yes. Not accepted without <dir>: the current
+                      folder's manager is detected (choices: "npm", "yarn",
+                      "pnpm", "bun")
+  -f, --force         replace the config files init owns when they already
+                      exist, and delete their other names (default: off; init
+                      stops and lists them)
+  --no-vscode         do not write .vscode/ (default: written)
+  -y, --yes           do not ask; take the default answers (default: off; ask in
+                      a terminal)
+  --dry-run           show the files that would change, write and install
+                      nothing (default: off)
+  -h, --help          display help for command
 
 Examples:
-  $ jss-devtools init              ask before writing
-  $ jss-devtools init --dry-run    show what would change
-  $ jss-devtools init --yes        write without asking, e.g. in CI
+  $ jss-devtools init my-app              create my-app, asking for the package manager
+  $ jss-devtools init my-app --pm pnpm -y create my-app with pnpm, no questions (CI)
+  $ jss-devtools init                     set up the project in the current folder
+  $ jss-devtools init --dry-run           show what would change, write nothing
+  $ jss-devtools init -f                  replace existing ESLint, Prettier and commitlint configs
 `);
 	});
 
-	it('sets nothing up and leaves the working directory unchanged', async () => {
+	it('refuses to ask questions when the output is piped', async () => {
 		const empty = await makeEmptyDir();
 
-		const { stdout, stderr, code } = await runEntry('cli.mjs', ['init'], empty);
+		const { stderr, code } = await runEntry('cli.mjs', ['init'], empty);
 
-		expect(code).toBe(0);
-		expect(stdout).toContain('Nothing to set up');
-		expect(stderr).toBe('');
+		expect(code).toBe(1);
+		expect(stderr).toContain('run it in a terminal, or pass --yes');
 		expect(await readdir(empty)).toEqual([]);
 
 		await removeDir(empty);

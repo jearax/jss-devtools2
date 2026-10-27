@@ -8,5 +8,5 @@ export type InitOptions = {
 	pm?: PackageManagerName;
 	force?: true;
 	framework?: InitFramework;
-	noVscode?: true;
+	vscode?: boolean;
 };

@@ -138,7 +138,7 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 	const pm = (detected === null ? 'npm' : detected.name) as PackageManagerName;
 	const pmVersion = await installedVersion(pm, cwd, false);
 
-	const fileConflicts = ownedConflicts(cwd, options.noVscode !== true);
+	const fileConflicts = ownedConflicts(cwd, options.vscode !== false);
 
 	const keyConflicts = (['prettier', 'commitlint'] as const).flatMap((tool) => {
 		return CONFIG_NAMES[tool].packageJsonKeys

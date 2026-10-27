@@ -66,7 +66,7 @@ const createModeEntries = (preflight: InitPreflight, options: InitOptions): read
 		at('.husky/commit-msg', huskyCommitMsgTemplate({ command: commands.commitMsg }))
 	];
 
-	if (options.noVscode !== true) {
+	if (options.vscode !== false) {
 		entries.push(
 			at('.vscode/settings.json', vscodeSettingsJsonTemplate({ packageManager: pm })),
 			at('.vscode/extensions.json', vscodeExtensionsJsonTemplate())
@@ -146,7 +146,7 @@ const existingModeEntries = (preflight: InitPreflight, options: InitOptions): re
 		['.prettierrc.json', prettierrcJsonTemplate()],
 		['.editorconfig', editorconfigTemplate()],
 		['commitlint.config.mjs', commitlintConfigMjsTemplate()],
-		...(options.noVscode === true
+		...(options.vscode === false
 			? []
 			: ([
 					['.vscode/settings.json', vscodeSettingsJsonTemplate({ packageManager: pm })],

@@ -476,7 +476,7 @@ describe('preflight, existing mode', () => {
 			'.vscode/settings.json': '{}\n'
 		});
 
-		const result = await preflightInit(dir, [], { noVscode: true });
+		const result = await preflightInit(dir, [], { vscode: false });
 
 		expect(result.mode).toBe('existing');
 	});

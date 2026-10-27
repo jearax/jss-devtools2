@@ -112,7 +112,7 @@ describe('the plan, create mode', () => {
 	});
 
 	it('plans no vscode files with --no-vscode', () => {
-		const plan = buildInitPlan(createPreflight('/tmp/nowhere'), { noVscode: true });
+		const plan = buildInitPlan(createPreflight('/tmp/nowhere'), { vscode: false });
 
 		expect(
 			plan.entries.some((entry) => {

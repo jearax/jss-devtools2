@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Confirmation, writes, install and help"
-status: pending
+status: completed
 priority: P1
 effort: "5h"
 dependencies: [3]
@@ -98,10 +98,10 @@ or the select prompt is shared; otherwise render in `init.command.ts`.
 
 ## Tasks & Steps
 
-- [ ] Package-manager select and final confirmation, with the no-terminal, declined and `-y` paths
-- [ ] Write in order: mkdir and `gitInit` (create), entries, deletions last
-- [ ] Install with inherited stdio; on failure exit 1 with the install command, nothing rolled back
-- [ ] Sort `package.json` with the project's `prettier-package-json`, then `prettier`
-- [ ] Outro with next steps
-- [ ] Options and help text; `init --help` from the bundle equals the block exactly
-- [ ] Run the full gate; commit
+- [x] Package-manager select and final confirmation, with the no-terminal, declined and `-y` paths
+- [x] Write in order: mkdir and `gitInit` (create), entries, deletions last
+- [x] Install with inherited stdio; on failure exit 1 with the install command, nothing rolled back
+- [x] Sort `package.json` with the project's `prettier-package-json`, then `prettier`
+- [x] Outro with next steps
+- [x] Options and help text; `init --help` from the bundle equals the block exactly
+- [x] Run the full gate; commit
