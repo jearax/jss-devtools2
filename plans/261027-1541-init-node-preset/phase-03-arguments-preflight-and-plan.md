@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Arguments, preflight and the plan"
-status: pending
+status: completed
 priority: P1
 effort: "6h"
 dependencies: [1, 2]
@@ -78,10 +78,10 @@ One test per row of each table above, in temp folders, asserting the message and
 
 ## Tasks & Steps
 
-- [ ] Argument rules: unsupported framework, `--pm` without `<dir>`, `-f` with `<dir>`
-- [ ] Create-mode preflight, three checks in order
-- [ ] Existing-mode preflight, seven checks in order
-- [ ] Plan computation, with the shared-file merges and the `-f` deletions
-- [ ] `--dry-run` rendering and exit 0
-- [ ] One test per table row, asserting the message and a byte-for-byte unchanged folder
-- [ ] Run the full gate; commit
+- [x] Argument rules: unsupported framework, `--pm` without `<dir>`, `-f` with `<dir>`
+- [x] Create-mode preflight, three checks in order
+- [x] Existing-mode preflight, seven checks in order
+- [x] Plan computation, with the shared-file merges and the `-f` deletions
+- [x] `--dry-run` rendering and exit 0
+- [x] One test per table row, asserting the message and a byte-for-byte unchanged folder
+- [x] Run the full gate; commit

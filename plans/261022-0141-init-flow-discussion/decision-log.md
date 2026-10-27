@@ -234,6 +234,16 @@ Details the planner proposed on top, 2026-10-27, standing unless the user object
   init stops and lists them)`.
 - Accepted: `-f` replaces a file even when it has uncommitted changes. The flag is the user's choice.
 
+Wording the planner settled at the phase 3 review, 2026-10-27, standing unless the user objects:
+
+- `-f` with `init <dir>`: "-f, --force only applies when setting up an existing project; a new
+  project has nothing to replace".
+- Existing mode, detected manager not installed: "<pm> is not installed; install it". The create-mode
+  tail "or pick another with --pm" is dropped, since `--pm` exits 1 in this mode.
+- The `.vscode/` offer appended to the "already exist" message: "; or pass --no-vscode".
+- A `package.json` key from the config-name table joins the same list as `package.json "prettier"
+  key` (or `"commitlint"`).
+
 #### Other names for the ESLint and Prettier configs (2026-10-27)
 
 > "Chốt 12a theo phương án detected all file support của eslint và prettier theo docs, xong exit 1
