@@ -155,7 +155,8 @@ export const rules: readonly ArchitectureRule[] = [
 	{
 		id: 'output-in-ui-layer-only',
 		scope: (logicalPath) => {
-			return !isUiFile(logicalPath) && !isCommandFile(logicalPath);
+			// *.template.ts carries the content of a generated file as data; a console call there is text, not output.
+			return !isUiFile(logicalPath) && !isCommandFile(logicalPath) && !logicalPath.endsWith('.template.ts');
 		},
 		pattern: /\b(?:process\.(?:stdout|stderr)|console\.)/,
 		allow: [],

@@ -9,6 +9,7 @@ import {
 	installPackages,
 	packageManagerVersion,
 	resolveLocalBin,
+	localBinCommandLine,
 	runLocalBin
 } from '@/core/adapters/package-manager.adapter';
 
@@ -131,6 +132,14 @@ describe('resolving the local-bin command', () => {
 
 		expect(command).toBe('npx');
 		expect(args).toEqual(['prettier', '--write']);
+	});
+
+	it('joins the yarn command line with the -- separator before the arguments', () => {
+		expect(localBinCommandLine('yarn', 'commitlint', ['--edit', '"$1"'])).toBe('yarn exec commitlint -- --edit "$1"');
+	});
+
+	it('joins the pnpm command line without a separator', () => {
+		expect(localBinCommandLine('pnpm', 'lint-staged', [])).toBe('pnpm exec lint-staged');
 	});
 });
 

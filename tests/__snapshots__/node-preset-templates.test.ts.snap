@@ -1,0 +1,694 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`node preset templates > renders .editorconfig 1`] = `
+"root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = tab
+indent_size = 2
+max_line_length = 120
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{yml,yaml}]
+indent_style = space
+
+[*.md]
+indent_style = space
+trim_trailing_whitespace = false
+"
+`;
+
+exports[`node preset templates > renders .gitignore 1`] = `
+"node_modules/
+
+dist/
+coverage/
+*.tsbuildinfo
+
+*.log
+pnpm-debug.log*
+
+.env*
+!.env.example
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+.DS_Store
+Thumbs.db
+
+.eslintcache
+.cache/
+"
+`;
+
+exports[`node preset templates > renders .prettierignore 1`] = `
+"node_modules/
+dist/
+coverage/
+
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+
+.env*
+.eslintcache
+*.log
+"
+`;
+
+exports[`node preset templates > renders .prettierrc.json 1`] = `
+"{
+	"semi": true,
+	"singleQuote": true,
+	"jsxSingleQuote": false,
+	"arrowParens": "always",
+	"trailingComma": "none"
+}
+"
+`;
+
+exports[`node preset templates > renders .vscode/extensions.json 1`] = `
+"{
+	"recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "editorconfig.editorconfig"]
+}
+"
+`;
+
+exports[`node preset templates > renders .vscode/settings.json per package manager > vscode settings bun 1`] = `
+"{
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit",
+		"source.organizeImports": "never"
+	},
+	"prettier.requireConfig": true,
+	"eslint.validate": ["javascript", "typescript"],
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"npm.packageManager": "bun"
+}
+"
+`;
+
+exports[`node preset templates > renders .vscode/settings.json per package manager > vscode settings npm 1`] = `
+"{
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit",
+		"source.organizeImports": "never"
+	},
+	"prettier.requireConfig": true,
+	"eslint.validate": ["javascript", "typescript"],
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"npm.packageManager": "npm"
+}
+"
+`;
+
+exports[`node preset templates > renders .vscode/settings.json per package manager > vscode settings pnpm 1`] = `
+"{
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit",
+		"source.organizeImports": "never"
+	},
+	"prettier.requireConfig": true,
+	"eslint.validate": ["javascript", "typescript"],
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"npm.packageManager": "pnpm"
+}
+"
+`;
+
+exports[`node preset templates > renders .vscode/settings.json per package manager > vscode settings yarn 1`] = `
+"{
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit",
+		"source.organizeImports": "never"
+	},
+	"prettier.requireConfig": true,
+	"eslint.validate": ["javascript", "typescript"],
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"npm.packageManager": "yarn"
+}
+"
+`;
+
+exports[`node preset templates > renders commitlint.config.mjs 1`] = `
+"const commitlintConfig = {
+	extends: ['@commitlint/config-conventional']
+};
+
+export default commitlintConfig;
+"
+`;
+
+exports[`node preset templates > renders eslint.config.mjs 1`] = `
+"import js from '@eslint/js';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import pluginAutofix from 'eslint-plugin-autofix';
+import pluginImportX from 'eslint-plugin-import-x';
+import pluginPreferArrowFunctions from 'eslint-plugin-prefer-arrow-functions';
+import pluginPrettier from 'eslint-plugin-prettier';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+const { JAVASCRIPT_FILES, TYPESCRIPT_FILES, CODE_FILES } = (() => {
+	const TEST_FOLDERS = 'test{,s},__test{s,}__,spec{,s},e2e';
+	const SOURCE_FOLDERS = \`src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},\${TEST_FOLDERS}\`;
+
+	const JAVASCRIPT_EXTENSIONS = 'cjs,mjs,js,jsx';
+	const TYPESCRIPT_EXTENSIONS = 'cts,mts,ts,tsx';
+	const CODE_EXTENSIONS = \`\${JAVASCRIPT_EXTENSIONS},\${TYPESCRIPT_EXTENSIONS}\`;
+
+	const JAVASCRIPT_FILES = [\`{\${SOURCE_FOLDERS}}/**/*.{\${JAVASCRIPT_EXTENSIONS}}\`, \`*.{\${JAVASCRIPT_EXTENSIONS}}\`];
+	const TYPESCRIPT_FILES = [\`{\${SOURCE_FOLDERS}}/**/*.{\${TYPESCRIPT_EXTENSIONS}}\`, \`*.{\${TYPESCRIPT_EXTENSIONS}}\`];
+	const CODE_FILES = [\`{\${SOURCE_FOLDERS}}/**/*.{\${CODE_EXTENSIONS}}\`, \`*.{\${CODE_EXTENSIONS}}\`];
+
+
+	return {
+		JAVASCRIPT_FILES,
+		TYPESCRIPT_FILES,
+		CODE_FILES
+	};
+})();
+
+const IGNORED_PATHS = ['dist/**', 'coverage/**', 'node_modules/**'];
+
+const eslintConfig = defineConfig(
+	globalIgnores(IGNORED_PATHS),
+
+	{
+		files: CODE_FILES,
+		extends: [js.configs.recommended, tseslint.configs.recommended],
+		languageOptions: {
+			ecmaVersion: 'latest',
+			sourceType: 'module',
+			globals: { ...globals.node }
+		}
+	},
+
+	// A type-aware rule on a file with no \`projectService\` is a hard error, so JavaScript opts out.
+	{
+		files: TYPESCRIPT_FILES,
+		extends: [tseslint.configs.recommendedTypeChecked],
+		languageOptions: {
+			parserOptions: {
+				projectService: true,
+				tsconfigRootDir: import.meta.dirname
+			}
+		}
+	},
+	{
+		files: JAVASCRIPT_FILES,
+		extends: [tseslint.configs.disableTypeChecked]
+	},
+
+	{
+		files: CODE_FILES,
+		settings: {
+			'import-x/internal-regex': '^@/'
+		},
+		plugins: {
+			autofix: pluginAutofix,
+			'import-x': pluginImportX,
+			'prefer-arrow-functions': pluginPreferArrowFunctions,
+			prettier: pluginPrettier
+		},
+		rules: {
+			'@typescript-eslint/no-explicit-any': 'off',
+
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['../*'],
+							message: 'Import through the @/ alias, not a parent-relative path.'
+						},
+						{
+							regex: '^(?:@/|\\\\.{1,2}/).+\\\\.(?:js|ts)$',
+							message: 'Import without the file extension.'
+						}
+					]
+				}
+			],
+
+			'autofix/eol-last': 'error',
+			'autofix/curly': 'error',
+			'autofix/no-lonely-if': 'error',
+			'autofix/no-else-return': 'error',
+			'autofix/object-shorthand': 'error',
+			'autofix/object-curly-newline': [
+				'error',
+				{
+					ObjectExpression: {
+						multiline: true,
+						minProperties: 2,
+						consistent: true
+					}
+				}
+			],
+
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					args: 'all',
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+					destructuredArrayIgnorePattern: '^_',
+					ignoreRestSiblings: true
+				}
+			],
+			'@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+
+			'prefer-arrow-functions/prefer-arrow-functions': ['error', { returnStyle: 'explicit' }],
+			'arrow-body-style': ['error', 'always'],
+
+			'import-x/first': 'error',
+			'import-x/newline-after-import': 'error',
+			'import-x/no-duplicates': 'error',
+			'import-x/no-anonymous-default-export': 'error',
+			'import-x/order': [
+				'error',
+				{
+					'newlines-between': 'always',
+					alphabetize: {
+						order: 'asc',
+						caseInsensitive: true
+					},
+					groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index'], ['object', 'unknown', 'type']]
+				}
+			],
+
+			'prettier/prettier': 'error',
+
+			'no-undef': 'off',
+			'no-redeclare': 'off',
+			'no-import-assign': 'off',
+			'padding-line-between-statements': [
+				'error',
+				{
+					blankLine: 'any',
+					prev: 'export',
+					next: 'export'
+				},
+				{
+					blankLine: 'always',
+					prev: ['const', 'let', 'var'],
+					next: '*'
+				},
+				{
+					blankLine: 'any',
+					prev: ['const', 'let', 'var'],
+					next: ['const', 'let', 'var']
+				},
+				{
+					blankLine: 'always',
+					prev: '*',
+					next: ['function', 'multiline-const', 'multiline-block-like']
+				},
+				{
+					blankLine: 'always',
+					prev: ['function', 'multiline-const', 'multiline-block-like'],
+					next: '*'
+				}
+			]
+		}
+	},
+
+	eslintConfigPrettier
+);
+
+export default eslintConfig;
+"
+`;
+
+exports[`node preset templates > renders package.json per package manager > package.json bun 1`] = `
+"{
+	"name": "my-app",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"engines": {
+		"node": ">=24.11.0"
+	},
+	"packageManager": "bun@1.2.3",
+	"scripts": {
+		"dev": "tsx watch src/main.ts",
+		"build": "tsc && tsc-alias --resolve-full-paths",
+		"start": "node dist/main.js",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint \\"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\" \\"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\"",
+		"lint:fix": "eslint --fix \\"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\" \\"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\"",
+		"format": "bun run lint:fix && prettier --write .",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"!(package).json": [
+			"prettier --write"
+		],
+		"**/*.{md,yml,yaml}": [
+			"prettier --write"
+		],
+		"package.json": [
+			"prettier-package-json --write",
+			"prettier --write"
+		]
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
+		"@eslint/js": "^10.0.1",
+		"@types/node": "^24.19.2",
+		"eslint": "^10.13.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-autofix": "^2.2.0",
+		"eslint-plugin-import-x": "^4.17.1",
+		"eslint-plugin-prefer-arrow-functions": "^3.10.2",
+		"eslint-plugin-prettier": "^5.5.7",
+		"globals": "^17.13.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.6.0",
+		"prettier": "^3.9.10",
+		"prettier-package-json": "^2.8.0",
+		"tsc-alias": "^1.9.9",
+		"tsx": "^4.23.15",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.72.0"
+	}
+}
+"
+`;
+
+exports[`node preset templates > renders package.json per package manager > package.json npm 1`] = `
+"{
+	"name": "my-app",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"engines": {
+		"node": ">=24.11.0"
+	},
+	"packageManager": "npm@1.2.3",
+	"scripts": {
+		"dev": "tsx watch src/main.ts",
+		"build": "tsc && tsc-alias --resolve-full-paths",
+		"start": "node dist/main.js",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint \\"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\" \\"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\"",
+		"lint:fix": "eslint --fix \\"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\" \\"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\"",
+		"format": "npm run lint:fix && prettier --write .",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"!(package).json": [
+			"prettier --write"
+		],
+		"**/*.{md,yml,yaml}": [
+			"prettier --write"
+		],
+		"package.json": [
+			"prettier-package-json --write",
+			"prettier --write"
+		]
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
+		"@eslint/js": "^10.0.1",
+		"@types/node": "^24.19.2",
+		"eslint": "^10.13.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-autofix": "^2.2.0",
+		"eslint-plugin-import-x": "^4.17.1",
+		"eslint-plugin-prefer-arrow-functions": "^3.10.2",
+		"eslint-plugin-prettier": "^5.5.7",
+		"globals": "^17.13.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.6.0",
+		"prettier": "^3.9.10",
+		"prettier-package-json": "^2.8.0",
+		"tsc-alias": "^1.9.9",
+		"tsx": "^4.23.15",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.72.0"
+	}
+}
+"
+`;
+
+exports[`node preset templates > renders package.json per package manager > package.json pnpm 1`] = `
+"{
+	"name": "my-app",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"engines": {
+		"node": ">=24.11.0"
+	},
+	"packageManager": "pnpm@1.2.3",
+	"scripts": {
+		"dev": "tsx watch src/main.ts",
+		"build": "tsc && tsc-alias --resolve-full-paths",
+		"start": "node dist/main.js",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint \\"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\" \\"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\"",
+		"lint:fix": "eslint --fix \\"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\" \\"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\"",
+		"format": "pnpm lint:fix && prettier --write .",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"!(package).json": [
+			"prettier --write"
+		],
+		"**/*.{md,yml,yaml}": [
+			"prettier --write"
+		],
+		"package.json": [
+			"prettier-package-json --write",
+			"prettier --write"
+		]
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
+		"@eslint/js": "^10.0.1",
+		"@types/node": "^24.19.2",
+		"eslint": "^10.13.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-autofix": "^2.2.0",
+		"eslint-plugin-import-x": "^4.17.1",
+		"eslint-plugin-prefer-arrow-functions": "^3.10.2",
+		"eslint-plugin-prettier": "^5.5.7",
+		"globals": "^17.13.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.6.0",
+		"prettier": "^3.9.10",
+		"prettier-package-json": "^2.8.0",
+		"tsc-alias": "^1.9.9",
+		"tsx": "^4.23.15",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.72.0"
+	}
+}
+"
+`;
+
+exports[`node preset templates > renders package.json per package manager > package.json yarn 1`] = `
+"{
+	"name": "my-app",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"engines": {
+		"node": ">=24.11.0"
+	},
+	"packageManager": "yarn@1.2.3",
+	"scripts": {
+		"dev": "tsx watch src/main.ts",
+		"build": "tsc && tsc-alias --resolve-full-paths",
+		"start": "node dist/main.js",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint \\"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\" \\"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\"",
+		"lint:fix": "eslint --fix \\"{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\" \\"*.{cjs,mjs,js,jsx,cts,mts,ts,tsx}\\"",
+		"format": "yarn lint:fix && prettier --write .",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"!(package).json": [
+			"prettier --write"
+		],
+		"**/*.{md,yml,yaml}": [
+			"prettier --write"
+		],
+		"package.json": [
+			"prettier-package-json --write",
+			"prettier --write"
+		]
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
+		"@eslint/js": "^10.0.1",
+		"@types/node": "^24.19.2",
+		"eslint": "^10.13.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-autofix": "^2.2.0",
+		"eslint-plugin-import-x": "^4.17.1",
+		"eslint-plugin-prefer-arrow-functions": "^3.10.2",
+		"eslint-plugin-prettier": "^5.5.7",
+		"globals": "^17.13.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.6.0",
+		"prettier": "^3.9.10",
+		"prettier-package-json": "^2.8.0",
+		"tsc-alias": "^1.9.9",
+		"tsx": "^4.23.15",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.72.0"
+	}
+}
+"
+`;
+
+exports[`node preset templates > renders pnpm-workspace.yaml 1`] = `
+"allowBuilds:
+  unrs-resolver: true
+
+strictPeerDependencies: true
+
+engineStrict: true
+"
+`;
+
+exports[`node preset templates > renders src/main.ts 1`] = `
+"export const main = (): void => {
+	console.log('Hello from my-app');
+};
+
+main();
+"
+`;
+
+exports[`node preset templates > renders the husky hooks per package manager > commit-msg bun 1`] = `
+"#!/usr/bin/env sh
+bun x commitlint --edit "$1"
+"
+`;
+
+exports[`node preset templates > renders the husky hooks per package manager > commit-msg npm 1`] = `
+"#!/usr/bin/env sh
+npx commitlint --edit "$1"
+"
+`;
+
+exports[`node preset templates > renders the husky hooks per package manager > commit-msg pnpm 1`] = `
+"#!/usr/bin/env sh
+pnpm exec commitlint --edit "$1"
+"
+`;
+
+exports[`node preset templates > renders the husky hooks per package manager > commit-msg yarn 1`] = `
+"#!/usr/bin/env sh
+yarn exec commitlint -- --edit "$1"
+"
+`;
+
+exports[`node preset templates > renders the husky hooks per package manager > pre-commit bun 1`] = `
+"#!/usr/bin/env sh
+bun x lint-staged
+"
+`;
+
+exports[`node preset templates > renders the husky hooks per package manager > pre-commit npm 1`] = `
+"#!/usr/bin/env sh
+npx lint-staged
+"
+`;
+
+exports[`node preset templates > renders the husky hooks per package manager > pre-commit pnpm 1`] = `
+"#!/usr/bin/env sh
+pnpm exec lint-staged
+"
+`;
+
+exports[`node preset templates > renders the husky hooks per package manager > pre-commit yarn 1`] = `
+"#!/usr/bin/env sh
+yarn exec lint-staged
+"
+`;
+
+exports[`node preset templates > renders tsconfig.json 1`] = `
+"{
+	"compilerOptions": {
+		"target": "ES2023",
+		"lib": [
+			"ES2023"
+		],
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"paths": {
+			"@/*": [
+				"./src/*"
+			]
+		},
+		"types": [
+			"node"
+		],
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"noFallthroughCasesInSwitch": true,
+		"exactOptionalPropertyTypes": true,
+		"resolveJsonModule": true,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true,
+		"rootDir": "src",
+		"outDir": "dist"
+	},
+	"include": [
+		"src"
+	]
+}
+"
+`;

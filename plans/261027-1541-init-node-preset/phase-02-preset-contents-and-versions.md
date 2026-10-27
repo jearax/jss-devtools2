@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Preset contents and the version table"
-status: pending
+status: completed
 priority: P1
 effort: "6h"
 dependencies: [1]
@@ -86,9 +86,9 @@ detect and by the writer to delete.
 
 ## Tasks & Steps
 
-- [ ] Pin the version set with a script in `scripts/` (latest, older than 1440 minutes, peers both ways, engines at or below the floor)
-- [ ] Create `constants/node-preset-dependency.constant.ts` and `constants/config-name.constant.ts`
-- [ ] Create one `templates/*.template.ts` per row of the table
-- [ ] Snapshot test per template and per package manager where output differs
-- [ ] Test: no `latest` or range in the version table; `@types/node` major equals the floor major; `.prettierignore` covers every folder ESLint and `tsconfig.json` ignore
-- [ ] Run the full gate; commit
+- [x] Pin the version set with a script in `scripts/` (latest, older than 1440 minutes, peers both ways, engines at or below the floor)
+- [x] Create `constants/node-preset-dependency.constant.ts` and `constants/config-name.constant.ts`
+- [x] Create one `templates/*.template.ts` per row of the table
+- [x] Snapshot test per template and per package manager where output differs
+- [x] Test: no `latest` or range in the version table; `@types/node` major equals the floor major; `.prettierignore` covers every folder ESLint and `tsconfig.json` ignore
+- [x] Run the full gate; commit

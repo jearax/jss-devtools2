@@ -1,0 +1,66 @@
+export type ConfigNames = {
+	files: readonly string[];
+	packageJsonKeys: readonly string[];
+};
+
+/**
+ * Every file name and package.json key each tool's docs list as a configuration source.
+ * Preflight detects these; with `-f` all but the owned file are deleted. Names from the
+ * decision log's tables, read from the ESLint, Prettier and commitlint docs on 2026-10-27.
+ */
+export const CONFIG_NAMES: Readonly<Record<'eslint' | 'prettier' | 'commitlint', ConfigNames>> = {
+	eslint: {
+		files: [
+			'eslint.config.js',
+			'eslint.config.mjs',
+			'eslint.config.cjs',
+			'eslint.config.ts',
+			'eslint.config.mts',
+			'eslint.config.cts'
+		],
+		packageJsonKeys: []
+	},
+	prettier: {
+		files: [
+			'.prettierrc',
+			'.prettierrc.json',
+			'.prettierrc.yml',
+			'.prettierrc.yaml',
+			'.prettierrc.json5',
+			'.prettierrc.js',
+			'.prettierrc.ts',
+			'.prettierrc.mjs',
+			'.prettierrc.mts',
+			'.prettierrc.cjs',
+			'.prettierrc.cts',
+			'prettier.config.js',
+			'prettier.config.ts',
+			'prettier.config.mjs',
+			'prettier.config.mts',
+			'prettier.config.cjs',
+			'prettier.config.cts'
+		],
+		packageJsonKeys: ['prettier']
+	},
+	commitlint: {
+		files: [
+			'.commitlintrc',
+			'.commitlintrc.json',
+			'.commitlintrc.yaml',
+			'.commitlintrc.yml',
+			'.commitlintrc.js',
+			'.commitlintrc.cjs',
+			'.commitlintrc.mjs',
+			'.commitlintrc.ts',
+			'.commitlintrc.cts',
+			'.commitlintrc.mts',
+			'commitlint.config.js',
+			'commitlint.config.cjs',
+			'commitlint.config.mjs',
+			'commitlint.config.ts',
+			'commitlint.config.cts',
+			'commitlint.config.mts'
+		],
+		packageJsonKeys: ['commitlint']
+	}
+};

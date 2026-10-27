@@ -34,6 +34,12 @@ export const resolveLocalBin = (pm: Agent, bin: string, args: readonly string[])
 	return resolveOrThrow(pm, 'execute-local', [bin, ...args]);
 };
 
+export const localBinCommandLine = (pm: Agent, bin: string, args: readonly string[]): string => {
+	const { command, args: binArgs } = resolveLocalBin(pm, bin, args);
+
+	return [command, ...binArgs].join(' ');
+};
+
 export const installPackages = async (pm: Agent, cwd: string): Promise<number | null> => {
 	const { command, args } = resolveOrThrow(pm, 'install', []);
 
