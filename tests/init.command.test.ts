@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
-import { existsSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, unlinkSync, writeFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { promisify } from 'node:util';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -183,7 +183,7 @@ describe('the init command', () => {
 
 		const { stdout } = await runInit('--dry-run');
 
-		expect(stdout).toContain(': 10 to create, 1 to update');
+		expect(stdout).toContain(': 10 to create; 1 to update');
 		expect(stdout).toContain('+ .prettierrc.json');
 		expect(stdout).toContain('Dry run: nothing written\n   To apply:\n     $ jss-devtools init');
 		expect(stdout).not.toContain('would be written');
@@ -301,6 +301,54 @@ describe('the init command', () => {
 		expect(stderr).toContain('$ cd my-app');
 		expect(stderr).toContain('$ npm install');
 		expect(process.exitCode).toBe(1);
+	}, 120_000);
+
+	it('counts deletions apart in the confirmation of init -f', async () => {
+		const dir = await useCwd();
+
+		await setupExistingProject(dir);
+		writeFileSync(join(dir, '.eslintrc.json'), '{}\n');
+		interactivity.enabled = true;
+		answers.confirm = false;
+
+		await runInit('-f');
+
+		expect(confirmCalls[0]?.message).toBe(`Write 11 files; delete 1 in ${basename(dir)} and install?`);
+	});
+
+	it('says 1 file in the confirmation when a single entry is written', async () => {
+		const dir = await useCwd();
+
+		await setupExistingProject(dir);
+		useDeadRegistry();
+
+		await runInit('-y');
+
+		unlinkSync(join(dir, '.prettierrc.json'));
+		writeFileSync(join(dir, '.eslintrc.json'), '{}\n');
+		interactivity.enabled = true;
+		answers.confirm = false;
+
+		await runInit('-f');
+
+		expect(confirmCalls[0]?.message).toBe(`Write 1 file; delete 1 in ${basename(dir)} and install?`);
+	}, 120_000);
+
+	it('asks to delete when only deletions remain, counting one file in the singular', async () => {
+		const dir = await useCwd();
+
+		await setupExistingProject(dir);
+		useDeadRegistry();
+
+		await runInit('-y');
+
+		writeFileSync(join(dir, '.eslintrc.json'), '{}\n');
+		interactivity.enabled = true;
+		answers.confirm = false;
+
+		await runInit('-f');
+
+		expect(confirmCalls[0]?.message).toBe(`Delete 1 file in ${basename(dir)} and install?`);
 	}, 120_000);
 
 	it('refuses --pm without a folder', async () => {

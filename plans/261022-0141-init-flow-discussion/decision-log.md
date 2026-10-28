@@ -833,3 +833,20 @@ bạn đề xuất" and "Options thì sort ngược lại: npm -> yarn -> pnpm -
   "Package manager order", which allows the reverse "cho những case cần chiều ngược lại". npm stays
   preselected, now first. Help values, error lists and detection keep bun, pnpm, yarn, npm.
 - Counting deletions apart in the confirm (message review row P2) is not decided by this.
+
+## Confirm counts deletions apart (message review row P2)
+
+Decided 2026-10-29: "`Write 11 files; delete 2 in p2 and install?`, có xử lý số ít số nhiều"
+(user). With deletions the confirm reads `Write <w> files; delete <d> in <project> and install?`,
+where `<w>` counts created and updated files and `<d>` deleted ones; `1 file` for one. Without
+deletions it stays `Write <n> files to <project> and install?`.
+
+Delete-only plans and the plan heading, decided 2026-10-29 (user):
+
+- When nothing is written and only deletions remain (a set-up project where `init -f` finds a
+  leftover config), the confirm drops the write part: `Delete <d> files in <project> and
+  install?`, `1 file` for one. Option "Bỏ phần Write".
+- The plan heading starts with a capital without changing the project name, which the user typed:
+  `Changes in <project>: <counts>`, option "Changes in <project>: …", with the counts separated by
+  `;` as in the confirm: "Chỗ này tôi mong muốn dùng format ; luôn `Changes in p2: 10 to create, 1
+  to update, 2 to delete`" (user), so `Changes in p2: 10 to create; 1 to update; 2 to delete`.

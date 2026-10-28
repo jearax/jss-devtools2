@@ -715,7 +715,7 @@ describe('rendering the plan', () => {
 		const createPlan = buildInitPlan(createPreflight('/tmp/nowhere'), {});
 		const heading = renderPlanHeading(createPlan, 'my-app');
 
-		expect(heading).toContain(`my-app: ${ESC}[32m13 to create${ESC}[39m`);
+		expect(heading).toContain(`Changes in my-app: ${ESC}[32m13 to create${ESC}[39m`);
 		expect(heading).not.toContain('to update');
 		expect(heading).not.toContain('to delete');
 
@@ -749,7 +749,7 @@ describe('rendering the plan', () => {
 	it('keeps the heading plain without colour', () => {
 		const heading = renderPlanHeading(buildInitPlan(createPreflight('/tmp/nowhere'), {}), 'my-app');
 
-		expect(heading).toBe('my-app: 13 to create');
+		expect(heading).toBe('Changes in my-app: 13 to create');
 		expect(heading).not.toContain(ESC);
 	});
 });

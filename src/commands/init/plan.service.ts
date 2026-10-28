@@ -311,14 +311,28 @@ export const renderPlan = (plan: InitPlan): string => {
 		.join('\n');
 };
 
+export const planActionCounts = (plan: InitPlan): Record<'create' | 'update' | 'delete', number> => {
+	return {
+		create: plan.entries.filter((entry) => {
+			return entry.action === 'create';
+		}).length,
+		update: plan.entries.filter((entry) => {
+			return entry.action === 'update';
+		}).length,
+		delete: plan.entries.filter((entry) => {
+			return entry.action === 'delete';
+		}).length
+	};
+};
+
 export const renderPlanHeading = (plan: InitPlan, projectName: string): string => {
+	const actionCounts = planActionCounts(plan);
+
 	const counts = (['create', 'update', 'delete'] as const).flatMap((action) => {
-		const count = plan.entries.filter((entry) => {
-			return entry.action === action;
-		}).length;
+		const count = actionCounts[action];
 
 		return count === 0 ? [] : [styleText(PLAN_MARK_COLOURS[action], `${count} ${PLAN_COUNT_LABELS[action]}`)];
 	});
 
-	return counts.length === 0 ? projectName : `${projectName}: ${counts.join(', ')}`;
+	return counts.length === 0 ? projectName : `Changes in ${projectName}: ${counts.join('; ')}`;
 };

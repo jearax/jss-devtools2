@@ -19,7 +19,7 @@ import {
 } from '@/core/ui/terminal.ui';
 
 import { validateInitArguments } from './init.service';
-import { buildInitPlan, renderPlan, renderPlanHeading } from './plan.service';
+import { buildInitPlan, planActionCounts, renderPlan, renderPlanHeading } from './plan.service';
 import { preflightInit } from './preflight.service';
 import { shellQuote } from './shell-quote.service';
 import { PACKAGE_MANAGERS } from './templates/package-json.template';
@@ -191,8 +191,23 @@ const runInit = async (dirArg: string | undefined, options: InitOptions, command
 	}
 
 	if (options.yes !== true) {
+		const actionCounts = planActionCounts(plan);
+		const writeCount = actionCounts.create + actionCounts.update;
+		const deleteCount = actionCounts.delete;
+
+		const files = (count: number): string => {
+			return count === 1 ? 'file' : 'files';
+		};
+
+		const message =
+			writeCount === 0 && deleteCount > 0
+				? `Delete ${deleteCount} ${files(deleteCount)} in ${preflight.projectName} and install?`
+				: deleteCount === 0
+					? `Write ${writeCount} ${files(writeCount)} to ${preflight.projectName} and install?`
+					: `Write ${writeCount} ${files(writeCount)}; delete ${deleteCount} in ${preflight.projectName} and install?`;
+
 		const confirmed = await confirm({
-			message: `Write ${plan.entries.length} files to ${preflight.projectName} and install?`,
+			message,
 			initialValue: true
 		});
 

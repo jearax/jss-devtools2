@@ -90,7 +90,7 @@ describe('the init install step, piped', () => {
 		const secondLine = stdout.indexOf('│  found 0 vulnerabilities');
 		const done = stdout.indexOf('Installed with npm');
 
-		expect(stdout).toContain('10 to create, 1 to update');
+		expect(stdout).toContain('10 to create; 1 to update');
 		expect(stdout).toContain('~ package.json');
 		expect(start).toBeGreaterThan(-1);
 		expect(firstLine).toBeGreaterThan(start);
