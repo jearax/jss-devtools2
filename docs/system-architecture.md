@@ -214,7 +214,7 @@ because only a command file may import commander.
 
 | Flag                 | Meaning                                                                            |
 | -------------------- | ---------------------------------------------------------------------------------- |
-| `--yes, -y`          | Do not ask; take the default answers                                               |
+| `--yes, -y`          | Skip the questions and use the defaults                                            |
 | `--dry-run`          | Run preflight, show `+`, `~` and `-`, then the command that applies, write nothing |
 | `--force, -f`        | Replace the configs init owns, and delete their other documented names             |
 | `--pm <name>`        | Package manager for a new project; detected in existing mode, where it exits 1     |

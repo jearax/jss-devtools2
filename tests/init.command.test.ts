@@ -61,22 +61,21 @@ const HELP_BLOCK = `Usage: jss-devtools init [options] [dir]
 Create a project, or set up the current one
 
 Arguments:
-  dir                 Create a new project in this folder (missing or empty);
-                      without it, set up the project in the current folder
+  dir                 Folder for a new project (missing or empty); omit it to
+                      set up the current folder
 
 Options:
   --framework <name>  Preset to apply; only node for now (values: "node" |
                       "react" | "rn" | "next" | "nest"; default: "node")
   --pm <name>         Package manager for a new project (values: "bun" | "pnpm"
                       | "yarn" | "npm"; default: "npm")
-  --force, -f         Replace the config files init owns when they already
-                      exist, and delete their other names (init stops and lists
-                      them; default: off)
+  --force, -f         Replace existing ESLint, Prettier, commitlint and editor
+                      configs (init stops and lists them; default: off)
   --no-vscode         Do not write .vscode/ (default: written)
-  --yes, -y           Do not ask; take the default answers (ask in a terminal;
-                      default: off)
-  --dry-run           Show the files that would change, write and install
-                      nothing (default: off)
+  --yes, -y           Skip the questions and use the defaults (asks in a
+                      terminal; default: off)
+  --dry-run           Show what would change; write and install nothing
+                      (default: off)
   --help, -h          Display help for command
 
 Examples:

@@ -74,3 +74,9 @@ Built and deployed on 2026-10-19: [../261019-1619-dokploy-install-site/plan.md](
 live guide [../../docs/deployment-guide.md](../../docs/deployment-guide.md). F7's artifact
 answer is decision [0018](../../docs/decisions/0018-javascript-bundle-artifact.md) and F8's is
 [0020](../../docs/decisions/0020-version-0-0-1-during-development.md). X3 stays open.
+
+## Doctor
+
+| # | Question | Context | Leaning | Status |
+|---|---|---|---|---|
+| D1 | What is `doctor` for now that init checks its own preconditions, and what should it check? | Raised 2026-10-28 from message row H3 (`Check the environment` → `Check Node.js, git and the git repository`): "H3 out meta với các decision rồi, doctor tinh gọn lại đi, git đã quyết định exit 1 rồi, hoặc notes lại, xử lý sau cho plan khác" (user). Today doctor runs three checks: Node version, git installed, git repository. Init's preflight already exits 1 without git and outside a repository, so two of the three repeat it. The help line H3 waits on this answer. | Settle doctor's purpose first, in its own plan. If it stays a preflight report, it should run init's own checks rather than keep a second copy of them | open |

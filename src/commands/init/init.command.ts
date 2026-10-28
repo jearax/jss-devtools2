@@ -29,8 +29,7 @@ import type { InitOptions } from './types/init-options.type';
 import type { InitPreflight } from './types/init-plan.type';
 import type { Command } from 'commander';
 
-const DIR_DESCRIPTION =
-	'Create a new project in this folder (missing or empty); without it, set up the project in the current folder';
+const DIR_DESCRIPTION = 'Folder for a new project (missing or empty); omit it to set up the current folder';
 
 const PM_CHOICES = PACKAGE_MANAGERS;
 
@@ -61,7 +60,7 @@ export const registerInitCommand = (program: Command): void => {
 		.addOption(pmOption)
 		.option(
 			'--force, -f',
-			'Replace the config files init owns when they already exist, and delete their other names (init stops and lists them; default: off)'
+			'Replace existing ESLint, Prettier, commitlint and editor configs (init stops and lists them; default: off)'
 		)
 		.option('--no-vscode', 'Do not write .vscode/ (default: written)')
 		.option(COMMON_OPTIONS.yes.flags, COMMON_OPTIONS.yes.description)
