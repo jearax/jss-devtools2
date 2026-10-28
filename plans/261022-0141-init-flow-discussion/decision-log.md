@@ -748,3 +748,14 @@ errors and doctor hints with a single command stay on one line.
 Existing mode ends with `Next steps` and `$ <pm> run format`, chosen option "Next steps: format":
 existing code rarely matches the new Prettier config (probed 2026-10-28: `bun run lint` exits 1
 right after init, 0 after `bun run format`).
+
+## Import paths in VS Code
+
+Decided 2026-10-28. The user found `no-restricted-imports` "quá cứng" and asked whether
+`"js/ts.preferences.importModuleSpecifier": "non-relative"` should replace it or join it. Planner's
+proposal, to keep both, so auto-import writes the `@/` form the rule demands and the rule still
+holds for other editors, hand-written imports, agents and CI; with
+`"js/ts.preferences.importModuleSpecifierEnding": "minimal"` for the no-extension half of the rule.
+User: "OK, chọn cả 2" for both the repository's `.vscode/settings.json` and the one init writes. The
+rule stays as it is. The setting names exist in VS Code 1.142 (checked in its bundled
+typescript-language-features manifest); the `js/ts.*` prefix dates from VS Code 1.110.

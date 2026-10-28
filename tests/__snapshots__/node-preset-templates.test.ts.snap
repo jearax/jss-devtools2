@@ -95,6 +95,8 @@ exports[`node preset templates > renders .vscode/settings.json per package manag
 	"eslint.validate": ["javascript", "typescript"],
 	"js/ts.tsdk.path": "node_modules/typescript/lib",
 	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"js/ts.preferences.importModuleSpecifier": "non-relative",
+	"js/ts.preferences.importModuleSpecifierEnding": "minimal",
 	"npm.packageManager": "bun"
 }
 "
@@ -112,6 +114,8 @@ exports[`node preset templates > renders .vscode/settings.json per package manag
 	"eslint.validate": ["javascript", "typescript"],
 	"js/ts.tsdk.path": "node_modules/typescript/lib",
 	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"js/ts.preferences.importModuleSpecifier": "non-relative",
+	"js/ts.preferences.importModuleSpecifierEnding": "minimal",
 	"npm.packageManager": "npm"
 }
 "
@@ -129,6 +133,8 @@ exports[`node preset templates > renders .vscode/settings.json per package manag
 	"eslint.validate": ["javascript", "typescript"],
 	"js/ts.tsdk.path": "node_modules/typescript/lib",
 	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"js/ts.preferences.importModuleSpecifier": "non-relative",
+	"js/ts.preferences.importModuleSpecifierEnding": "minimal",
 	"npm.packageManager": "pnpm"
 }
 "
@@ -146,6 +152,8 @@ exports[`node preset templates > renders .vscode/settings.json per package manag
 	"eslint.validate": ["javascript", "typescript"],
 	"js/ts.tsdk.path": "node_modules/typescript/lib",
 	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"js/ts.preferences.importModuleSpecifier": "non-relative",
+	"js/ts.preferences.importModuleSpecifierEnding": "minimal",
 	"npm.packageManager": "yarn"
 }
 "

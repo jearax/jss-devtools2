@@ -14,6 +14,8 @@ export const vscodeSettingsJsonTemplate = ({ packageManager }: VscodeSettingsJso
 	"eslint.validate": ["javascript", "typescript"],
 	"js/ts.tsdk.path": "node_modules/typescript/lib",
 	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"js/ts.preferences.importModuleSpecifier": "non-relative",
+	"js/ts.preferences.importModuleSpecifierEnding": "minimal",
 	"npm.packageManager": "${packageManager}"
 }
 `;
