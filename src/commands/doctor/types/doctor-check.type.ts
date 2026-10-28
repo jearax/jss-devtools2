@@ -1,9 +1,11 @@
 import type { GitVersion } from '@/core/adapters/git.adapter';
+import type { PackageManagerName } from '@/core/adapters/package-manager.adapter';
+import type { CheckStatus } from '@/core/ui/check-list.ui';
 
 export type DoctorResult = {
 	id: string;
 	label: string;
-	ok: boolean;
+	status: CheckStatus;
 	detail: string;
 	note?: string;
 	hint?: string;
@@ -11,16 +13,19 @@ export type DoctorResult = {
 
 export type GitProbe = {
 	version: GitVersion;
-	isInsideWorkTree: (cwd: string) => Promise<boolean>;
+};
+
+export type PackageManagerProbe = {
+	version: (pm: PackageManagerName) => Promise<string | null>;
 };
 
 export type DoctorContext = {
-	cwd: string;
 	nodeVersion: string;
 	git: GitProbe;
+	pm: PackageManagerProbe;
 };
 
 export type DoctorCheck = {
 	id: string;
-	run: (context: DoctorContext) => DoctorResult | Promise<DoctorResult>;
+	run: (context: DoctorContext) => readonly DoctorResult[] | Promise<readonly DoctorResult[]>;
 };

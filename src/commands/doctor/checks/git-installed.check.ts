@@ -8,29 +8,35 @@ export const gitInstalledCheck: DoctorCheck = {
 		const version = context.git.version;
 
 		if (version.status === 'ok') {
-			return {
-				id: CHECK_ID,
-				label: 'Git',
-				ok: true,
-				detail: version.output.replace(/^git version /, '')
-			};
+			return [
+				{
+					id: CHECK_ID,
+					label: 'Git',
+					status: 'ok',
+					detail: version.output.replace(/^git version /, '')
+				}
+			];
 		}
 
 		if (version.status === 'missing') {
-			return {
-				id: CHECK_ID,
-				label: 'Git',
-				ok: false,
-				detail: version.problem,
-				hint: 'Install git, then run the command again'
-			};
+			return [
+				{
+					id: CHECK_ID,
+					label: 'Git',
+					status: 'fail',
+					detail: version.problem,
+					hint: 'Install git, then run the command again'
+				}
+			];
 		}
 
-		return {
-			id: CHECK_ID,
-			label: 'Git',
-			ok: false,
-			detail: version.problem
-		};
+		return [
+			{
+				id: CHECK_ID,
+				label: 'Git',
+				status: 'fail',
+				detail: version.problem
+			}
+		];
 	}
 };

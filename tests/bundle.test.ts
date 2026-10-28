@@ -143,37 +143,20 @@ describe('standalone bundle', () => {
 		expect(unknown.code).toBe(1);
 	});
 
-	it('passes the doctor checks inside a git repository', async () => {
-		const repo = await makeEmptyDir();
-
-		await run('git', ['init'], { cwd: repo });
-
-		const { stdout, stderr, code } = await runEntry('cli.mjs', ['doctor'], repo);
-
-		expect(code).toBe(0);
-		expect(stdout).toContain('┌   jss-devtools doctor ');
-		expect(stdout).toMatch(/^│ {2}✔ Node\.js {9}v\d+\.\d+\.\d+ {2}needs >= /m);
-		expect(stdout).toMatch(/^│ {2}✔ Git {13}\d+\.\d+\.\d+/m);
-		expect(stdout).toContain('│  ✔ Git repository  inside a git repository');
-		expect(stdout).toContain(`needs >= ${nodeFloor}`);
-		expect(stdout).toContain('└  All 3 checks passed');
-		expect(stdout).not.toContain('\u001b');
-		expect(stderr).toBe('');
-
-		await removeDir(repo);
-	});
-
-	it('fails the doctor checks with a fix hint outside a git repository', async () => {
+	it('checks the machine, not the folder, and is ready outside a repository', async () => {
 		const plain = await makeEmptyDir();
 
 		const { stdout, stderr, code } = await runEntry('cli.mjs', ['doctor'], plain);
 
-		expect(code).toBe(1);
-		expect(stdout).toContain('│  ✖ Git repository  not a git repository');
-		expect(stdout).toContain('│    ↳ Run `git init`, or cd into a repository');
-		expect(stderr).toContain('└  1 of 3 checks failed');
+		expect(code).toBe(0);
+		expect(stdout).toContain('┌   jss-devtools doctor ');
+		expect(stdout).toMatch(/^│ {2}✔ Node\.js {2}v\d+\.\d+\.\d+ {2}needs >= /m);
+		expect(stdout).toMatch(/^│ {2}✔ Git {6}\d+\.\d+\.\d+/m);
+		expect(stdout).toMatch(/^│ {2}[–✔] (bun|pnpm|yarn|npm) /m);
+		expect(stdout).toContain(`needs >= ${nodeFloor}`);
+		expect(stdout).toMatch(/└ {2}Ready: Node\.js, git and \d+ package managers?$/m);
 		expect(stdout).not.toContain('\u001b');
-		expect(stderr).not.toContain('\u001b');
+		expect(stderr).toBe('');
 
 		await removeDir(plain);
 	});

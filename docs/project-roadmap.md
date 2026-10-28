@@ -81,7 +81,8 @@ Decisions:
 - The exit codes are 0 and 1. A failed check throws `CliError`, which carries the exit code and the
   fix.
 - `jss-devtools doctor` is the first command: it checks the Node version, whether git is installed and
-  whether the directory is inside a repository, and each failure carries its fix.
+  the package managers init supports, and each failure carries its fix. A manager that is missing or
+  a yarn 2+ is shown as an informational row, not a failure.
 - The package facts reach the CLI through one build define, so `src/cli.ts` holds no package literal.
 
 ## Done: the init command scaffold

@@ -159,19 +159,26 @@ command shows the same banner.
 folder holds the wiring, the service, the checks and the types, and `core/` holds everything
 shared.
 
-It runs three checks in a fixed order and reports each with its id, its detail and, when it fails,
-the fix:
+It checks the machine — Node.js, git and the package managers init supports — in a fixed order and
+reports each row with its id, its detail and, when it fails, the fix:
 
-| Id               | What it checks                                                          |
-| ---------------- | ----------------------------------------------------------------------- |
-| `node.version`   | the running Node against `PACKAGE.nodeFloor`                            |
-| `git.installed`  | the adapter's version, failing with an install hint when git is missing |
-| `git.repository` | whether the working directory is inside a work tree                     |
+| Id                 | What it checks                                                                 |
+| ------------------ | ------------------------------------------------------------------------------ |
+| `node.version`     | the running Node against `PACKAGE.nodeFloor`                                   |
+| `git.installed`    | the adapter's version, failing with an install hint when git is missing        |
+| `pm.<name>`        | one row per package manager, in the order bun, pnpm, yarn, npm                 |
+| `package.managers` | one failing row when no manager is usable: not installed, or a yarn 2 or newer |
+
+A package manager row is a check when a usable manager exists behind it; a manager that is missing,
+or a yarn 2+ that init cannot use, is an `info` row (`–`, dim) and does not count as a pass or a
+failure. The version probes run concurrently through `packageManagerVersion`, from a neutral
+directory (`os.tmpdir()`), because a project's `packageManager` field changes what `<pm> --version`
+answers; the yarn 2+ rule is `isYarnBerry` in the package-manager adapter, shared with the init
+preflight.
 
 `git --version` runs once, before the checks, and its outcome is in the context: git that is not
 installed, git that exits non-zero and git that answers are three different results, and only the
-third passes `git.installed`. The repository check reads the same outcome, so a missing git is
-reported once: `git.repository` is skipped, with no second install hint.
+third passes `git.installed`.
 
 A failed check is a result, not an exception: the service runs every check and returns the results
 in order. The command renders them through clack and ends with a `CliError` when any failed, so the

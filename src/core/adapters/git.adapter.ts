@@ -35,12 +35,6 @@ export const gitVersion = async (): Promise<GitVersion> => {
 	};
 };
 
-export const isInsideWorkTree = async (cwd: string): Promise<boolean> => {
-	const result = await runCommand('git', ['rev-parse', '--is-inside-work-tree'], { cwd });
-
-	return result.code === 0 && result.stdout.trim() === 'true';
-};
-
 export const gitInit = async (cwd: string): Promise<boolean> => {
 	const result = await runCommand('git', ['init', '-q', '-b', 'main'], { cwd });
 

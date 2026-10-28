@@ -13,22 +13,26 @@ export const nodeVersionCheck: DoctorCheck = {
 		const note = `needs >= ${PACKAGE.nodeFloor}`;
 
 		if (!ok) {
-			return {
-				id: CHECK_ID,
-				label: 'Node.js',
-				ok: false,
-				detail,
-				note,
-				hint: `Install Node ${PACKAGE.nodeFloor} or newer`
-			};
+			return [
+				{
+					id: CHECK_ID,
+					label: 'Node.js',
+					status: 'fail',
+					detail,
+					note,
+					hint: `Install Node ${PACKAGE.nodeFloor} or newer`
+				}
+			];
 		}
 
-		return {
-			id: CHECK_ID,
-			label: 'Node.js',
-			ok: true,
-			detail,
-			note
-		};
+		return [
+			{
+				id: CHECK_ID,
+				label: 'Node.js',
+				status: 'ok',
+				detail,
+				note
+			}
+		];
 	}
 };

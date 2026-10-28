@@ -869,3 +869,29 @@ Decided 2026-10-29: keep it as it is. `init <dir> --dry-run` without `--pm` plan
 default `--pm` states in its help, and the `To apply:` line stays the command the user typed: "Tôi
 thấy hiện tại cũng đã ổn rồi, không cần thêm --pm npm đâu vì khi user chạy thật sẽ được hỏi thôi"
 (user).
+
+## What doctor checks (open question D1)
+
+Decided 2026-10-29, option "A. Chỉ kiểm tra máy" (user), with the approved mockup:
+
+```text
+┌   jss-devtools doctor
+│  ✔ Node.js  v24.11.0  needs >= 24.11.0
+│  ✔ Git      2.55.0
+│  ✔ npm      11.6.2
+│  ✔ pnpm     11.24.0
+│  – yarn     not installed
+│  ✔ bun      1.3.8
+│
+└  Ready: Node.js, git and 3 package managers
+```
+
+`doctor` checks the machine, not the folder: Node.js against the floor, git, and each package
+manager init supports. The git repository check goes, because init checks the folder itself and
+doctor run outside a repository failed on a machine that was ready. A package manager that is
+missing is shown, not failed. The help line (message review row H3) becomes `Check Node.js, git and
+the package managers`. A project health check with a fix mode, in the style of K3's `doctor --fix`,
+waits for the harness module, which brings the managed files it would compare against.
+
+The package manager rows follow the order fixed under "Package manager order" (bun, pnpm, yarn,
+npm), not the npm-first order of the mockup.

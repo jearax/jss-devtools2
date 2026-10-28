@@ -26,7 +26,7 @@ Windows is not supported natively; use WSL (Windows Subsystem for Linux). The re
 ```bash
 node dist/cli.mjs --help      # usage
 node dist/cli.mjs -v          # the version from package.json (also --version)
-node dist/cli.mjs doctor      # check the environment, exit 1 with a fix hint when a check fails
+node dist/cli.mjs doctor      # check the machine, exit 1 with a fix hint when a check fails
 node dist/cli.mjs init my-app # create a TypeScript node project
 node dist/cli.mjs init        # set up the current project
 node dist/cli.mjs nope        # error plus help, exit code 1
@@ -49,9 +49,10 @@ and prints a `PATH` hint when that directory is not on your `PATH`. `JSS_DEVTOOL
 The site's home page is `https://jss-devtools.jjuidev.com/`. How it is deployed, and how to roll it
 back, is in [docs/deployment-guide.md](./docs/deployment-guide.md).
 
-After the install, `jss-devtools doctor` checks the environment: the Node version against the floor,
-whether git is installed, and whether the working directory is inside a repository. Each check that
-fails carries the fix, and the command exits 1.
+After the install, `jss-devtools doctor` checks the machine: the Node version against the floor,
+whether git is installed, and the package managers init supports (bun, pnpm, yarn 1 and npm). Each
+check that fails carries the fix, the command exits 1, and a manager that is only missing is shown,
+not failed.
 
 `jss-devtools init my-app` creates a folder holding a TypeScript node project that installs, lints,
 typechecks, builds and runs (`node dist/main.js`), with git hooks active. `jss-devtools init` in an

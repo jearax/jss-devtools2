@@ -20,6 +20,11 @@ export const packageManagerVersion = async (pm: PackageManagerName, cwd: string)
 	return result.code === 0 ? result.stdout.trim() : null;
 };
 
+// yarn 2+ defaults to Plug n Play, outside the yarn 1 scope this preset is tested against.
+export const isYarnBerry = (pm: PackageManagerName, version: string): boolean => {
+	return pm === 'yarn' && Number.parseInt(version, 10) >= 2;
+};
+
 const resolveOrThrow = (agent: Agent, command: Command, args: readonly string[]): ResolvedCommand => {
 	const resolved = resolveCommand(agent, command, [...args]);
 

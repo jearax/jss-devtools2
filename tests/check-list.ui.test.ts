@@ -4,6 +4,8 @@ import { renderCheckList } from '@/core/ui/check-list.ui';
 
 import { capture } from './support/capture-stream';
 
+import type { CheckListRow } from '@/core/ui/check-list.ui';
+
 const ESC = '\u001b';
 
 const originalNoColor = process.env['NO_COLOR'];
@@ -24,30 +26,25 @@ describe('the check list', () => {
 			renderCheckList([
 				{
 					label: 'Node.js',
-					ok: true,
+					status: 'ok',
 					detail: 'v24.11.0',
 					note: 'needs >= 24.11.0'
 				},
 				{
 					label: 'Git',
-					ok: true,
+					status: 'ok',
 					detail: '2.55.0'
 				},
 				{
-					label: 'Git repository',
-					ok: true,
-					detail: 'inside a git repository'
+					label: 'bun',
+					status: 'ok',
+					detail: '1.3.8'
 				}
 			]);
 		});
 
 		expect(output).toBe(
-			[
-				'│  ✔ Node.js         v24.11.0  needs >= 24.11.0',
-				'│  ✔ Git             2.55.0',
-				'│  ✔ Git repository  inside a git repository',
-				''
-			].join('\n')
+			['│  ✔ Node.js  v24.11.0  needs >= 24.11.0', '│  ✔ Git      2.55.0', '│  ✔ bun      1.3.8', ''].join('\n')
 		);
 	});
 
@@ -57,33 +54,55 @@ describe('the check list', () => {
 		const output = await capture(process.stdout, () => {
 			renderCheckList([
 				{
-					label: 'Node.js',
-					ok: true,
-					detail: 'v24.11.0',
-					note: 'needs >= 24.11.0'
-				},
-				{
 					label: 'Git',
-					ok: true,
-					detail: '2.55.0'
+					status: 'fail',
+					detail: 'Git is not installed',
+					hint: 'Install git, then run the command again'
 				},
 				{
-					label: 'Git repository',
-					ok: false,
-					detail: 'not a git repository',
-					hint: 'run `git init`, or cd into a repository'
+					label: 'Package manager',
+					status: 'fail',
+					detail: 'none found'
 				}
 			]);
 		});
 
 		expect(output).toBe(
 			[
-				'│  ✔ Node.js         v24.11.0  needs >= 24.11.0',
-				'│  ✔ Git             2.55.0',
-				'│  ✖ Git repository  not a git repository',
-				'│    ↳ run `git init`, or cd into a repository',
+				'│  ✖ Git              Git is not installed',
+				'│    ↳ Install git, then run the command again',
+				'│  ✖ Package manager  none found',
 				''
 			].join('\n')
+		);
+	});
+
+	it('draws an info row dim with a dash instead of a pass or fail mark', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const output = await capture(process.stdout, () => {
+			renderCheckList([
+				{
+					label: 'Git',
+					status: 'ok',
+					detail: '2.55.0'
+				},
+				{
+					label: 'yarn',
+					status: 'info',
+					detail: '4.5.0',
+					note: 'init supports yarn 1 only'
+				},
+				{
+					label: 'npm',
+					status: 'info',
+					detail: 'not installed'
+				}
+			]);
+		});
+
+		expect(output).toBe(
+			['│  ✔ Git   2.55.0', '│  – yarn  4.5.0  init supports yarn 1 only', '│  – npm   not installed', ''].join('\n')
 		);
 	});
 
@@ -91,13 +110,15 @@ describe('the check list', () => {
 		process.env['NO_COLOR'] = '1';
 
 		const output = await capture(process.stdout, () => {
-			renderCheckList([
+			const rows: readonly CheckListRow[] = [
 				{
 					label: 'Git',
-					ok: false,
+					status: 'fail',
 					detail: 'Git is not installed'
 				}
-			]);
+			];
+
+			renderCheckList(rows);
 		});
 
 		expect(output).not.toContain(ESC);

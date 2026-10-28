@@ -7,12 +7,20 @@ import { CliError } from '@/core/errors/cli.error';
 import { showBanner } from '@/core/ui/banner.ui';
 import { renderCheckList } from '@/core/ui/check-list.ui';
 
-import { createDoctorContext, runDoctorChecks } from './doctor.service';
+import {
+	checkCount,
+	createDoctorContext,
+	failedCheckCount,
+	failureMessage,
+	readyMessage,
+	runDoctorChecks,
+	usablePackageManagerCount
+} from './doctor.service';
 
 import type { Command } from 'commander';
 
 export const registerDoctorCommand = (program: Command): void => {
-	program.command('doctor').description('Check the environment').action(runDoctor);
+	program.command('doctor').description('Check Node.js, git and the package managers').action(runDoctor);
 };
 
 const runDoctor = async (): Promise<void> => {
@@ -24,13 +32,12 @@ const runDoctor = async (): Promise<void> => {
 
 	renderCheckList(results);
 
-	const failed = results.filter((result) => {
-		return !result.ok;
-	});
+	const failed = failedCheckCount(results);
+	const checks = checkCount(results);
 
-	if (failed.length > 0) {
-		throw new CliError(`${failed.length} of ${results.length} checks failed`);
+	if (failed > 0) {
+		throw new CliError(failureMessage(failed, checks));
 	}
 
-	outro(`All ${results.length} checks passed`);
+	outro(readyMessage(usablePackageManagerCount(results)));
 };

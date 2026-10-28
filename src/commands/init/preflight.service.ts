@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'n
 import { basename, join, relative, resolve } from 'node:path';
 
 import { gitHooksPath, gitTopLevel, gitVersion } from '@/core/adapters/git.adapter';
-import { detectPackageManager, packageManagerVersion } from '@/core/adapters/package-manager.adapter';
+import { detectPackageManager, isYarnBerry, packageManagerVersion } from '@/core/adapters/package-manager.adapter';
 import { CliError } from '@/core/errors/cli.error';
 
 import { CONFIG_NAMES } from './constants/config-name.constant';
@@ -83,8 +83,7 @@ const preflightCreate = async (dirArg: string, options: InitOptions): Promise<In
 	const pm = options.pm ?? 'npm';
 	const pmVersion = await installedVersion(pm, process.cwd(), true);
 
-	// yarn 2+ defaults to Plug n Play, outside the yarn 1 scope this preset is tested against.
-	if (pm === 'yarn' && Number.parseInt(pmVersion, 10) >= 2) {
+	if (isYarnBerry(pm, pmVersion)) {
 		throw new CliError(`Only yarn 1 is supported, found yarn ${pmVersion}`, {
 			hint: 'Pick another with --pm'
 		});

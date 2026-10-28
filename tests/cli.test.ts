@@ -75,7 +75,7 @@ describe('cli program', () => {
 		});
 
 		expect(output).toContain('Usage: jss-devtools doctor');
-		expect(output).toContain('Check the environment');
+		expect(output).toContain('Check Node.js, git and the package managers');
 		expect(output).toContain('Display help for command');
 		expect(process.exitCode).toBe(0);
 	});

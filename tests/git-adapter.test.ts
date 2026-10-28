@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { gitHooksPath, gitInit, gitTopLevel, gitVersion, isInsideWorkTree } from '@/core/adapters/git.adapter';
+import { gitHooksPath, gitInit, gitTopLevel, gitVersion } from '@/core/adapters/git.adapter';
 
 import { makeEmptyDir, removeDir } from './support/tmp-dir';
 
@@ -55,24 +55,6 @@ describe('the git adapter', () => {
 				process.env['PATH'] = originalPath;
 			}
 		}
-	});
-
-	it('knows a directory inside a work tree', async () => {
-		const repo = await makeEmptyDir();
-
-		dirs.push(repo);
-
-		await run('git', ['init'], { cwd: repo });
-
-		expect(await isInsideWorkTree(repo)).toBe(true);
-	});
-
-	it('knows a directory outside a work tree', async () => {
-		const plain = await makeEmptyDir();
-
-		dirs.push(plain);
-
-		expect(await isInsideWorkTree(plain)).toBe(false);
 	});
 
 	it('initializes a repository on branch main whatever init.defaultBranch says', async () => {
