@@ -862,3 +862,10 @@ still ran.
 ## Caret drift (matrix issue #7)
 
 Closed 2026-10-29 with no change: "#7 OK, đóng." (user). It follows from the `^x.y.z` ranges.
+
+## Dry run without `--pm` (matrix issue #8)
+
+Decided 2026-10-29: keep it as it is. `init <dir> --dry-run` without `--pm` plans for npm, the
+default `--pm` states in its help, and the `To apply:` line stays the command the user typed: "Tôi
+thấy hiện tại cũng đã ổn rồi, không cần thêm --pm npm đâu vì khi user chạy thật sẽ được hỏi thôi"
+(user).
