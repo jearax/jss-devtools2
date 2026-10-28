@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { promisify } from 'node:util';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -53,6 +53,7 @@ afterEach(async () => {
 });
 
 beforeEach(() => {
+	process.exitCode = undefined;
 	install.lines = [];
 	install.code = 0;
 });
@@ -171,5 +172,43 @@ describe('the init install step, piped', () => {
 		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);
 		expect(existsSync(join(dir, 'eslint.config.mjs'))).toBe(true);
+	});
+});
+
+describe('the init run on an already set-up project', () => {
+	const setUpProject = async (): Promise<string> => {
+		const dir = await makeEmptyDir();
+
+		dirs.push(dir);
+		process.chdir(dir);
+		await run('git', ['init'], { cwd: dir });
+		writeFileSync(join(dir, 'package.json'), '{}\n');
+		writeFileSync(join(dir, 'tsconfig.json'), '{}\n');
+		await runInit('-y');
+
+		return dir;
+	};
+
+	it('stops after the plan with the outro when init -f -y finds nothing to change', async () => {
+		const dir = await setUpProject();
+
+		const { stdout } = await runInit('-f', '-y');
+
+		expect(stdout).toBe(`┌   jss-devtools init \n│\n└  Nothing to change in ${basename(dir)}\n\n`);
+		expect(stdout).not.toContain('Changes in');
+		expect(stdout).not.toContain('To apply');
+		expect(stdout).not.toContain('Next steps');
+		expect(stdout).not.toContain('Installing with');
+		expect(stdout).not.toContain('Sorted package.json');
+		expect(process.exitCode).toBeUndefined();
+	});
+
+	it('prints the same outro in a dry run without the apply command', async () => {
+		const dir = await setUpProject();
+
+		const { stdout } = await runInit('-f', '-y', '--dry-run');
+
+		expect(stdout).toBe(`┌   jss-devtools init \n│\n└  Nothing to change in ${basename(dir)}\n\n`);
+		expect(process.exitCode).toBeUndefined();
 	});
 });

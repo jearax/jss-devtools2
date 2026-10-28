@@ -334,5 +334,5 @@ export const renderPlanHeading = (plan: InitPlan, projectName: string): string =
 		return count === 0 ? [] : [styleText(PLAN_MARK_COLOURS[action], `${count} ${PLAN_COUNT_LABELS[action]}`)];
 	});
 
-	return counts.length === 0 ? projectName : `Changes in ${projectName}: ${counts.join('; ')}`;
+	return `Changes in ${projectName}: ${counts.join('; ')}`;
 };

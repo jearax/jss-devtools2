@@ -850,3 +850,15 @@ Delete-only plans and the plan heading, decided 2026-10-29 (user):
   `Changes in <project>: <counts>`, option "Changes in <project>: …", with the counts separated by
   `;` as in the confirm: "Chỗ này tôi mong muốn dùng format ; luôn `Changes in p2: 10 to create, 1
   to update, 2 to delete`" (user), so `Changes in p2: 10 to create; 1 to update; 2 to delete`.
+
+## Nothing to change
+
+Decided 2026-10-29, option "Dừng sớm, exit 0" (user). When the plan has no entry (found with
+`init -f` in a project init already set up), init asks nothing, installs nothing, sorts nothing,
+prints the outro `Nothing to change in <project>` and exits 0. A dry run prints the same outro,
+without `To apply:`. Before this the heading showed the bare project name and the install and sort
+still ran.
+
+## Caret drift (matrix issue #7)
+
+Closed 2026-10-29 with no change: "#7 OK, đóng." (user). It follows from the `^x.y.z` ranges.

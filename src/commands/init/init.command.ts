@@ -181,6 +181,12 @@ const runInit = async (dirArg: string | undefined, options: InitOptions, command
 	const relativeTarget = relative(process.cwd(), preflight.targetDir);
 	const plan = buildInitPlan(preflight, withPm(options, pm));
 
+	if (plan.entries.length === 0) {
+		outro(`Nothing to change in ${preflight.projectName}`);
+
+		return;
+	}
+
 	log.step(renderPlanHeading(plan, preflight.projectName));
 	log.message(renderPlan(plan), { spacing: 0 });
 
