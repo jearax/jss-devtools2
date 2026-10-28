@@ -9,7 +9,7 @@ import { COMMON_OPTIONS } from '@/core/constants/common-option.constant';
 import { PACKAGE } from '@/core/constants/package.constant';
 import { CliError } from '@/core/errors/cli.error';
 import { showBanner } from '@/core/ui/banner.ui';
-import { createTaskLog, isInteractive, runTasks, taskLogSummary } from '@/core/ui/terminal.ui';
+import { createTaskLog, isInteractive, nextStepLines, runTasks, taskLogSummary } from '@/core/ui/terminal.ui';
 
 import { validateInitArguments } from './init.service';
 import { buildInitPlan, renderPlan, renderPlanHeading } from './plan.service';
@@ -107,24 +107,19 @@ const shellQuote = (path: string): string => {
 	return /^[\w@%+=:,./-]+$/.test(path) ? path : `'${path.replaceAll(`'`, `'\\''`)}'`;
 };
 
-const nextStep = (preflight: InitPreflight, target: string, command: string): string => {
-	const cd = preflight.mode === 'create' ? `cd ${target} && ` : '';
+const nextStepCommands = (preflight: InitPreflight, relativeTarget: string, command: string): string[] => {
+	const cd = preflight.mode === 'create' && relativeTarget !== '' ? [`cd ${shellQuote(relativeTarget)}`] : [];
 
-	return `${cd}${command}`;
+	return [...cd, command];
 };
 
-export const sortFailureMessage = (
-	bin: string,
-	result: { stdout: string; stderr: string },
-	finishCommand: string
-): string => {
+export const sortFailureMessage = (bin: string, result: { stdout: string; stderr: string }): string => {
 	const output = result.stderr.trim() || result.stdout.trim();
-	const reported = output === '' ? ' ' : `\n${output}\n`;
 
-	return `${bin} failed; the files are written.${reported}To finish: ${finishCommand}`;
+	return output === '' ? `${bin} failed; the files are written` : `${bin} failed; the files are written\n${output}`;
 };
 
-const sortPackageJson = async (preflight: InitPreflight, target: string, cwd: string): Promise<void> => {
+const sortPackageJson = async (preflight: InitPreflight, relativeTarget: string, cwd: string): Promise<void> => {
 	const bins = [
 		['prettier-package-json', ['--write', 'package.json']],
 		['prettier', ['--write', 'package.json']]
@@ -134,17 +129,17 @@ const sortPackageJson = async (preflight: InitPreflight, target: string, cwd: st
 		const result = await runLocalBin(preflight.pm, bin, [...args], cwd);
 
 		if (result.code !== 0) {
-			throw new CliError(
-				sortFailureMessage(bin, result, nextStep(preflight, target, localBinCommandLine(preflight.pm, bin, [...args])))
-			);
+			throw new CliError(sortFailureMessage(bin, result), {
+				commands: nextStepCommands(preflight, relativeTarget, localBinCommandLine(preflight.pm, bin, [...args]))
+			});
 		}
 	}
 };
 
-const installError = (preflight: InitPreflight, target: string): CliError => {
-	return new CliError(
-		`install failed; the files are written. To finish: ${nextStep(preflight, target, `${preflight.pm} install`)}`
-	);
+const installError = (preflight: InitPreflight, relativeTarget: string): CliError => {
+	return new CliError('install failed; the files are written', {
+		commands: nextStepCommands(preflight, relativeTarget, `${preflight.pm} install`)
+	});
 };
 
 const runInit = async (dirArg: string | undefined, options: InitOptions): Promise<void> => {
@@ -161,7 +156,7 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 
 	const pm = await askPackageManager(dirArg !== undefined, options);
 	const preflight = await preflightInit(process.cwd(), positional, withPm(options, pm));
-	const target = shellQuote(relative(process.cwd(), preflight.targetDir) || '.');
+	const relativeTarget = relative(process.cwd(), preflight.targetDir);
 	const plan = buildInitPlan(preflight, withPm(options, pm));
 
 	log.step(renderPlanHeading(plan, preflight.projectName));
@@ -196,7 +191,7 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 	if (code !== 0) {
 		installLog.error();
 
-		throw installError(preflight, target);
+		throw installError(preflight, relativeTarget);
 	}
 
 	installLog.success(taskLogSummary(`Installed with ${preflight.pm}`, (Date.now() - startedAt) / 1000));
@@ -205,12 +200,14 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 		{
 			title: 'Sorting package.json',
 			run: async () => {
-				await sortPackageJson(preflight, target, plan.targetDir);
+				await sortPackageJson(preflight, relativeTarget, plan.targetDir);
 
 				return 'Sorted package.json';
 			}
 		}
 	]);
 
-	outro(preflight.mode === 'create' ? `next: cd ${target}, ${preflight.pm} run dev` : 'done');
+	const nextCommand = preflight.mode === 'create' ? `${preflight.pm} run dev` : `${preflight.pm} run format`;
+
+	outro(['Next steps', ...nextStepLines(nextStepCommands(preflight, relativeTarget, nextCommand))].join('\n'));
 };

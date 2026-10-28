@@ -5,6 +5,7 @@ import {
 	createSpinner,
 	createTaskLog,
 	isInteractive,
+	nextStepLines,
 	renderError,
 	runTasks,
 	taskLogSummary
@@ -410,5 +411,78 @@ describe('error rendering', () => {
 		});
 
 		expect(stderr).toBe(['│', '└  plain string', ''].join('\n'));
+	});
+
+	it('writes To finish and the command list on stderr', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const stderr = await capture(process.stderr, () => {
+			renderError(new CliError('install failed; the files are written', { commands: ['cd my-app', 'npm install'] }));
+		});
+
+		expect(stderr).toBe(
+			[
+				'│',
+				'└  install failed; the files are written',
+				'   To finish:',
+				'     $ cd my-app',
+				'     $ npm install',
+				''
+			].join('\n')
+		);
+		expect(stderr).not.toContain(ESC);
+	});
+
+	it('indents continuation lines of a multi-line message by three spaces, uncoloured', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const stderr = await capture(process.stderr, () => {
+			renderError(new CliError('prettier-package-json failed; the files are written\nPrettier 3.9.10'));
+		});
+
+		expect(stderr).toBe(
+			['│', '└  prettier-package-json failed; the files are written', '   Prettier 3.9.10', ''].join('\n')
+		);
+		expect(stderr).not.toContain(ESC);
+	});
+
+	it('drops To finish when the error carries no commands', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const stderr = await capture(process.stderr, () => {
+			renderError(new CliError('the check failed', { commands: [] }));
+		});
+
+		expect(stderr).toBe(['│', '└  the check failed', ''].join('\n'));
+	});
+
+	it('dims the $ and colours the command when colour is forced', async () => {
+		delete process.env['NO_COLOR'];
+		process.env['FORCE_COLOR'] = '1';
+
+		const stderr = await capture(process.stderr, () => {
+			renderError(new CliError('install failed; the files are written', { commands: ['npm install'] }));
+		});
+
+		expect(stderr).toContain(`   To finish:\n     ${ESC}[2m$ ${ESC}[22m${ESC}[36mnpm install${ESC}[39m`);
+	});
+});
+
+describe('next step lines', () => {
+	it('writes plain $ lines when the output is piped', () => {
+		process.env['NO_COLOR'] = '1';
+
+		const lines = nextStepLines(['cd my-app', 'pnpm run dev']);
+
+		expect(lines).toEqual(['     $ cd my-app', '     $ pnpm run dev']);
+	});
+
+	it('colours the $ and the command on a colour-forced stream', () => {
+		delete process.env['NO_COLOR'];
+		process.env['FORCE_COLOR'] = '1';
+
+		const lines = nextStepLines(['npm install']);
+
+		expect(lines).toEqual([`     ${ESC}[2m$ ${ESC}[22m${ESC}[36mnpm install${ESC}[39m`]);
 	});
 });

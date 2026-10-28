@@ -105,7 +105,9 @@ describe('init wired through commander', () => {
 		expect(calls.confirms).toBe(0);
 		// macOS resolves /var to /private/var under process.chdir, and process.cwd() follows it
 		expect(calls.install).toEqual([['pnpm', realpathSync(dir)]]);
-		expect(stderr).toContain('install failed; the files are written. To finish: pnpm install');
+		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('$ pnpm install');
+		expect(stderr).not.toContain('$ cd');
 		expect(process.exitCode).toBe(1);
 		expect(existsSync(join(dir, 'eslint.config.mjs'))).toBe(true);
 	}, 30_000);
@@ -120,7 +122,9 @@ describe('init wired through commander', () => {
 			['pnpm', 'prettier-package-json'],
 			['pnpm', 'prettier']
 		]);
-		expect(stdout).toContain('done');
+		expect(stdout).toContain('Next steps');
+		expect(stdout).toContain('$ pnpm run format');
+		expect(stdout).not.toContain('$ cd');
 		expect(process.exitCode ?? 0).toBe(0);
 	}, 30_000);
 
@@ -131,8 +135,24 @@ describe('init wired through commander', () => {
 
 		const { stderr } = await runInit('-y');
 
-		expect(stderr).toContain('prettier-package-json failed; the files are written.');
-		expect(stderr).toContain('pnpm exec prettier-package-json --write package.json');
+		expect(stderr).toContain('prettier-package-json failed; the files are written');
+		expect(stderr).toContain('To finish:');
+		expect(stderr).toContain('$ pnpm exec prettier-package-json --write package.json');
+		expect(process.exitCode).toBe(1);
+	}, 30_000);
+
+	it('drops the cd line when the sort fails in the current folder', async () => {
+		const dir = await makeEmptyDir();
+
+		process.chdir(dir);
+		calls.installCode = 0;
+		calls.sortCode = 'prettier-package-json';
+
+		const { stderr } = await runInit('.', '-y');
+
+		expect(stderr).toContain('prettier-package-json failed; the files are written');
+		expect(stderr).toContain('$ npx prettier-package-json --write package.json');
+		expect(stderr).not.toContain('$ cd');
 		expect(process.exitCode).toBe(1);
 	}, 30_000);
 

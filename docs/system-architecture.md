@@ -93,13 +93,13 @@ would do nothing and exit 0.
 [the research report](../plans/reports/researcher-261020-0023-tui-framework.md) and the decision in
 [0004](./decisions/0004-cli-parser-and-prompts.md).
 
-| Primitive            | On a terminal outside CI                 | Piped, captured or in CI                                         |
-| -------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
-| `createSpinner()`    | the animated spinner                     | `log.step` at the start, `log.success` or `log.error` at the end |
-| `runTasks()`         | one animated spinner per task            | one `log.step` per task, a result line after it                  |
-| `createTaskLog()`    | clack `taskLog`, the last 5 lines, dim   | `log.step` title, every line prefixed `│  `, `log.step` summary  |
-| `renderError(error)` | `log.error` on stderr, the hint under it | the same                                                         |
-| prompts              | not written yet                          | not written yet                                                  |
+| Primitive            | On a terminal outside CI                                                                                           | Piped, captured or in CI                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| `createSpinner()`    | the animated spinner                                                                                               | `log.step` at the start, `log.success` or `log.error` at the end |
+| `runTasks()`         | one animated spinner per task                                                                                      | one `log.step` per task, a result line after it                  |
+| `createTaskLog()`    | clack `taskLog`, the last 5 lines, dim                                                                             | `log.step` title, every line prefixed `│  `, `log.step` summary  |
+| `renderError(error)` | `log.error` on stderr, the hint under it, or `To finish:` and the `$` command list when the error carries commands | the same                                                         |
+| prompts              | not written yet                                                                                                    | not written yet                                                  |
 
 `isInteractive(context)` is the one rule for the output: stdout is a terminal with a usable width
 (zero or unknown columns counts as not interactive) and no CI marker is set. Clack writes cursor codes even when the output is piped, so the animated primitives never run
@@ -125,8 +125,10 @@ differing. The layer therefore owns no process state at all: no handlers, no hid
 Ctrl+C ends the CLI the way it ends any other program. The frames and the colours are clack's, so
 the look is the same.
 
-`CliError` carries the exit code and the hint that says what to do about the failure. `src/cli.ts`
-renders it through `renderError` and ends with its exit code. An unexpected error is a crash, not
+`CliError` carries the exit code, the hint that says what to do about the failure, and an optional
+list of commands to run next, rendered as `$` lines under `To finish:` — the same list the init
+outro renders under `Next steps`. `src/cli.ts` renders it through `renderError` and ends with its
+exit code. An unexpected error is a crash, not
 an expected failure: it stays a bare line on stderr, with the stack under `JSS_DEBUG=1`.
 
 ## Banner

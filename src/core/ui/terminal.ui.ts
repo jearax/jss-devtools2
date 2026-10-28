@@ -128,14 +128,36 @@ export const createTaskLog = (title: string, context: TerminalContext = {}): Ter
 	};
 };
 
+export const nextStepLines = (
+	commands: readonly string[],
+	stream: NodeJS.WritableStream = process.stdout
+): string[] => {
+	return commands.map((command) => {
+		return `     ${styleText('dim', '$ ', { stream })}${styleText('cyan', command, { stream })}`;
+	});
+};
+
 export const renderError = (error: unknown): void => {
 	const message = error instanceof Error ? error.message : String(error);
 	const stderr = { stream: process.stderr };
 
 	process.stderr.write(`${styleText('gray', '│', stderr)}\n`);
-	process.stderr.write(`${styleText('gray', '└', stderr)}  ${styleText('red', message, stderr)}\n`);
 
-	if (error instanceof CliError && error.hint) {
+	const [firstLine = message, ...restLines] = message.split('\n');
+
+	process.stderr.write(`${styleText('gray', '└', stderr)}  ${styleText('red', firstLine, stderr)}\n`);
+
+	for (const line of restLines) {
+		process.stderr.write(`${line === '' ? '' : `   ${line}`}\n`);
+	}
+
+	if (error instanceof CliError && error.commands !== undefined && error.commands.length > 0) {
+		process.stderr.write('   To finish:\n');
+
+		for (const line of nextStepLines(error.commands, process.stderr)) {
+			process.stderr.write(`${line}\n`);
+		}
+	} else if (error instanceof CliError && error.hint) {
 		process.stderr.write(`${styleText('yellow', `   ↳ ${error.hint}`, stderr)}\n`);
 	}
 };

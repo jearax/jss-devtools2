@@ -98,8 +98,56 @@ describe('the init install step, piped', () => {
 		expect(done).toBeGreaterThan(secondLine);
 		expect(stdout).toContain('(0.0s)');
 		expect(stdout).toContain('Sorted package.json');
+		expect(stdout).toContain('Next steps');
+		expect(stdout).toContain('$ npm run format');
+		expect(stdout).not.toContain('$ cd');
 		expect(stdout).not.toContain('\u001b');
 		expect(process.exitCode).toBeUndefined();
+	});
+
+	it('lists cd and dev after a create run', async () => {
+		const dir = await makeEmptyDir();
+
+		dirs.push(dir);
+		process.chdir(dir);
+
+		const { stdout } = await runInit('my-app', '-y');
+
+		expect(stdout).toContain('Next steps');
+		expect(stdout).toContain('$ cd my-app');
+		expect(stdout).toContain('$ npm run dev');
+		expect(stdout.indexOf('$ cd my-app')).toBeLessThan(stdout.indexOf('$ npm run dev'));
+		expect(stdout).not.toContain('\u001b');
+		expect(process.exitCode).toBeUndefined();
+	});
+
+	it('drops the cd line when the target is the current folder', async () => {
+		const dir = await makeEmptyDir();
+
+		dirs.push(dir);
+		process.chdir(dir);
+
+		const { stdout } = await runInit('.', '-y');
+
+		expect(stdout).toContain('Next steps');
+		expect(stdout).toContain('$ npm run dev');
+		expect(stdout).not.toContain('$ cd');
+		expect(process.exitCode).toBeUndefined();
+	});
+
+	it('drops the cd line in the failure list too when the install fails in the current folder', async () => {
+		const dir = await makeEmptyDir();
+
+		dirs.push(dir);
+		process.chdir(dir);
+		install.code = 1;
+
+		const { stderr } = await runInit('.', '-y');
+
+		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('$ npm install');
+		expect(stderr).not.toContain('$ cd');
+		expect(process.exitCode).toBe(1);
 	});
 
 	it('keeps the lines and the failed title when the install exits 1', async () => {
@@ -118,7 +166,9 @@ describe('the init install step, piped', () => {
 		expect(stdout).toContain('│  npm error code EACCES');
 		expect(stdout).toContain('■  Installing with npm');
 		expect(stdout).not.toContain('Installed with');
-		expect(stderr).toContain('install failed; the files are written. To finish: npm install');
+		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('$ npm install');
+		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);
 		expect(existsSync(join(dir, 'eslint.config.mjs'))).toBe(true);
 	});

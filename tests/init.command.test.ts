@@ -207,7 +207,11 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit();
 
-		expect(stderr).toContain('install failed; the files are written. To finish: npm install');
+		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('To finish:');
+		expect(stderr).toContain('$ npm install');
+		expect(stderr).not.toContain('$ cd');
+		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);
 		expect(existsSync(join(dir, 'eslint.config.mjs'))).toBe(true);
 		expect(existsSync(join(dir, '.prettierrc.json'))).toBe(true);
@@ -222,7 +226,10 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('my-app', '-y');
 
-		expect(stderr).toContain('install failed; the files are written. To finish: cd my-app && npm install');
+		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('$ cd my-app');
+		expect(stderr).toContain('$ npm install');
+		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);
 		expect(existsSync(join(dir, 'my-app', '.' + 'git'))).toBe(true);
 		expect(existsSync(join(dir, 'my-app', 'src/main.ts'))).toBe(true);
@@ -236,7 +243,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit(join('apps', 'My App'), '-y');
 
-		expect(stderr).toContain("To finish: cd 'apps/My App' && npm install");
+		expect(stderr).toContain("cd 'apps/My App'");
 		expect(process.exitCode).toBe(1);
 		expect(existsSync(join(dir, 'apps', 'My App', 'src', 'main.ts'))).toBe(true);
 	}, 120_000);
@@ -258,7 +265,9 @@ describe('the init command', () => {
 		).toEqual(['bun', 'pnpm', 'yarn', 'npm']);
 		expect(selectCalls[0]?.initialValue).toBe('npm');
 
-		expect(stderr).toContain('install failed; the files are written. To finish: cd my-app && npm install');
+		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('$ cd my-app');
+		expect(stderr).toContain('$ npm install');
 		expect(process.exitCode).toBe(1);
 	}, 120_000);
 
@@ -380,41 +389,27 @@ describe('the init command', () => {
 });
 
 describe('the sort failure message', () => {
-	it('includes the failing tool stderr, then the finish command', () => {
+	it('includes the failing tool stderr', () => {
 		expect(
-			sortFailureMessage(
-				'prettier',
-				{
-					stdout: '',
-					stderr: 'Prettier 3.9.10\n'
-				},
-				'cd my-app && npm exec prettier --write package.json'
-			)
-		).toBe(
-			'prettier failed; the files are written.\nPrettier 3.9.10\nTo finish: cd my-app && npm exec prettier --write package.json'
-		);
+			sortFailureMessage('prettier', {
+				stdout: '',
+				stderr: 'Prettier 3.9.10\n'
+			})
+		).toBe('prettier failed; the files are written\nPrettier 3.9.10');
 	});
 
 	it('falls back to stdout when stderr is empty, and stays on one line without output', () => {
 		expect(
-			sortFailureMessage(
-				'prettier-package-json',
-				{
-					stdout: 'boom\n',
-					stderr: ''
-				},
-				'npm exec prettier-package-json'
-			)
-		).toBe('prettier-package-json failed; the files are written.\nboom\nTo finish: npm exec prettier-package-json');
+			sortFailureMessage('prettier-package-json', {
+				stdout: 'boom\n',
+				stderr: ''
+			})
+		).toBe('prettier-package-json failed; the files are written\nboom');
 		expect(
-			sortFailureMessage(
-				'prettier',
-				{
-					stdout: '',
-					stderr: ''
-				},
-				'npm exec prettier'
-			)
-		).toBe('prettier failed; the files are written. To finish: npm exec prettier');
+			sortFailureMessage('prettier', {
+				stdout: '',
+				stderr: ''
+			})
+		).toBe('prettier failed; the files are written');
 	});
 });

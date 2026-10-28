@@ -731,3 +731,20 @@ screenshot of the VS Code explorer as the reference. The plan list sorts by path
 explorer does: at each level, entries inside a folder come before files; names compare
 alphabetically, case-insensitive, numbers by value, a leading dot before letters. Every entry sorts
 by its path whatever its mark (`+`, `~`, `-`). Only the display changes; the write order does not.
+
+## Commands to run next
+
+Decided 2026-10-28, from three mockups (box, numbered, shell prompt): "Thống nhất các case tương tự
+cho project này là dùng style $." (user). Commands the user should run next are listed one per line
+under a heading, each prefixed with a dim `$ `, the command itself in cyan, as the help Examples
+already do:
+
+    └  Next steps
+         $ cd my-app
+         $ pnpm run dev
+Scope, chosen option "Outro + lỗi sau khi đã ghi file": the init outro and the two errors raised after
+files are written (install failed, package.json sort failed) list their commands this way. Preflight
+errors and doctor hints with a single command stay on one line.
+Existing mode ends with `Next steps` and `$ <pm> run format`, chosen option "Next steps: format":
+existing code rarely matches the new Prettier config (probed 2026-10-28: `bun run lint` exits 1
+right after init, 0 after `bun run format`).
