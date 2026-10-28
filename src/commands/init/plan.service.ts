@@ -266,8 +266,41 @@ const renderPath = (path: string): string => {
 	return slash === -1 ? path : `${styleText('dim', path.slice(0, slash + 1))}${path.slice(slash + 1)}`;
 };
 
+const planPathCollator = new Intl.Collator('en', {
+	numeric: true,
+	sensitivity: 'base'
+});
+
+export const comparePlanPaths = (a: string, b: string): number => {
+	const aSegments = a.split('/');
+	const bSegments = b.split('/');
+
+	for (let i = 0; i < Math.min(aSegments.length, bSegments.length); i++) {
+		const aSegment = aSegments[i];
+		const bSegment = bSegments[i];
+
+		if (aSegment === undefined || bSegment === undefined || aSegment === bSegment) {
+			continue;
+		}
+
+		const aIsFolder = i + 1 < aSegments.length;
+		const bIsFolder = i + 1 < bSegments.length;
+
+		if (aIsFolder !== bIsFolder) {
+			return aIsFolder ? -1 : 1;
+		}
+
+		return planPathCollator.compare(aSegment, bSegment);
+	}
+
+	return aSegments.length - bSegments.length;
+};
+
 export const renderPlan = (plan: InitPlan): string => {
-	return plan.entries
+	return [...plan.entries]
+		.sort((a, b) => {
+			return comparePlanPaths(a.path, b.path);
+		})
 		.map((entry) => {
 			const mark = styleText(PLAN_MARK_COLOURS[entry.action], PLAN_MARKS[entry.action]);
 

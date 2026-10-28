@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { NODE_PRESET_DEPENDENCIES } from '@/commands/init/constants/node-preset-dependency.constant';
 import { mergePackageJson, mergePnpmWorkspaceYaml } from '@/commands/init/merge.service';
-import { buildInitPlan, renderPlan, renderPlanHeading } from '@/commands/init/plan.service';
+import { buildInitPlan, comparePlanPaths, renderPlan, renderPlanHeading } from '@/commands/init/plan.service';
 import { eslintConfigMjsTemplate } from '@/commands/init/templates/eslint-config-mjs.template';
 import { LINT_STAGED } from '@/commands/init/templates/package-json.template';
 import {
@@ -511,6 +511,136 @@ describe('merging package.json dependencies', () => {
 		expect(parsed['devDependencies']?.['prettier']).toBeUndefined();
 		expect(parsed['dependencies']?.['typescript']).toBe('^6.0.3');
 		expect(parsed['devDependencies']?.['husky']).toBeDefined();
+	});
+});
+
+describe('sorting the plan list', () => {
+	const renderedPaths = (plan: InitPlan): string[] => {
+		return renderPlan(plan)
+			.split('\n')
+			.map((line) => {
+				return line.replace(/^[+~-] /, '');
+			});
+	};
+
+	it('renders the create list folders first, then root files, for pnpm', () => {
+		const plan = buildInitPlan(
+			{
+				...createPreflight('/tmp/nowhere'),
+				pm: 'pnpm'
+			},
+			{}
+		);
+
+		expect(renderedPaths(plan)).toEqual([
+			'.husky/commit-msg',
+			'.husky/pre-commit',
+			'.vscode/extensions.json',
+			'.vscode/settings.json',
+			'src/main.ts',
+			'.editorconfig',
+			'.gitignore',
+			'.prettierignore',
+			'.prettierrc.json',
+			'commitlint.config.mjs',
+			'eslint.config.mjs',
+			'package.json',
+			'pnpm-workspace.yaml',
+			'tsconfig.json'
+		]);
+	});
+
+	it('renders the npm create list without pnpm-workspace.yaml', () => {
+		const plan = buildInitPlan(createPreflight('/tmp/nowhere'), {});
+
+		expect(renderedPaths(plan)).toEqual([
+			'.husky/commit-msg',
+			'.husky/pre-commit',
+			'.vscode/extensions.json',
+			'.vscode/settings.json',
+			'src/main.ts',
+			'.editorconfig',
+			'.gitignore',
+			'.prettierignore',
+			'.prettierrc.json',
+			'commitlint.config.mjs',
+			'eslint.config.mjs',
+			'package.json',
+			'tsconfig.json'
+		]);
+	});
+
+	it('renders the --no-vscode create list without the .vscode entries', () => {
+		const plan = buildInitPlan(createPreflight('/tmp/nowhere'), { vscode: false });
+
+		expect(renderedPaths(plan)).toEqual([
+			'.husky/commit-msg',
+			'.husky/pre-commit',
+			'src/main.ts',
+			'.editorconfig',
+			'.gitignore',
+			'.prettierignore',
+			'.prettierrc.json',
+			'commitlint.config.mjs',
+			'eslint.config.mjs',
+			'package.json',
+			'tsconfig.json'
+		]);
+	});
+
+	it('interleaves the marks by path in existing mode with -f', async () => {
+		const dir = await makeProject({
+			'package.json': '{"name":"x","prettier":{"singleQuote":true}}',
+			'tsconfig.json': '{}\n',
+			'eslint.config.js': 'old\n',
+			'.prettierrc.yml': 'x\n',
+			'.commitlintrc.json': '{}\n'
+		});
+
+		const plan = buildInitPlan(existingPreflight(dir, '{"name":"x","prettier":{"singleQuote":true}}'), {
+			force: true
+		});
+
+		expect(
+			plan.entries
+				.filter((entry) => {
+					return entry.action === 'delete';
+				})
+				.map((entry) => {
+					return entry.path;
+				})
+		).toEqual(['eslint.config.js', '.prettierrc.yml', '.commitlintrc.json']);
+
+		expect(renderedPaths(plan)).toEqual([
+			'.husky/commit-msg',
+			'.husky/pre-commit',
+			'.vscode/extensions.json',
+			'.vscode/settings.json',
+			'.commitlintrc.json',
+			'.editorconfig',
+			'.gitignore',
+			'.prettierignore',
+			'.prettierrc.json',
+			'.prettierrc.yml',
+			'commitlint.config.mjs',
+			'eslint.config.js',
+			'eslint.config.mjs',
+			'package.json'
+		]);
+	});
+
+	it('puts a folder before a file at the same level', () => {
+		expect(comparePlanPaths('src/main.ts', 'README.md')).toBeLessThan(0);
+		expect(comparePlanPaths('README.md', 'src/main.ts')).toBeGreaterThan(0);
+	});
+
+	it('compares names case-insensitively', () => {
+		expect(comparePlanPaths('.prettierrc.json', 'CLAUDE.md')).toBeLessThan(0);
+		expect(comparePlanPaths('CLAUDE.md', 'commitlint.config.mjs')).toBeLessThan(0);
+	});
+
+	it('compares numbers by value', () => {
+		expect(comparePlanPaths('a2.ts', 'a10.ts')).toBeLessThan(0);
 	});
 });
 
