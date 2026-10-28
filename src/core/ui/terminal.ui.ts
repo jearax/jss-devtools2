@@ -1,6 +1,6 @@
 import { styleText } from 'node:util';
 
-import { log } from '@clack/prompts';
+import { log, taskLog } from '@clack/prompts';
 
 import { CliError } from '@/core/errors/cli.error';
 
@@ -10,6 +10,7 @@ import { createAnimatedSpinner } from './animated-spinner.ui';
 export type TerminalContext = {
 	isTTY?: boolean;
 	env?: NodeJS.ProcessEnv;
+	columns?: number | undefined;
 };
 
 /** A prompt reads stdin, which is a different question from stdout. */
@@ -17,8 +18,10 @@ export const isInteractive = (context: TerminalContext = {}): boolean => {
 	const isTTY = context.isTTY ?? process.stdout.isTTY === true;
 	const env = context.env ?? process.env;
 	const ci = env['CI'];
+	// A pty with 0 columns makes clack's cursor rendering loop forever.
+	const columns = context.columns ?? process.stdout.columns;
 
-	return isTTY && (ci === undefined || ci === '' || ci === '0' || ci === 'false');
+	return isTTY && (columns ?? 0) > 0 && (ci === undefined || ci === '' || ci === '0' || ci === 'false');
 };
 
 export type TerminalSpinner = {
@@ -74,6 +77,55 @@ export const runTasks = async (tasks: readonly TerminalTask[], context: Terminal
 			throw error;
 		}
 	}
+};
+
+export type TerminalTaskLog = {
+	message(line: string): void;
+	success(summary: string): void;
+	error(): void;
+};
+
+export const taskLogSummary = (lead: string, seconds: number, context: TerminalContext = {}): string => {
+	const time = `(${seconds.toFixed(1)}s)`;
+
+	return `${lead} ${isInteractive(context) ? styleText('dim', time) : time}`;
+};
+
+// Clack's taskLog writes cursor codes even when piped.
+export const createTaskLog = (title: string, context: TerminalContext = {}): TerminalTaskLog => {
+	if (!isInteractive(context)) {
+		log.step(title);
+
+		return {
+			message: (line) => {
+				process.stdout.write(`│  ${line}\n`);
+			},
+			success: (summary) => {
+				log.step(summary);
+			},
+			error: () => {
+				log.error(title);
+			}
+		};
+	}
+
+	const task = taskLog({
+		title,
+		limit: 5,
+		retainLog: true
+	});
+
+	return {
+		message: (line) => {
+			task.message(line);
+		},
+		success: (summary) => {
+			task.success(summary);
+		},
+		error: () => {
+			task.error(title);
+		}
+	};
 };
 
 export const renderError = (error: unknown): void => {

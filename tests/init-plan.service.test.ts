@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { NODE_PRESET_DEPENDENCIES } from '@/commands/init/constants/node-preset-dependency.constant';
 import { mergePackageJson, mergePnpmWorkspaceYaml } from '@/commands/init/merge.service';
-import { buildInitPlan, renderPlan } from '@/commands/init/plan.service';
+import { buildInitPlan, renderPlan, renderPlanHeading } from '@/commands/init/plan.service';
 import { eslintConfigMjsTemplate } from '@/commands/init/templates/eslint-config-mjs.template';
 import { LINT_STAGED } from '@/commands/init/templates/package-json.template';
 import {
@@ -15,6 +15,8 @@ import {
 import { localBinCommandLine } from '@/core/adapters/package-manager.adapter';
 
 import { makeEmptyDir, removeDir } from './support/tmp-dir';
+
+import type { InitPlan } from '@/commands/init/types/init-plan.type';
 
 const dirs: string[] = [];
 
@@ -509,5 +511,75 @@ describe('merging package.json dependencies', () => {
 		expect(parsed['devDependencies']?.['prettier']).toBeUndefined();
 		expect(parsed['dependencies']?.['typescript']).toBe('^6.0.3');
 		expect(parsed['devDependencies']?.['husky']).toBeDefined();
+	});
+});
+
+describe('rendering the plan', () => {
+	const ESC = '\u001b';
+
+	afterEach(() => {
+		delete process.env['FORCE_COLOR'];
+	});
+
+	it('colours the marks and the folder part of a path when colour is forced', () => {
+		process.env['FORCE_COLOR'] = '1';
+
+		const plan = buildInitPlan(createPreflight('/tmp/nowhere'), {});
+		const rendered = renderPlan(plan);
+
+		expect(rendered).toContain(`${ESC}[32m+${ESC}[39m package.json`);
+		expect(rendered).toContain(`${ESC}[2msrc/${ESC}[22mmain.ts`);
+	});
+
+	it('stays plain without colour', () => {
+		const rendered = renderPlan(buildInitPlan(createPreflight('/tmp/nowhere'), {}));
+
+		expect(rendered).toContain('+ package.json');
+		expect(rendered).toContain('src/main.ts');
+		expect(rendered).not.toContain(ESC);
+	});
+
+	it('counts each action in its mark colour and leaves zero counts out', () => {
+		process.env['FORCE_COLOR'] = '1';
+
+		const createPlan = buildInitPlan(createPreflight('/tmp/nowhere'), {});
+		const heading = renderPlanHeading(createPlan, 'my-app');
+
+		expect(heading).toContain(`my-app: ${ESC}[32m13 to create${ESC}[39m`);
+		expect(heading).not.toContain('to update');
+		expect(heading).not.toContain('to delete');
+
+		const mixedPlan: InitPlan = {
+			mode: 'existing',
+			targetDir: '/tmp/nowhere',
+			entries: [
+				{
+					action: 'update',
+					path: 'package.json'
+				},
+				{
+					action: 'create',
+					path: '.editorconfig'
+				},
+				{
+					action: 'delete',
+					path: '.eslintrc.json'
+				}
+			]
+		};
+
+		const mixed = renderPlanHeading(mixedPlan, 'demo');
+
+		expect(mixed).toContain(`${ESC}[32m1 to create${ESC}[39m`);
+		expect(mixed).toContain(`${ESC}[33m1 to update${ESC}[39m`);
+		expect(mixed).toContain(`${ESC}[31m1 to delete${ESC}[39m`);
+		expect(mixed.indexOf('1 to update')).toBeLessThan(mixed.indexOf('1 to delete'));
+	});
+
+	it('keeps the heading plain without colour', () => {
+		const heading = renderPlanHeading(buildInitPlan(createPreflight('/tmp/nowhere'), {}), 'my-app');
+
+		expect(heading).toBe('my-app: 13 to create');
+		expect(heading).not.toContain(ESC);
 	});
 });

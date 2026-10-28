@@ -12,7 +12,7 @@ export type RunResult = {
 
 export type RunOptions = {
 	cwd?: string;
-	inheritStdio?: boolean;
+	onLine?: (line: string) => void;
 };
 
 const exitCodeOf = (failure: { code?: unknown }): number | null => {
@@ -23,28 +23,67 @@ const exitCodeOf = (failure: { code?: unknown }): number | null => {
 	return typeof failure.code === 'number' ? failure.code : 1;
 };
 
-// execFile does not take a stdio option, so an inherited run goes through spawn and captures nothing.
-const runInherited = async (file: string, args: readonly string[], cwd: string | undefined): Promise<RunResult> => {
+const feedLines = (buffer: string, chunk: string, onLine: (line: string) => void): string => {
+	const parts = (buffer + chunk).split(/\r\n|\n|\r/);
+	const rest = parts.pop() ?? '';
+
+	for (const line of parts) {
+		if (line !== '') {
+			onLine(line);
+		}
+	}
+
+	return rest;
+};
+
+// setEncoding keeps a multi-byte character that lands across two chunks whole.
+const runStreamed = async (
+	file: string,
+	args: readonly string[],
+	cwd: string | undefined,
+	onLine: (line: string) => void
+): Promise<RunResult> => {
 	return new Promise((resolve) => {
 		const child = spawn(file, [...args], {
 			cwd,
-			stdio: 'inherit'
+			stdio: ['ignore', 'pipe', 'pipe']
 		});
 
-		child.on('error', (failure) => {
-			const code = (failure as { code?: number | string }).code;
+		let stdout = '';
+		let stderr = '';
+		let stdoutBuffer = '';
+		let stderrBuffer = '';
 
+		child.stdout.setEncoding('utf8');
+		child.stderr.setEncoding('utf8');
+		child.stdout.on('data', (text: string) => {
+			stdout += text;
+			stdoutBuffer = feedLines(stdoutBuffer, text, onLine);
+		});
+		child.stderr.on('data', (text: string) => {
+			stderr += text;
+			stderrBuffer = feedLines(stderrBuffer, text, onLine);
+		});
+		child.on('error', (failure) => {
 			resolve({
-				code: exitCodeOf({ code }),
-				stdout: '',
-				stderr: ''
+				code: exitCodeOf(failure as { code?: unknown }),
+				stdout,
+				stderr
 			});
 		});
 		child.on('close', (code) => {
+			if (stdoutBuffer !== '') {
+				onLine(stdoutBuffer);
+			}
+
+			if (stderrBuffer !== '') {
+				onLine(stderrBuffer);
+			}
+
 			resolve({
 				code: code ?? 1,
-				stdout: '',
-				stderr: ''
+				stdout,
+				stderr
 			});
 		});
 	});
@@ -55,8 +94,8 @@ export const runCommand = async (
 	args: readonly string[],
 	options: RunOptions = {}
 ): Promise<RunResult> => {
-	if (options.inheritStdio) {
-		return runInherited(file, args, options.cwd);
+	if (options.onLine) {
+		return runStreamed(file, args, options.cwd, options.onLine);
 	}
 
 	try {

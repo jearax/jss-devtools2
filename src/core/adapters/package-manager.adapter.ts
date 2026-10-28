@@ -40,13 +40,23 @@ export const localBinCommandLine = (pm: Agent, bin: string, args: readonly strin
 	return [command, ...binArgs].join(' ');
 };
 
-export const installPackages = async (pm: Agent, cwd: string): Promise<number | null> => {
+export const installPackages = async (
+	pm: Agent,
+	cwd: string,
+	onLine?: (line: string) => void
+): Promise<number | null> => {
 	const { command, args } = resolveOrThrow(pm, 'install', []);
 
-	const result = await runCommand(command, args, {
-		cwd,
-		inheritStdio: true
-	});
+	const result = await runCommand(
+		command,
+		args,
+		onLine === undefined
+			? { cwd }
+			: {
+					cwd,
+					onLine
+				}
+	);
 
 	return result.code;
 };

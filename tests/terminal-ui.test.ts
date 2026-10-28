@@ -1,7 +1,14 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CliError } from '@/core/errors/cli.error';
-import { createSpinner, isInteractive, renderError, runTasks } from '@/core/ui/terminal.ui';
+import {
+	createSpinner,
+	createTaskLog,
+	isInteractive,
+	renderError,
+	runTasks,
+	taskLogSummary
+} from '@/core/ui/terminal.ui';
 
 import { capture } from './support/capture-stream';
 
@@ -12,7 +19,8 @@ const piped = {
 
 const terminal = {
 	isTTY: true,
-	env: {}
+	env: {},
+	columns: 80
 };
 
 const ESC = '\u001b';
@@ -56,7 +64,40 @@ describe('interactive terminal detection', () => {
 		expect(
 			isInteractive({
 				isTTY: true,
-				env: { CI: ci }
+				env: { CI: ci },
+				columns: 80
+			})
+		).toBe(true);
+	});
+});
+
+describe('interactive terminal detection, by columns', () => {
+	it('is not interactive on a tty that reports zero columns', () => {
+		expect(
+			isInteractive({
+				isTTY: true,
+				env: {},
+				columns: 0
+			})
+		).toBe(false);
+	});
+
+	it('is not interactive when the width is unknown', () => {
+		expect(
+			isInteractive({
+				isTTY: true,
+				env: {},
+				columns: undefined
+			})
+		).toBe(false);
+	});
+
+	it('is interactive on a tty with a usable width', () => {
+		expect(
+			isInteractive({
+				isTTY: true,
+				env: {},
+				columns: 80
 			})
 		).toBe(true);
 	});
@@ -124,6 +165,48 @@ describe('spinner', () => {
 
 			spinner.success('Dependencies installed');
 		});
+	});
+});
+
+describe('task log', () => {
+	it('writes the title step, then every line prefixed, then the summary, without escape bytes', async () => {
+		process.env['NO_COLOR'] = '1';
+
+		const output = await capture(process.stdout, () => {
+			const task = createTaskLog('Installing with npm', piped);
+
+			task.message('added 248 packages');
+			task.message('done in 12s');
+			task.success('Installed with npm (12.0s)');
+		});
+
+		expect(output.indexOf('◇  Installing with npm')).toBeLessThan(output.indexOf('│  added 248 packages'));
+		expect(output.indexOf('│  added 248 packages')).toBeLessThan(output.indexOf('◇  Installed with npm (12.0s)'));
+		expect(output).toContain('│  done in 12s');
+		expect(output).not.toContain(ESC);
+	});
+
+	it('keeps the title line on failure instead of the summary', async () => {
+		const output = await capture(process.stdout, () => {
+			const task = createTaskLog('Installing with npm', piped);
+
+			task.message('added 248 packages');
+			task.error();
+		});
+
+		expect(output).toContain('■  Installing with npm');
+		expect(output).toContain('│  added 248 packages');
+		expect(output).not.toContain('Installed with');
+	});
+
+	it('dims the time in the summary on a terminal only', () => {
+		expect(taskLogSummary('Installed with npm', 13.14, piped)).toBe('Installed with npm (13.1s)');
+
+		// styleText colours by the real stdout, piped here, so colour is forced to see the dim codes.
+		process.env['FORCE_COLOR'] = '1';
+
+		expect(taskLogSummary('Installed with npm', 13.14, terminal)).toBe(`Installed with npm ${ESC}[2m(13.1s)${ESC}[22m`);
+		expect(taskLogSummary('Installed with npm', 13.14, piped)).toBe('Installed with npm (13.1s)');
 	});
 });
 

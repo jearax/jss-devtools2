@@ -165,6 +165,19 @@ describe('the init command', () => {
 		expect(snapshotDir(dir)).toBe(before);
 	});
 
+	it('prints the plan with a counted heading and ends a dry run without a count', async () => {
+		const dir = await useCwd();
+
+		await setupExistingProject(dir);
+
+		const { stdout } = await runInit('--dry-run');
+
+		expect(stdout).toContain(': 10 to create, 1 to update');
+		expect(stdout).toContain('+ .prettierrc.json');
+		expect(stdout).toContain('Dry run: nothing written');
+		expect(stdout).not.toContain('would be written');
+	});
+
 	it('exits 1 when the confirmation is declined, leaving the folder unchanged', async () => {
 		const dir = await useCwd();
 

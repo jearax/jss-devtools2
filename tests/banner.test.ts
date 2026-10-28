@@ -72,7 +72,8 @@ describe('showing the banner', () => {
 		const output = await capture(process.stdout, () => {
 			showBanner({
 				isTTY: true,
-				env: {}
+				env: {},
+				columns: 80
 			});
 		});
 

@@ -9,10 +9,10 @@ import { COMMON_OPTIONS } from '@/core/constants/common-option.constant';
 import { PACKAGE } from '@/core/constants/package.constant';
 import { CliError } from '@/core/errors/cli.error';
 import { showBanner } from '@/core/ui/banner.ui';
-import { isInteractive } from '@/core/ui/terminal.ui';
+import { createTaskLog, isInteractive, runTasks, taskLogSummary } from '@/core/ui/terminal.ui';
 
 import { validateInitArguments } from './init.service';
-import { buildInitPlan, renderPlan } from './plan.service';
+import { buildInitPlan, renderPlan, renderPlanHeading } from './plan.service';
 import { preflightInit } from './preflight.service';
 import { PACKAGE_MANAGERS } from './templates/package-json.template';
 import { applyInitPlan } from './write.service';
@@ -164,10 +164,11 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 	const target = shellQuote(relative(process.cwd(), preflight.targetDir) || '.');
 	const plan = buildInitPlan(preflight, withPm(options, pm));
 
+	log.step(renderPlanHeading(plan, preflight.projectName));
 	log.message(renderPlan(plan));
 
 	if (options.dryRun === true) {
-		outro(`Dry run: ${plan.entries.length} files would be written`);
+		outro('Dry run: nothing written');
 
 		return;
 	}
@@ -185,13 +186,31 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 
 	await applyInitPlan(plan);
 
-	const code = await installPackages(preflight.pm, plan.targetDir);
+	const startedAt = Date.now();
+	const installLog = createTaskLog(`Installing with ${preflight.pm}`);
+
+	const code = await installPackages(preflight.pm, plan.targetDir, (line) => {
+		installLog.message(line);
+	});
 
 	if (code !== 0) {
+		installLog.error();
+
 		throw installError(preflight, target);
 	}
 
-	await sortPackageJson(preflight, target, plan.targetDir);
+	installLog.success(taskLogSummary(`Installed with ${preflight.pm}`, (Date.now() - startedAt) / 1000));
+
+	await runTasks([
+		{
+			title: 'Sorting package.json',
+			run: async () => {
+				await sortPackageJson(preflight, target, plan.targetDir);
+
+				return 'Sorted package.json';
+			}
+		}
+	]);
 
 	outro(preflight.mode === 'create' ? `next: cd ${target}, ${preflight.pm} run dev` : 'done');
 };

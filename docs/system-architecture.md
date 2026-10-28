@@ -97,11 +97,12 @@ would do nothing and exit 0.
 | -------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
 | `createSpinner()`    | the animated spinner                     | `log.step` at the start, `log.success` or `log.error` at the end |
 | `runTasks()`         | one animated spinner per task            | one `log.step` per task, a result line after it                  |
+| `createTaskLog()`    | clack `taskLog`, the last 5 lines, dim   | `log.step` title, every line prefixed `│  `, `log.step` summary  |
 | `renderError(error)` | `log.error` on stderr, the hint under it | the same                                                         |
 | prompts              | not written yet                          | not written yet                                                  |
 
-`isInteractive(context)` is the one rule for the output: stdout is a terminal and no CI marker is
-set. Clack writes cursor codes even when the output is piped, so the animated primitives never run
+`isInteractive(context)` is the one rule for the output: stdout is a terminal with a usable width
+(zero or unknown columns counts as not interactive) and no CI marker is set. Clack writes cursor codes even when the output is piped, so the animated primitives never run
 outside a terminal. The prompt guard, which refuses to prompt when there is no terminal to answer,
 ships with the first prompt: on a closed stdin a clack prompt never settles and the process exits 13
 without a message ([bombshell-dev/clack#615](https://github.com/bombshell-dev/clack/issues/615)).
@@ -196,8 +197,11 @@ preflight into `+` create, `~` update and `-` delete entries; existing mode merg
 `pnpm-workspace.yaml`, where only `allowBuilds` entries are managed) and replaces the owned configs,
 whose other documented names are deleted with `-f`. `applyInitPlan` writes creates and updates
 first, deletions last; in create mode it makes the folder and `git init -q -b main` before them.
-The install then runs with inherited stdio, and `prettier-package-json` and `prettier` sort the
-manifest through the project's own local bins.
+The install runs under `createTaskLog`, which keeps the last 5 dim lines on a terminal and
+collapses them into `Installed with <pm> (<seconds>s)`; piped, every line the package manager
+prints is kept with the `│  ` prefix. A failed install retains the whole log, then the error path
+reports on stderr. `prettier-package-json` and `prettier` then sort the manifest through the
+project's own local bins, under a `Sorted package.json` task.
 
 The file contents live in `templates/`, one export per file, and the pinned devDependency versions
 in `constants/node-preset-dependency.constant.ts`, written by `scripts/pin-node-preset.mjs`.

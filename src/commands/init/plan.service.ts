@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { styleText } from 'node:util';
 
 import { localBinCommandLine } from '@/core/adapters/package-manager.adapter';
 import { PACKAGE } from '@/core/constants/package.constant';
@@ -247,10 +248,42 @@ const PLAN_MARKS = {
 	delete: '-'
 } as const;
 
+const PLAN_MARK_COLOURS = {
+	create: 'green',
+	update: 'yellow',
+	delete: 'red'
+} as const;
+
+const PLAN_COUNT_LABELS = {
+	create: 'to create',
+	update: 'to update',
+	delete: 'to delete'
+} as const;
+
+const renderPath = (path: string): string => {
+	const slash = path.lastIndexOf('/');
+
+	return slash === -1 ? path : `${styleText('dim', path.slice(0, slash + 1))}${path.slice(slash + 1)}`;
+};
+
 export const renderPlan = (plan: InitPlan): string => {
 	return plan.entries
 		.map((entry) => {
-			return `${PLAN_MARKS[entry.action]} ${entry.path}`;
+			const mark = styleText(PLAN_MARK_COLOURS[entry.action], PLAN_MARKS[entry.action]);
+
+			return `${mark} ${renderPath(entry.path)}`;
 		})
 		.join('\n');
+};
+
+export const renderPlanHeading = (plan: InitPlan, projectName: string): string => {
+	const counts = (['create', 'update', 'delete'] as const).flatMap((action) => {
+		const count = plan.entries.filter((entry) => {
+			return entry.action === action;
+		}).length;
+
+		return count === 0 ? [] : [styleText(PLAN_MARK_COLOURS[action], `${count} ${PLAN_COUNT_LABELS[action]}`)];
+	});
+
+	return counts.length === 0 ? projectName : `${projectName}: ${counts.join(', ')}`;
 };

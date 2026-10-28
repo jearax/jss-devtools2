@@ -691,3 +691,35 @@ mode the shorter command comes first; `--dry-run` applies to both modes and clos
 Decided 2026-10-28: a tool is written the way its own project writes it: ESLint, Prettier,
 commitlint (lower case even at the start of a sentence, as its README does). "OK, giữ như cũ cho
 case này." (user)
+
+## Colours in the init output
+
+Decided 2026-10-28 after a coloured mockup: "OKie, đẹp á, tôi approve" (user). The aim, in the user's
+words: "tôi muốn 1 UIs có màu mè để dễ nhìn 1 tí, không phải 100% như git diff". So no content diff.
+
+- Plan marks: `+` green, `~` yellow, `-` red; the folder part of a path dim.
+- A heading above the list: `<project>: 13 to create`, or `9 to create, 2 to update, 1 to delete`,
+  each count in its mark's colour, zero counts left out. It replaces the dry-run outro's file count.
+- Install in a terminal: clack `taskLog`, the last 5 lines live and dim, cleared on success into
+  `Installed with <pm> (13.1s)`, the whole log kept on failure (`retainLog`).
+- `Sorted package.json` as its own step.
+- Outside a terminal (pipe, CI): "In đầy đủ log" (user): the step lines and the package manager's
+  whole output as it arrives. No colour, and no cursor codes, which clack `taskLog` 1.8.1 writes
+  even when piped (probed 2026-10-28), so it is not used there. Icons stay: "tôi nghĩ có icon/emoij
+  tương ứng như check / error / warning" (user); they are plain characters, the same clack symbols
+  as in a terminal.
+
+## Long flag first
+
+Decided 2026-10-28: "Options/flags có alias, strategy là dùng flag dài trước / flag alias ngắn sau
+cho thống nhất" (user), example `--help, -h`. Every flag with a short alias is declared and written
+long first: `--force, -f`, `--yes, -y`, `--help, -h`, `--version, -v`, in the help, in messages and
+in the docs. Commander 15 parses both forms from a long-first declaration (probed 2026-10-28).
+
+## Default last
+
+Decided 2026-10-28: "Tất cả các cú pháp `default` thống nhất thành 1 format, để sau cùng" (user),
+with the example `(init stops and lists them; default: off)`. In every help line the parenthesis
+holds the notes first, then `values: …`, then `default: …` last, separated by `; `.
+Quotes: a value the user can type is quoted (`default: "npm"`, `values: "bun" | …`); a state is not
+(`default: off`, `default: written`). "Approve đề xuất của bạn." (user)
