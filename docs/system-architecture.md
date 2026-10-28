@@ -212,15 +212,15 @@ The flags are declared once, as plain data in `src/core/constants/common-option.
 command attaches the ones it needs in its own `*.command.ts`. Core holds no commander import,
 because only a command file may import commander.
 
-| Flag                 | Meaning                                                                        |
-| -------------------- | ------------------------------------------------------------------------------ |
-| `--yes, -y`          | Do not ask; take the default answers                                           |
-| `--dry-run`          | Run preflight, show `+`, `~` and `-`, write nothing                            |
-| `--force, -f`        | Replace the configs init owns, and delete their other documented names         |
-| `--pm <name>`        | Package manager for a new project; detected in existing mode, where it exits 1 |
-| `--framework <name>` | Preset to apply; only node for now                                             |
-| `--no-vscode`        | Do not write `.vscode/`                                                        |
-| `--help, -h`         | commander's usage and options, plus an `Examples` section                      |
+| Flag                 | Meaning                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `--yes, -y`          | Do not ask; take the default answers                                               |
+| `--dry-run`          | Run preflight, show `+`, `~` and `-`, then the command that applies, write nothing |
+| `--force, -f`        | Replace the configs init owns, and delete their other documented names             |
+| `--pm <name>`        | Package manager for a new project; detected in existing mode, where it exits 1     |
+| `--framework <name>` | Preset to apply; only node for now                                                 |
+| `--no-vscode`        | Do not write `.vscode/`                                                            |
+| `--help, -h`         | commander's usage and options, plus an `Examples` section                          |
 
 `doctor` asks nothing, so it has neither shared flag, and `jss-devtools doctor --yes` is an unknown
 option. The contracts of the flags are in

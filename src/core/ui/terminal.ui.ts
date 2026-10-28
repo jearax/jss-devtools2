@@ -137,6 +137,14 @@ export const nextStepLines = (
 	});
 };
 
+export const nextStepBlock = (
+	label: string,
+	commands: readonly string[],
+	stream: NodeJS.WritableStream = process.stdout
+): string[] => {
+	return [`   ${label}:`, ...nextStepLines(commands, stream)];
+};
+
 export const renderError = (error: unknown): void => {
 	const message = error instanceof Error ? error.message : String(error);
 	const stderr = { stream: process.stderr };
@@ -152,9 +160,7 @@ export const renderError = (error: unknown): void => {
 	}
 
 	if (error instanceof CliError && error.commands !== undefined && error.commands.length > 0) {
-		process.stderr.write('   To finish:\n');
-
-		for (const line of nextStepLines(error.commands, process.stderr)) {
+		for (const line of nextStepBlock('To finish', error.commands, process.stderr)) {
 			process.stderr.write(`${line}\n`);
 		}
 	} else if (error instanceof CliError && error.hint) {

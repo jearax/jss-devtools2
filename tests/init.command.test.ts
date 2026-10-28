@@ -178,8 +178,28 @@ describe('the init command', () => {
 
 		expect(stdout).toContain(': 10 to create, 1 to update');
 		expect(stdout).toContain('+ .prettierrc.json');
-		expect(stdout).toContain('Dry run: nothing written');
+		expect(stdout).toContain('Dry run: nothing written\n   To apply:\n     $ jss-devtools init');
 		expect(stdout).not.toContain('would be written');
+	});
+
+	it.each([
+		[['my-app', '--pm', 'pnpm', '--dry-run'], false, '     $ jss-devtools init my-app --pm pnpm'],
+		[['--dry-run'], true, '     $ jss-devtools init'],
+		[['My App', '--dry-run', '-y'], false, "     $ jss-devtools init 'My App' -y"],
+		[['--dry-run', '-f', '-y'], true, '     $ jss-devtools init -f -y'],
+		[['--dry-run', '.'], false, '     $ jss-devtools init .']
+	])('the dry-run outro lists the words typed without --dry-run: %j', async (args, existingProject, applyLine) => {
+		const dir = await useCwd();
+
+		if (existingProject) {
+			await setupExistingProject(dir);
+		}
+
+		const { stdout } = await runInit(...args);
+
+		expect(stdout).toContain('Dry run: nothing written\n   To apply:\n');
+		expect(stdout).toContain(`${applyLine}\n`);
+		expect(stdout).not.toContain('\u001b');
 	});
 
 	it('exits 1 when the confirmation is declined, leaving the folder unchanged', async () => {
@@ -338,7 +358,7 @@ describe('the init command', () => {
 
 		const { stdout } = await runInit('--yes', '--dry-run');
 
-		expect(stdout).toContain('Dry run: nothing written');
+		expect(stdout).toContain('Dry run: nothing written\n   To apply:\n     $ jss-devtools init --yes');
 		expect(snapshotDir(dir)).toBe(before);
 	});
 

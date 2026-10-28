@@ -759,3 +759,23 @@ holds for other editors, hand-written imports, agents and CI; with
 User: "OK, chọn cả 2" for both the repository's `.vscode/settings.json` and the one init writes. The
 rule stays as it is. The setting names exist in VS Code 1.142 (checked in its bundled
 typescript-language-features manifest); the `js/ts.*` prefix dates from VS Code 1.110.
+
+## Dry-run outro
+
+Decided 2026-10-28: "2. Approve." (user), on the planner's proposal. The dry run keeps
+`Dry run: nothing written` and lists the command that applies the plan, in the `$` style of
+"Commands to run next": the words the user typed, without `--dry-run`, after `To apply:`.
+
+    └  Dry run: nothing written
+       To apply:
+         $ jss-devtools init my-app --pm pnpm
+
+## Legacy ESLint config (matrix issue #4)
+
+Decided 2026-10-28, option "Như các tên khác" (user), replacing the known limit recorded under
+"Other names for the ESLint and Prettier configs": legacy ESLint config names count as other names
+of the ESLint config. Without `-f` they join the exit 1 list; with `-f` the files are deleted and the
+`eslintConfig` key leaves `package.json`. The names, from `configFilenames` in
+`@eslint/eslintrc` `lib/config-array-factory.js` (main, read 2026-10-28) and the v8 configuration
+files page: `.eslintrc.js`, `.eslintrc.cjs`, `.eslintrc.yaml`, `.eslintrc.yml`, `.eslintrc.json`,
+`.eslintrc`, and the `eslintConfig` key in `package.json`.

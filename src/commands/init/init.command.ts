@@ -9,7 +9,14 @@ import { COMMON_OPTIONS } from '@/core/constants/common-option.constant';
 import { PACKAGE } from '@/core/constants/package.constant';
 import { CliError } from '@/core/errors/cli.error';
 import { showBanner } from '@/core/ui/banner.ui';
-import { createTaskLog, isInteractive, nextStepLines, runTasks, taskLogSummary } from '@/core/ui/terminal.ui';
+import {
+	createTaskLog,
+	isInteractive,
+	nextStepBlock,
+	nextStepLines,
+	runTasks,
+	taskLogSummary
+} from '@/core/ui/terminal.ui';
 
 import { validateInitArguments } from './init.service';
 import { buildInitPlan, renderPlan, renderPlanHeading } from './plan.service';
@@ -113,6 +120,19 @@ const nextStepCommands = (preflight: InitPreflight, relativeTarget: string, comm
 	return [...cd, command];
 };
 
+const typedWords = (command: Command): readonly string[] => {
+	const rawArgs = (command.parent as { rawArgs?: readonly string[] } | undefined)?.rawArgs ?? [];
+	const subIndex = rawArgs.indexOf(command.name());
+
+	return rawArgs.slice(subIndex).filter((word) => {
+		return word !== '--dry-run';
+	});
+};
+
+const applyCommandLine = (command: Command): string => {
+	return [PACKAGE.name, ...typedWords(command)].map(shellQuote).join(' ');
+};
+
 export const sortFailureMessage = (bin: string, result: { stdout: string; stderr: string }): string => {
 	const output = result.stderr.trim() || result.stdout.trim();
 
@@ -142,7 +162,7 @@ const installError = (preflight: InitPreflight, relativeTarget: string): CliErro
 	});
 };
 
-const runInit = async (dirArg: string | undefined, options: InitOptions): Promise<void> => {
+const runInit = async (dirArg: string | undefined, options: InitOptions, command: Command): Promise<void> => {
 	showBanner();
 	intro(styleText('inverse', ` ${PACKAGE.name} init `));
 
@@ -163,7 +183,7 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 	log.message(renderPlan(plan), { spacing: 0 });
 
 	if (options.dryRun === true) {
-		outro('Dry run: nothing written');
+		outro(['Dry run: nothing written', ...nextStepBlock('To apply', [applyCommandLine(command)])].join('\n'));
 
 		return;
 	}
