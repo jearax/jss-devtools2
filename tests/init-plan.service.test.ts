@@ -484,7 +484,7 @@ describe('the package name in create mode', () => {
 				},
 				{}
 			);
-		}).toThrow('برنامج has no valid npm package name; use a folder name with Latin letters or digits');
+		}).toThrow('برنامج cannot be a package name');
 	});
 });
 

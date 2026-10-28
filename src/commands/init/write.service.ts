@@ -4,6 +4,8 @@ import { basename, dirname, join } from 'node:path';
 import { gitInit } from '@/core/adapters/git.adapter';
 import { CliError } from '@/core/errors/cli.error';
 
+import { shellQuote } from './shell-quote.service';
+
 import type { InitPlan, PlanEntry } from './types/init-plan.type';
 
 const writeEntry = (targetDir: string, entry: PlanEntry): void => {
@@ -20,7 +22,12 @@ export const applyInitPlan = async (plan: InitPlan): Promise<void> => {
 		mkdirSync(plan.targetDir, { recursive: true });
 
 		if (!(await gitInit(plan.targetDir))) {
-			throw new CliError(`git init failed in ${basename(plan.targetDir)}; run git init there to see why`);
+			const dir = basename(plan.targetDir);
+
+			throw new CliError(`git init failed in ${dir}`, {
+				label: 'To see why',
+				commands: [`cd ${shellQuote(dir)}`, 'git init']
+			});
 		}
 	}
 

@@ -21,6 +21,7 @@ import {
 import { validateInitArguments } from './init.service';
 import { buildInitPlan, renderPlan, renderPlanHeading } from './plan.service';
 import { preflightInit } from './preflight.service';
+import { shellQuote } from './shell-quote.service';
 import { PACKAGE_MANAGERS } from './templates/package-json.template';
 import { applyInitPlan } from './write.service';
 
@@ -109,10 +110,6 @@ const withPm = (options: InitOptions, pm: PackageManagerName | undefined): InitO
 			};
 };
 
-const shellQuote = (path: string): string => {
-	return /^[\w@%+=:,./-]+$/.test(path) ? path : `'${path.replaceAll(`'`, `'\\''`)}'`;
-};
-
 const nextStepCommands = (preflight: InitPreflight, relativeTarget: string, command: string): string[] => {
 	const cd = preflight.mode === 'create' && relativeTarget !== '' ? [`cd ${shellQuote(relativeTarget)}`] : [];
 
@@ -170,7 +167,9 @@ const runInit = async (dirArg: string | undefined, options: InitOptions, command
 	validateInitArguments(positional, options);
 
 	if (options.dryRun !== true && options.yes !== true && !isInteractive()) {
-		throw new CliError('run it in a terminal, or pass --yes');
+		throw new CliError('not a terminal', {
+			hint: 'Run it in a terminal, or pass --yes'
+		});
 	}
 
 	const pm = await askPackageManager(dirArg !== undefined, options);

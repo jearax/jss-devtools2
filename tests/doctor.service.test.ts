@@ -70,7 +70,7 @@ describe('the doctor checks', () => {
 
 		expect(node.ok).toBe(false);
 		expect(node.detail).toContain('20.0.0');
-		expect(node.hint).toContain('Node');
+		expect(node.hint).toBe(`Install Node ${PACKAGE.nodeFloor} or newer`);
 	});
 
 	it('fails the git check when git is not installed', async () => {
@@ -92,7 +92,7 @@ describe('the doctor checks', () => {
 
 		expect(git.ok).toBe(false);
 		expect(git.detail).toBe('git is not installed');
-		expect(git.hint).toContain('install git');
+		expect(git.hint).toBe('Install git, then run the command again');
 	});
 
 	it('fails the git check when git does not answer', async () => {
@@ -158,6 +158,6 @@ describe('the doctor checks', () => {
 
 		expect(repository.ok).toBe(false);
 		expect(repository.label).toBe('Git repository');
-		expect(repository.hint).toContain('git init');
+		expect(repository.hint).toBe('Run `git init`, or cd into a repository');
 	});
 });

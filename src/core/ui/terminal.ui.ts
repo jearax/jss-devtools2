@@ -160,10 +160,12 @@ export const renderError = (error: unknown): void => {
 	}
 
 	if (error instanceof CliError && error.commands !== undefined && error.commands.length > 0) {
-		for (const line of nextStepBlock('To finish', error.commands, process.stderr)) {
+		for (const line of nextStepBlock(error.label ?? 'To finish', error.commands, process.stderr)) {
 			process.stderr.write(`${line}\n`);
 		}
-	} else if (error instanceof CliError && error.hint) {
+	}
+
+	if (error instanceof CliError && error.hint) {
 		process.stderr.write(`${styleText('yellow', `   ↳ ${error.hint}`, stderr)}\n`);
 	}
 };

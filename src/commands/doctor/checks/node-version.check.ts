@@ -19,7 +19,7 @@ export const nodeVersionCheck: DoctorCheck = {
 				ok: false,
 				detail,
 				note,
-				hint: `install Node ${PACKAGE.nodeFloor} or newer`
+				hint: `Install Node ${PACKAGE.nodeFloor} or newer`
 			};
 		}
 

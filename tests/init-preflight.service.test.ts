@@ -122,7 +122,7 @@ describe('preflight, create mode', () => {
 			await failureMessage(() => {
 				return preflightInit(process.cwd(), [dir], {});
 			})
-		).toBe(`${dir} is not empty; to set up the project in it: cd ${dir} && jss-devtools init`);
+		).toBe(`${dir} is not empty`);
 		expectUnchanged(dir, before);
 	});
 
@@ -179,7 +179,7 @@ describe('preflight, create mode', () => {
 				await failureMessage(() => {
 					return preflightInit(process.cwd(), [dir], { pm: 'pnpm' });
 				})
-			).toBe('pnpm is not installed; install it, or pick another with --pm');
+			).toBe('pnpm is not installed');
 			expectUnchanged(dir, before);
 		});
 	});
@@ -199,7 +199,7 @@ describe('preflight, create mode', () => {
 				await failureMessage(() => {
 					return preflightInit(process.cwd(), [dir], { pm: 'yarn' });
 				})
-			).toBe('yarn 4.9.0 is not supported; supported: bun, pnpm, yarn 1, npm');
+			).toBe('yarn 4.9.0 is not supported, only yarn 1');
 			expectUnchanged(dir, before);
 		});
 	});
@@ -216,7 +216,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('no package.json here; to create a project: jss-devtools init <name>');
+		).toBe('no package.json here');
 		expectUnchanged(dir, before);
 	});
 
@@ -235,7 +235,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(parseError);
+		).toBe(`package.json is not valid JSON: ${parseError}`);
 		expectUnchanged(dir, before);
 	});
 
@@ -279,9 +279,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(
-			'pnpm-workspace.yaml cannot be extended line by line; add these entries by hand: allowBuilds.esbuild: true, allowBuilds.unrs-resolver: true'
-		);
+		).toBe('pnpm-workspace.yaml cannot be extended line by line');
 		expectUnchanged(dir, before);
 	});
 
@@ -309,7 +307,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('no tsconfig.json here; init sets up TypeScript projects. To create one: jss-devtools init <name>');
+		).toBe('no tsconfig.json here');
 		expectUnchanged(dir, before);
 	});
 
@@ -321,7 +319,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('not a git repository; run git init first');
+		).toBe('not a git repository');
 		expectUnchanged(dir, before);
 	});
 
@@ -343,7 +341,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(child, [], {});
 			})
-		).toBe('the git root is ..; run jss-devtools init there');
+		).toBe('this is not the git root');
 		expectUnchanged(child, before);
 	});
 
@@ -369,7 +367,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(link, [], {});
 			})
-		).toBe('the git root is ..; run jss-devtools init there');
+		).toBe('this is not the git root');
 		expectUnchanged(child, before);
 	});
 
@@ -395,9 +393,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(
-			'git hooks are managed by .githooks (core.hooksPath); remove it with git config --unset core.hooksPath to use husky'
-		);
+		).toBe('git hooks are managed by .githooks (core.hooksPath)');
 		expectUnchanged(dir, before);
 	});
 
@@ -418,7 +414,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe(`${agent} is not supported; supported: bun, pnpm, yarn 1, npm`);
+			).toBe(`${agent} is not supported`);
 			expectUnchanged(dir, before);
 		}
 	});
@@ -455,7 +451,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe('npm is not installed; install it');
+			).toBe('this project uses npm, which is not installed');
 			expectUnchanged(dir, before);
 		});
 	});
@@ -475,9 +471,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(
-			'these files already exist: eslint.config.mjs, .prettierrc.yml, .prettierrc.toml, .editorconfig; to replace them: jss-devtools init --force'
-		);
+		).toBe('already set up: eslint.config.mjs, .prettierrc.yml, .prettierrc.toml, .editorconfig');
 		expectUnchanged(dir, before);
 	});
 
@@ -501,7 +495,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe(`these files already exist: ${name}; to replace them: jss-devtools init --force`);
+			).toBe(`already set up: ${name}`);
 			expectUnchanged(dir, before);
 		}
 	});
@@ -523,7 +517,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe(`these files already exist: package.json "${key}" key; to replace them: jss-devtools init --force`);
+			).toBe(`already set up: package.json "${key}" key`);
 			expectUnchanged(dir, before);
 		}
 	});
@@ -540,9 +534,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(
-			'these files already exist: .vscode/settings.json; to replace them: jss-devtools init --force; or pass --no-vscode'
-		);
+		).toBe('already set up: .vscode/settings.json');
 		expectUnchanged(dir, before);
 	});
 

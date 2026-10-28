@@ -22,7 +22,7 @@ export const gitInstalledCheck: DoctorCheck = {
 				label: 'Git',
 				ok: false,
 				detail: version.problem,
-				hint: 'install git, then run the command again'
+				hint: 'Install git, then run the command again'
 			};
 		}
 

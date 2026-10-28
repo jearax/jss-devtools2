@@ -26,7 +26,8 @@ import, because only a command file may import commander.
 
 - `--yes, -y`: never asks a question; each question takes its default, designed with that question.
   It does not mean "answer yes". Without `-y`, a terminal asks; with no terminal on stdin or stdout,
-  or with `CI` set, a question exits 1 with "run it in a terminal, or pass --yes".
+  or with `CI` set, a question exits 1 with "not a terminal" and the hint
+  "Run it in a terminal, or pass --yes".
 - `--dry-run`: runs the read-only stages, shows `+` new and `~` changed files, writes nothing (no
   file, no install, no hooks, no manifest) and never asks. Exit 0 whenever the plan is shown,
   changes or not. With `--yes` it still writes nothing and is not an error.

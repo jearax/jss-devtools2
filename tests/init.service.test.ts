@@ -28,7 +28,7 @@ describe('init argument rules', () => {
 			messageOf(() => {
 				validateInitArguments([], { framework: 'react' });
 			})
-		).toBe('react is not supported yet; only node is');
+		).toBe('react is not supported yet');
 		expectsUnchangedDir(dir, before);
 
 		await removeDir(dir);
@@ -42,7 +42,7 @@ describe('init argument rules', () => {
 			messageOf(() => {
 				validateInitArguments([], { pm: 'pnpm' });
 			})
-		).toBe('--pm only applies when creating a project; here the package manager is detected');
+		).toBe('--pm needs <dir>');
 		expectsUnchangedDir(dir, before);
 
 		await removeDir(dir);
@@ -56,7 +56,7 @@ describe('init argument rules', () => {
 			messageOf(() => {
 				validateInitArguments(['my-app'], { force: true });
 			})
-		).toBe('--force, -f only applies when setting up an existing project; a new project has nothing to replace');
+		).toBe('--force is for an existing project');
 		expectsUnchangedDir(dir, before);
 
 		await removeDir(dir);

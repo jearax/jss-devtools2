@@ -779,3 +779,21 @@ of the ESLint config. Without `-f` they join the exit 1 list; with `-f` the file
 `@eslint/eslintrc` `lib/config-array-factory.js` (main, read 2026-10-28) and the v8 configuration
 files page: `.eslintrc.js`, `.eslintrc.cjs`, `.eslintrc.yaml`, `.eslintrc.yml`, `.eslintrc.json`,
 `.eslintrc`, and the `eslintConfig` key in `package.json`.
+
+## Error output (exit 1)
+
+Decided 2026-10-28: "Tôi nghĩ cũng cần format lại những chỗ output lỗi, tức là exit 1 á. Nên giống chỗ
+`To apply:` nhỉ?" then "Approve hết, nhưng những chỗ `<việc cần làm>` -> `<Việc cần làm>`" (user), on
+the planner's proposal. It replaces the scope note under "Commands to run next" that kept
+single-command preflight errors on one line. Every exit 1 message has up to three parts:
+
+1. The first line, red: what is wrong, short, no action in it.
+2. When the fix is a command: `To <purpose>:` and the `$` lines, the same helper as `To apply:` and
+   `To finish:`.
+3. When the fix is not a command: one `↳ <Action>` hint line, yellow, starting with a capital
+   letter. Doctor's hints use the same line and get the same capital.
+4. With no fix to offer: the first line only.
+
+The wording of every error row in
+[the message review](../reports/planner-261028-1136-init-message-rewrites.md) is approved with it,
+in the form listed in [the task](../reports/planner-261028-2338-error-output-format-task.md).

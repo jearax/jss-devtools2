@@ -163,7 +163,8 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit();
 
-		expect(stderr).toContain('run it in a terminal, or pass --yes');
+		expect(stderr).toBe(['│', '└  not a terminal', '   ↳ Run it in a terminal, or pass --yes', ''].join('\n'));
+		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);
 		expect(snapshotDir(dir)).toBe(before);
 	});
@@ -212,7 +213,8 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit();
 
-		expect(stderr).toContain('cancelled, nothing written');
+		expect(stderr).toBe(['│', '└  cancelled, nothing written', ''].join('\n'));
+		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);
 		expect(snapshotDir(dir)).toBe(before);
 	});
@@ -295,7 +297,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('--pm', 'npm');
 
-		expect(stderr).toContain('--pm only applies when creating a project; here the package manager is detected');
+		expect(stderr).toContain('--pm needs <dir>');
 		expect(process.exitCode).toBe(1);
 	});
 
@@ -314,9 +316,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('my-app', '-f');
 
-		expect(stderr).toContain(
-			'--force, -f only applies when setting up an existing project; a new project has nothing to replace'
-		);
+		expect(stderr).toContain('--force is for an existing project');
 		expect(process.exitCode).toBe(1);
 	});
 
@@ -325,7 +325,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('my-app', '--framework', 'react');
 
-		expect(stderr).toContain('react is not supported yet; only node is');
+		expect(stderr).toContain('react is not supported yet');
 		expect(process.exitCode).toBe(1);
 	});
 
@@ -342,9 +342,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('my-app', '--force');
 
-		expect(stderr).toContain(
-			'--force, -f only applies when setting up an existing project; a new project has nothing to replace'
-		);
+		expect(stderr).toContain('--force is for an existing project');
 		expect(process.exitCode).toBe(1);
 	});
 

@@ -22,7 +22,7 @@ export const gitRepositoryCheck: DoctorCheck = {
 				label: 'Git repository',
 				ok: false,
 				detail: 'not a git repository',
-				hint: 'run `git init`, or cd into a repository'
+				hint: 'Run `git init`, or cd into a repository'
 			};
 		}
 

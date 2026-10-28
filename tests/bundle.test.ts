@@ -170,7 +170,7 @@ describe('standalone bundle', () => {
 
 		expect(code).toBe(1);
 		expect(stdout).toContain('│  ✖ Git repository  not a git repository');
-		expect(stdout).toContain('│    ↳ run `git init`, or cd into a repository');
+		expect(stdout).toContain('│    ↳ Run `git init`, or cd into a repository');
 		expect(stderr).toContain('└  1 of 3 checks failed');
 		expect(stdout).not.toContain('\u001b');
 		expect(stderr).not.toContain('\u001b');
@@ -226,7 +226,7 @@ Examples:
 		const { stderr, code } = await runEntry('cli.mjs', ['init'], empty);
 
 		expect(code).toBe(1);
-		expect(stderr).toContain('run it in a terminal, or pass --yes');
+		expect(stderr).toContain('not a terminal');
 		expect(await readdir(empty)).toEqual([]);
 
 		await removeDir(empty);
