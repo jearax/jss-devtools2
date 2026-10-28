@@ -227,11 +227,12 @@ the `commit-msg` hook. Subject line: `type: summary`, lower case, no trailing pe
 
 Types in use: `chore`, `feat`, `fix`, `docs`, `test`, `refactor`, `ci`, `build`.
 
-The `pre-commit` hook runs `lint-staged`: ESLint and Prettier over staged source and root config
-files, Prettier over staged JSON, Markdown and YAML, and over `package.json` the pinned
-`prettier-package-json` for canonical key order followed by Prettier for indentation. No two keys
-match the same file, because lint-staged runs keys concurrently and two editing tasks on one file
-race.
+The `pre-commit` hook runs `lint-staged`: ESLint over staged source and root config files — its
+`prettier/prettier` rule already formats them on `--fix` — Prettier over staged JSON (except
+`package.json`), Markdown and YAML, and over `package.json` the pinned `prettier-package-json` for
+canonical key order followed by Prettier for indentation, which `prettier-package-json` does not
+apply. No two keys match the same file, because lint-staged runs keys concurrently and two editing
+tasks on one file race.
 
 ## Dependencies
 

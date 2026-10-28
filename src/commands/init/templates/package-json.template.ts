@@ -32,9 +32,8 @@ export const formatScript = (packageManager: PackageManagerName): string => {
 
 export const LINT_STAGED = {
 	'{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}':
-		['eslint --fix', 'prettier --write'],
-	'!(package).json': ['prettier --write'],
-	'**/*.{md,yml,yaml}': ['prettier --write'],
+		['eslint --fix'],
+	'**/!(package).{json,md,yml,yaml}': ['prettier --write'],
 	'package.json': ['prettier-package-json --write', 'prettier --write']
 } as const;
 

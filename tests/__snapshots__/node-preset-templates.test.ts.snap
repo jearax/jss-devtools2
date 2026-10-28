@@ -372,13 +372,9 @@ exports[`node preset templates > renders package.json per package manager > pack
 	},
 	"lint-staged": {
 		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
-			"eslint --fix",
-			"prettier --write"
+			"eslint --fix"
 		],
-		"!(package).json": [
-			"prettier --write"
-		],
-		"**/*.{md,yml,yaml}": [
+		"**/!(package).{json,md,yml,yaml}": [
 			"prettier --write"
 		],
 		"package.json": [
@@ -433,13 +429,9 @@ exports[`node preset templates > renders package.json per package manager > pack
 	},
 	"lint-staged": {
 		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
-			"eslint --fix",
-			"prettier --write"
+			"eslint --fix"
 		],
-		"!(package).json": [
-			"prettier --write"
-		],
-		"**/*.{md,yml,yaml}": [
+		"**/!(package).{json,md,yml,yaml}": [
 			"prettier --write"
 		],
 		"package.json": [
@@ -494,13 +486,9 @@ exports[`node preset templates > renders package.json per package manager > pack
 	},
 	"lint-staged": {
 		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
-			"eslint --fix",
-			"prettier --write"
+			"eslint --fix"
 		],
-		"!(package).json": [
-			"prettier --write"
-		],
-		"**/*.{md,yml,yaml}": [
+		"**/!(package).{json,md,yml,yaml}": [
 			"prettier --write"
 		],
 		"package.json": [
@@ -555,13 +543,9 @@ exports[`node preset templates > renders package.json per package manager > pack
 	},
 	"lint-staged": {
 		"{{src,lib{,s},bin{,s},script{,s},tool{,s},config{,s},type{,s},test{,s},__test{s,}__,spec{,s},e2e}/**/*,*}.{cjs,mjs,js,jsx,cts,mts,ts,tsx}": [
-			"eslint --fix",
-			"prettier --write"
+			"eslint --fix"
 		],
-		"!(package).json": [
-			"prettier --write"
-		],
-		"**/*.{md,yml,yaml}": [
+		"**/!(package).{json,md,yml,yaml}": [
 			"prettier --write"
 		],
 		"package.json": [

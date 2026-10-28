@@ -821,3 +821,15 @@ each tool at most once and the commit output lists as few commands as the file t
 `prettier --write` after `eslint --fix` (the `prettier/prettier` rule already formats), and the other
 globs merged or trimmed where a real commit shows it is safe. Same change in this repository's
 `package.json` and in the `LINT_STAGED` that init writes.
+
+## The two questions
+
+Decided 2026-10-29 (user): "Chỗ `Which package manager? và Write 14 files to p1 and install?` theo ý
+bạn đề xuất" and "Options thì sort ngược lại: npm -> yarn -> pnpm -> bun".
+
+- The questions start with a capital letter and read as questions: `Which package manager?` and
+  `Write <n> files to <project> and install?`.
+- The package manager question lists npm, yarn, pnpm, bun: the reverse of the order fixed under
+  "Package manager order", which allows the reverse "cho những case cần chiều ngược lại". npm stays
+  preselected, now first. Help values, error lists and detection keep bun, pnpm, yarn, npm.
+- Counting deletions apart in the confirm (message review row P2) is not decided by this.
