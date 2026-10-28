@@ -49,7 +49,7 @@ tsc-alias rewriting every import — the end-to-end test runs `node dist/main.js
 **Existing mode.** Shared files (`package.json`, `.gitignore`, `.prettierignore`,
 `.husky/pre-commit`, `.husky/commit-msg`, and for pnpm `pnpm-workspace.yaml`) are always merged:
 missing entries added once, values the user set kept. Owned files (the ESLint, Prettier, commitlint
-and `.editorconfig` configs, plus `.vscode/`) stop with exit 1 and the list; `-f, --force` replaces
+and `.editorconfig` configs, plus `.vscode/`) stop with exit 1 and the list; `--force, -f` replaces
 them and deletes the other documented config names. Existing mode never touches `tsconfig.json`,
 the alias, or the `dev`/`build` scripts, and never adds `strictPeerDependencies` or `engineStrict`
 to `pnpm-workspace.yaml` — create mode only. Merging skips a preset package that is already in any
@@ -70,7 +70,7 @@ ran, quoted when a shell would split or expand it, and the sort message includes
 output (stderr, else stdout).
 
 **Two questions, nothing else.** The package manager (create mode, when `--pm` is absent) and the
-confirmation after the plan is shown. `-y, --yes` takes every default; `--dry-run` runs preflight,
+confirmation after the plan is shown. `--yes, -y` takes every default; `--dry-run` runs preflight,
 shows `+`/`~`/`-` and writes nothing.
 
 **Versions are pinned, not fetched.** The set is chosen once when the preset is written — start at

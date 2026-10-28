@@ -8,7 +8,7 @@ Plan: [../plans/261019-1055-phase-0-source-foundation/plan.md](../plans/261019-1
 
 - Repository, pinned toolchain, and git hooks. The first commit is the toolchain, the second is the
   CLI entry point.
-- A CLI with `-h, --help` and `-v, --version`, a single self-contained `dist/cli.mjs`, and tests for exit
+- A CLI with `--help, -h` and `--version, -v`, a single self-contained `dist/cli.mjs`, and tests for exit
   codes, the standalone bundle and the first architecture rules.
 - This documentation set and the decision records.
 
@@ -89,7 +89,7 @@ Decisions:
 Plan: [../plans/261022-0225-init-command-scaffold/plan.md](../plans/261022-0225-init-command-scaffold/plan.md).
 Decision: [0029](./decisions/0029-shared-command-flags.md).
 
-- `jss-devtools init` exists, with the shared flags `-y, --yes` and `--dry-run` and a help with an
+- `jss-devtools init` exists, with the shared flags `--yes, -y` and `--dry-run` and a help with an
   `Examples` section. It writes nothing yet: every run ends with "Nothing to set up".
 - The shared flags are declared once in `src/core/constants/`, so the next command that asks a
   question attaches the same flags. `doctor` asks nothing and has neither.

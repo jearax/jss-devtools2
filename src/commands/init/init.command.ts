@@ -53,8 +53,8 @@ export const registerInitCommand = (program: Command): void => {
 		)
 		.addOption(pmOption)
 		.option(
-			'-f, --force',
-			'Replace the config files init owns when they already exist, and delete their other names (default: off; init stops and lists them)'
+			'--force, -f',
+			'Replace the config files init owns when they already exist, and delete their other names (init stops and lists them; default: off)'
 		)
 		.option('--no-vscode', 'Do not write .vscode/ (default: written)')
 		.option(COMMON_OPTIONS.yes.flags, COMMON_OPTIONS.yes.description)
@@ -165,7 +165,7 @@ const runInit = async (dirArg: string | undefined, options: InitOptions): Promis
 	const plan = buildInitPlan(preflight, withPm(options, pm));
 
 	log.step(renderPlanHeading(plan, preflight.projectName));
-	log.message(renderPlan(plan));
+	log.message(renderPlan(plan), { spacing: 0 });
 
 	if (options.dryRun === true) {
 		outro('Dry run: nothing written');

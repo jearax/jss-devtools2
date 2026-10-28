@@ -67,8 +67,8 @@ stopping the CLI. The layer draws its own frames because of that. The measuremen
 
 > "framework TUI tôi delegate full cho bạn, bạn nên /ak:research thêm" (user, 2026-10-20)
 
-The flags came after that, and they are the same in every CLI this toolchain generates: `-h, --help`
-and `-v, --version`. Commander's default for the version is `-V`, so the flag is declared
+The flags came after that, and they are the same in every CLI this toolchain generates: `--help, -h`
+and `--version, -v`. Commander's default for the version is `-V`, so the flag is declared
 explicitly. The short flag is the reason the rule is worth writing down: `-v` is taken by the
 version, so a `--verbose` added later cannot take `-v` for itself.
 

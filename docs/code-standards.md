@@ -180,7 +180,7 @@ this table, in the rules and in
 
 ## CLI
 
-Every CLI exposes the same two flag pairs: `-h, --help` and `-v, --version`, so `-v` is taken and a
+Every CLI exposes the same two flag pairs: `--help, -h` and `--version, -v`, so `-v` is taken and a
 later `--verbose` cannot use it.
 
 ## TypeScript

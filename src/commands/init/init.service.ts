@@ -16,7 +16,7 @@ export const validateInitArguments = (positional: readonly string[], options: In
 
 	if (dir !== undefined && options.force === true) {
 		throw new CliError(
-			'-f, --force only applies when setting up an existing project; a new project has nothing to replace'
+			'--force, -f only applies when setting up an existing project; a new project has nothing to replace'
 		);
 	}
 };

@@ -23,7 +23,7 @@ and drop the over-engineered ones.
 
 The foundation is in place: a verified TypeScript CLI repository, the install site that serves it, the
 terminal UI layer every command renders through, and the source layout the commands live in.
-The CLI entry point has `-h, --help` and `-v, --version`, and `jss-devtools doctor` is the first
+The CLI entry point has `--help, -h` and `--version, -v`, and `jss-devtools doctor` is the first
 command. The next steps are in [project-roadmap.md](./project-roadmap.md).
 
 ## Non-goals for now

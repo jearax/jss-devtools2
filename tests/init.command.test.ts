@@ -69,15 +69,15 @@ Options:
                       "react" | "rn" | "next" | "nest"; default: "node")
   --pm <name>         Package manager for a new project (values: "bun" | "pnpm"
                       | "yarn" | "npm"; default: "npm")
-  -f, --force         Replace the config files init owns when they already
-                      exist, and delete their other names (default: off; init
-                      stops and lists them)
+  --force, -f         Replace the config files init owns when they already
+                      exist, and delete their other names (init stops and lists
+                      them; default: off)
   --no-vscode         Do not write .vscode/ (default: written)
-  -y, --yes           Do not ask; take the default answers (default: off; ask in
-                      a terminal)
+  --yes, -y           Do not ask; take the default answers (ask in a terminal;
+                      default: off)
   --dry-run           Show the files that would change, write and install
                       nothing (default: off)
-  -h, --help          Display help for command
+  --help, -h          Display help for command
 
 Examples:
   $ jss-devtools init my-app              Create my-app, asking for the package manager
@@ -110,13 +110,13 @@ afterEach(() => {
 	}
 });
 
-const runInit = async (...args: readonly string[]): Promise<{ stdout: string; stderr: string }> => {
+const runCli = async (...args: readonly string[]): Promise<{ stdout: string; stderr: string }> => {
 	const program = createProgram({ exitOverride: true });
 	let stderr = '';
 
 	const stdout = await capture(process.stdout, async () => {
 		stderr = await capture(process.stderr, () => {
-			return runProgram(program, ['node', 'jss-devtools', 'init', ...args]);
+			return runProgram(program, ['node', 'jss-devtools', ...args]);
 		});
 	});
 
@@ -124,6 +124,10 @@ const runInit = async (...args: readonly string[]): Promise<{ stdout: string; st
 		stdout,
 		stderr
 	};
+};
+
+const runInit = async (...args: readonly string[]): Promise<{ stdout: string; stderr: string }> => {
+	return runCli('init', ...args);
 };
 
 const useCwd = async (): Promise<string> => {
@@ -283,7 +287,7 @@ describe('the init command', () => {
 		const { stderr } = await runInit('my-app', '-f');
 
 		expect(stderr).toContain(
-			'-f, --force only applies when setting up an existing project; a new project has nothing to replace'
+			'--force, -f only applies when setting up an existing project; a new project has nothing to replace'
 		);
 		expect(process.exitCode).toBe(1);
 	});
@@ -303,6 +307,61 @@ describe('the init command', () => {
 		expect(stderr).toContain("error: unknown option '--dryrun'");
 		expect(stderr).toContain('(Did you mean --dry-run?)');
 		expect(process.exitCode).toBe(1);
+	});
+
+	it('refuses --force with a folder when it is spelled long', async () => {
+		await useCwd();
+
+		const { stderr } = await runInit('my-app', '--force');
+
+		expect(stderr).toContain(
+			'--force, -f only applies when setting up an existing project; a new project has nothing to replace'
+		);
+		expect(process.exitCode).toBe(1);
+	});
+
+	it('runs a dry run with --yes long form without a terminal', async () => {
+		const dir = await useCwd();
+
+		await setupExistingProject(dir);
+
+		const before = snapshotDir(dir);
+
+		const { stdout } = await runInit('--yes', '--dry-run');
+
+		expect(stdout).toContain('Dry run: nothing written');
+		expect(snapshotDir(dir)).toBe(before);
+	});
+
+	it('prints the same help for --help and -h', async () => {
+		const { stdout: long } = await runCli('--help');
+		const { stdout: short } = await runCli('-h');
+
+		expect(long).toContain('Usage: jss-devtools');
+		expect(short).toBe(long);
+	});
+
+	it('prints the same version for --version and -v', async () => {
+		const { stdout: long } = await runCli('--version');
+		const { stdout: short } = await runCli('-v');
+
+		expect(long.trim()).toMatch(/^\d+\.\d+\.\d+$/);
+		expect(short).toBe(long);
+	});
+
+	it('puts default last in every help parenthesis', async () => {
+		for (const args of [['--help'], ['doctor', '--help'], ['init', '--help']]) {
+			const { stdout } = await runCli(...args);
+			const groups = stdout.match(/\([^()]*\)/g) ?? [];
+
+			for (const group of groups) {
+				if (!group.includes('default:')) {
+					continue;
+				}
+
+				expect(group).toMatch(/default: [^;)]*\)$/);
+			}
+		}
 	});
 
 	it('refuses the shared flags on doctor', async () => {

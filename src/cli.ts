@@ -30,8 +30,8 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 	program
 		.name(PACKAGE.name)
 		.description(PACKAGE.description)
-		.version(PACKAGE.version, '-v, --version', 'Output the version number')
-		.helpOption('-h, --help', 'Display help for command')
+		.version(PACKAGE.version, '--version, -v', 'Output the version number')
+		.helpOption('--help, -h', 'Display help for command')
 		.helpCommand('help [command]', 'Display help for command')
 		.showHelpAfterError(true)
 		.showSuggestionAfterError(true)

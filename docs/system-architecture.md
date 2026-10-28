@@ -136,7 +136,7 @@ an expected failure: it stays a bare line on stderr, with the stack under `JSS_D
 version and the platform in a column beside them. The art is six lines of 24 columns, so the whole
 banner fits in 80 columns.
 
-`src/cli.ts` puts it above the root help and above `-v, --version`, on a terminal only: the help hook
+`src/cli.ts` puts it above the root help and above `--version, -v`, on a terminal only: the help hook
 returns it when the help is not an error, and a listener registered before `.version()` writes it
 before the version. Piped, captured or in CI there is no banner, so `--version` is exactly
 `x.y.z`, which is what `scripts/install.sh` reads.
@@ -212,13 +212,13 @@ because only a command file may import commander.
 
 | Flag                 | Meaning                                                                        |
 | -------------------- | ------------------------------------------------------------------------------ |
-| `-y, --yes`          | Do not ask; take the default answers                                           |
+| `--yes, -y`          | Do not ask; take the default answers                                           |
 | `--dry-run`          | Run preflight, show `+`, `~` and `-`, write nothing                            |
-| `-f, --force`        | Replace the configs init owns, and delete their other documented names         |
+| `--force, -f`        | Replace the configs init owns, and delete their other documented names         |
 | `--pm <name>`        | Package manager for a new project; detected in existing mode, where it exits 1 |
 | `--framework <name>` | Preset to apply; only node for now                                             |
 | `--no-vscode`        | Do not write `.vscode/`                                                        |
-| `-h, --help`         | commander's usage and options, plus an `Examples` section                      |
+| `--help, -h`         | commander's usage and options, plus an `Examples` section                      |
 
 `doctor` asks nothing, so it has neither shared flag, and `jss-devtools doctor --yes` is an unknown
 option. The contracts of the flags are in

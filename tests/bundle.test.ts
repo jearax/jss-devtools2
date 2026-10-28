@@ -202,15 +202,15 @@ Options:
                       "react" | "rn" | "next" | "nest"; default: "node")
   --pm <name>         Package manager for a new project (values: "bun" | "pnpm"
                       | "yarn" | "npm"; default: "npm")
-  -f, --force         Replace the config files init owns when they already
-                      exist, and delete their other names (default: off; init
-                      stops and lists them)
+  --force, -f         Replace the config files init owns when they already
+                      exist, and delete their other names (init stops and lists
+                      them; default: off)
   --no-vscode         Do not write .vscode/ (default: written)
-  -y, --yes           Do not ask; take the default answers (default: off; ask in
-                      a terminal)
+  --yes, -y           Do not ask; take the default answers (ask in a terminal;
+                      default: off)
   --dry-run           Show the files that would change, write and install
                       nothing (default: off)
-  -h, --help          Display help for command
+  --help, -h          Display help for command
 
 Examples:
   $ jss-devtools init my-app              Create my-app, asking for the package manager

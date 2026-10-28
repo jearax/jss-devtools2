@@ -1,7 +1,7 @@
 export const COMMON_OPTIONS = {
 	yes: {
-		flags: '-y, --yes',
-		description: 'Do not ask; take the default answers (default: off; ask in a terminal)'
+		flags: '--yes, -y',
+		description: 'Do not ask; take the default answers (ask in a terminal; default: off)'
 	},
 	dryRun: {
 		flags: '--dry-run',

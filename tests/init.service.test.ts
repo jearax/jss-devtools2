@@ -56,7 +56,7 @@ describe('init argument rules', () => {
 			messageOf(() => {
 				validateInitArguments(['my-app'], { force: true });
 			})
-		).toBe('-f, --force only applies when setting up an existing project; a new project has nothing to replace');
+		).toBe('--force, -f only applies when setting up an existing project; a new project has nothing to replace');
 		expectsUnchangedDir(dir, before);
 
 		await removeDir(dir);

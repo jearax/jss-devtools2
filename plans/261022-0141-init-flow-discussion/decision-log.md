@@ -723,3 +723,11 @@ with the example `(init stops and lists them; default: off)`. In every help line
 holds the notes first, then `values: …`, then `default: …` last, separated by `; `.
 Quotes: a value the user can type is quoted (`default: "npm"`, `values: "bun" | …`); a state is not
 (`default: off`, `default: written`). "Approve đề xuất của bạn." (user)
+
+## Order of the plan list
+
+Decided 2026-10-28: "Theo strategy: folder trước, file sau, sắp xếp theo alphabet" (user), with a
+screenshot of the VS Code explorer as the reference. The plan list sorts by path the way that
+explorer does: at each level, entries inside a folder come before files; names compare
+alphabetically, case-insensitive, numbers by value, a leading dot before letters. Every entry sorts
+by its path whatever its mark (`+`, `~`, `-`). Only the display changes; the write order does not.
