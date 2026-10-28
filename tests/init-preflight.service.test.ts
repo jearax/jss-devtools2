@@ -199,7 +199,7 @@ describe('preflight, create mode', () => {
 				await failureMessage(() => {
 					return preflightInit(process.cwd(), [dir], { pm: 'yarn' });
 				})
-			).toBe('yarn 4.9.0 is not supported; supported: npm, yarn 1, pnpm, bun');
+			).toBe('yarn 4.9.0 is not supported; supported: bun, pnpm, yarn 1, npm');
 			expectUnchanged(dir, before);
 		});
 	});
@@ -418,7 +418,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe(`${agent} is not supported; supported: npm, yarn 1, pnpm, bun`);
+			).toBe(`${agent} is not supported; supported: bun, pnpm, yarn 1, npm`);
 			expectUnchanged(dir, before);
 		}
 	});

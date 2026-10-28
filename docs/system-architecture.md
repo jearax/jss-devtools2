@@ -208,12 +208,12 @@ because only a command file may import commander.
 
 | Flag                 | Meaning                                                                        |
 | -------------------- | ------------------------------------------------------------------------------ |
-| `-y, --yes`          | do not ask; take the default answers                                           |
-| `--dry-run`          | run preflight, show `+`, `~` and `-`, write nothing                            |
-| `-f, --force`        | replace the configs init owns, and delete their other documented names         |
-| `--pm <name>`        | package manager for a new project; detected in existing mode, where it exits 1 |
-| `--framework <name>` | the preset; only `node` is built, another value exits 1                        |
-| `--no-vscode`        | do not write `.vscode/`                                                        |
+| `-y, --yes`          | Do not ask; take the default answers                                           |
+| `--dry-run`          | Run preflight, show `+`, `~` and `-`, write nothing                            |
+| `-f, --force`        | Replace the configs init owns, and delete their other documented names         |
+| `--pm <name>`        | Package manager for a new project; detected in existing mode, where it exits 1 |
+| `--framework <name>` | Preset to apply; only node for now                                             |
+| `--no-vscode`        | Do not write `.vscode/`                                                        |
 | `-h, --help`         | commander's usage and options, plus an `Examples` section                      |
 
 `doctor` asks nothing, so it has neither shared flag, and `jss-devtools doctor --yes` is an unknown

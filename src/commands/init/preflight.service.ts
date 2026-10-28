@@ -7,12 +7,18 @@ import { CliError } from '@/core/errors/cli.error';
 
 import { CONFIG_NAMES } from './constants/config-name.constant';
 import { mergePnpmWorkspaceYaml } from './merge.service';
+import { PACKAGE_MANAGERS } from './templates/package-json.template';
 
 import type { PackageManagerName } from './templates/package-json.template';
 import type { InitOptions } from './types/init-options.type';
 import type { InitPreflight } from './types/init-plan.type';
 
-const SUPPORTED_AGENTS = new Set<string>(['npm', 'pnpm', 'bun', 'yarn']);
+const SUPPORTED_AGENTS = new Set<string>(PACKAGE_MANAGERS);
+
+const SUPPORTED_LIST = PACKAGE_MANAGERS.map((pm) => {
+	return pm === 'yarn' ? 'yarn 1' : pm;
+}).join(', ');
+
 const HUSKY_HOOKS_PATHS = new Set<string>(['.husky/_', '.husky']);
 
 const notEmptyError = (dirArg: string): CliError => {
@@ -63,7 +69,7 @@ const preflightCreate = async (dirArg: string, options: InitOptions): Promise<In
 
 	// yarn 2+ defaults to Plug n Play, outside the yarn 1 scope this preset is tested against.
 	if (pm === 'yarn' && Number.parseInt(pmVersion, 10) >= 2) {
-		throw new CliError(`yarn ${pmVersion} is not supported; supported: npm, yarn 1, pnpm, bun`);
+		throw new CliError(`yarn ${pmVersion} is not supported; supported: ${SUPPORTED_LIST}`);
 	}
 
 	return {
@@ -156,7 +162,7 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 	const detected = await detectPackageManager(cwd);
 
 	if (detected !== null && !SUPPORTED_AGENTS.has(detected.agent)) {
-		throw new CliError(`${detected.agent} is not supported; supported: npm, yarn 1, pnpm, bun`);
+		throw new CliError(`${detected.agent} is not supported; supported: ${SUPPORTED_LIST}`);
 	}
 
 	const pm = (detected === null ? 'npm' : detected.name) as PackageManagerName;

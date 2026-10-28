@@ -653,3 +653,41 @@ private, so there is no npm install); `init` runs npm, pnpm and yarn through `ex
 Node docs say cannot launch their `.cmd` shims, so it reports "npm is not installed"; the `cd`
 hints use POSIX quoting; and a generated project has no `.gitattributes`, so a Windows clone with
 `core.autocrlf=true` gets CRLF files that Prettier's `lf` rejects.
+
+## Help text casing
+
+Decided 2026-10-28, after reading the init test matrix: every description in `--help` starts with
+a capital letter. "In hoa chữ cái đầu lên trước." (user). Scope, chosen option "Toàn bộ help": the
+command descriptions, the Arguments and Options descriptions, the explanations in Examples, for
+every command, and commander's own texts (`-v, --version`, `-h, --help`, the `help` command), so the
+two styles never mix. Runtime messages (errors, prompts, outros) keep their current casing.
+
+## Package manager order
+
+Decided 2026-10-28: "Thứ tự của pm luôn theo dãy sau, thống nhất, align hết, tương tự cho những case
+cần chiều ngược lại nha: bun -> pnpm -> yarn -> npm" (user). Every list of the four managers uses
+this order: the help values, the package manager question, the "supported: …" errors, the type and
+constant declarations, the test loops and the docs. It is the same order as detection priority
+(see "Detecting the package manager" above). The default stays npm ("Ý là default npm á", user):
+`--yes` and `--dry-run` take npm, and the question preselects npm although it is listed last.
+
+## Help option format and articles
+
+Decided 2026-10-28. An option with a fixed list shows it as `(values: "a" | "b"; default: "x")`
+instead of commander's `(choices: "a", "b", default: "x")`; the user proposed "values" for
+"choices". `--pm` reads "Package manager for a new project" with `default: "npm"` ("Ý là default npm
+á"); "asked if omitted" is dropped as redundant (user). Help text keeps its articles: "OK, giữ mạo từ
+a/an/the" (user), the convention of git, gh, cargo and docker.
+
+## Order of the init examples
+
+Decided 2026-10-28: "Theo dạng ưu tiên usecase dùng nhiều nhất trước + ngắn trước / dài sau cho dễ
+nhìn" (user), then "Okie, approve" on this order: `init my-app`, `init my-app --pm pnpm -y`, `init`,
+`init -f`, `init --dry-run`. Create mode comes first because it is the main use case; within each
+mode the shorter command comes first; `--dry-run` applies to both modes and closes the list.
+
+## Tool names in messages
+
+Decided 2026-10-28: a tool is written the way its own project writes it: ESLint, Prettier,
+commitlint (lower case even at the start of a sentence, as its README does). "OK, giữ như cũ cho
+case này." (user)

@@ -23,6 +23,10 @@ const answers = vi.hoisted(() => {
 	};
 });
 
+const selectCalls = vi.hoisted(() => {
+	return [] as Array<{ message: string; options: Array<{ value: string; label: string }>; initialValue?: string }>;
+});
+
 vi.mock('@/core/ui/terminal.ui', async (importOriginal) => {
 	const actual = await importOriginal<Record<string, unknown>>();
 
@@ -39,7 +43,9 @@ vi.mock('@clack/prompts', async (importOriginal) => {
 
 	return {
 		...actual,
-		select: () => {
+		select: (input: { message: string; options: Array<{ value: string; label: string }>; initialValue?: string }) => {
+			selectCalls.push(input);
+
 			return Promise.resolve(answers.pm);
 		},
 		confirm: () => {
@@ -52,35 +58,33 @@ const run = promisify(execFile);
 
 const HELP_BLOCK = `Usage: jss-devtools init [options] [dir]
 
-create a project, or set up the current one
+Create a project, or set up the current one
 
 Arguments:
-  dir                 create a new project in this folder (missing or empty);
+  dir                 Create a new project in this folder (missing or empty);
                       without it, set up the project in the current folder
 
 Options:
-  --framework <name>  the preset to apply; only node is built so far (choices:
-                      "node", "react", "rn", "next", "nest", default: "node")
-  --pm <name>         package manager for a new project; asked when omitted, npm
-                      with --yes. Not accepted without <dir>: the current
-                      folder's manager is detected (choices: "npm", "yarn",
-                      "pnpm", "bun")
-  -f, --force         replace the config files init owns when they already
+  --framework <name>  Preset to apply; only node for now (values: "node" |
+                      "react" | "rn" | "next" | "nest"; default: "node")
+  --pm <name>         Package manager for a new project (values: "bun" | "pnpm"
+                      | "yarn" | "npm"; default: "npm")
+  -f, --force         Replace the config files init owns when they already
                       exist, and delete their other names (default: off; init
                       stops and lists them)
-  --no-vscode         do not write .vscode/ (default: written)
-  -y, --yes           do not ask; take the default answers (default: off; ask in
+  --no-vscode         Do not write .vscode/ (default: written)
+  -y, --yes           Do not ask; take the default answers (default: off; ask in
                       a terminal)
-  --dry-run           show the files that would change, write and install
+  --dry-run           Show the files that would change, write and install
                       nothing (default: off)
-  -h, --help          display help for command
+  -h, --help          Display help for command
 
 Examples:
-  $ jss-devtools init my-app              create my-app, asking for the package manager
-  $ jss-devtools init my-app --pm pnpm -y create my-app with pnpm, no questions (CI)
-  $ jss-devtools init                     set up the project in the current folder
-  $ jss-devtools init --dry-run           show what would change, write nothing
-  $ jss-devtools init -f                  replace existing ESLint, Prettier and commitlint configs
+  $ jss-devtools init my-app              Create my-app, asking for the package manager
+  $ jss-devtools init my-app --pm pnpm -y Create my-app with pnpm, no questions (CI)
+  $ jss-devtools init                     Set up the project in the current folder
+  $ jss-devtools init -f                  Replace existing ESLint, Prettier and commitlint configs
+  $ jss-devtools init --dry-run           Show what would change, write nothing
 `;
 
 const originalExitCode = process.exitCode;
@@ -88,6 +92,7 @@ const originalCwd = process.cwd();
 const originalRegistry = process.env['npm_config_registry'];
 
 beforeEach(() => {
+	selectCalls.length = 0;
 	interactivity.enabled = false;
 	answers.pm = 'npm';
 	answers.confirm = true;
@@ -224,8 +229,17 @@ describe('the init command', () => {
 
 		useDeadRegistry();
 		interactivity.enabled = true;
+		selectCalls.length = 0;
 
 		const { stderr } = await runInit('my-app');
+
+		expect(selectCalls).toHaveLength(1);
+		expect(
+			selectCalls[0]?.options.map((option) => {
+				return option.value;
+			})
+		).toEqual(['bun', 'pnpm', 'yarn', 'npm']);
+		expect(selectCalls[0]?.initialValue).toBe('npm');
 
 		expect(stderr).toContain('install failed; the files are written. To finish: cd my-app && npm install');
 		expect(process.exitCode).toBe(1);

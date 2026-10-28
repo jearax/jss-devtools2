@@ -1,6 +1,8 @@
 import { NODE_PRESET_DEPENDENCIES } from '@/commands/init/constants/node-preset-dependency.constant';
 
-export type PackageManagerName = 'npm' | 'pnpm' | 'yarn' | 'bun';
+export const PACKAGE_MANAGERS = ['bun', 'pnpm', 'yarn', 'npm'] as const;
+
+export type PackageManagerName = (typeof PACKAGE_MANAGERS)[number];
 
 export type PackageJsonTemplateInput = {
 	projectName: string;

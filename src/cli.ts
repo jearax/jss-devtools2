@@ -30,10 +30,42 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 	program
 		.name(PACKAGE.name)
 		.description(PACKAGE.description)
-		.version(PACKAGE.version, '-v, --version')
+		.version(PACKAGE.version, '-v, --version', 'Output the version number')
+		.helpOption('-h, --help', 'Display help for command')
+		.helpCommand('help [command]', 'Display help for command')
 		.showHelpAfterError(true)
 		.showSuggestionAfterError(true)
 		.allowExcessArguments(false);
+
+	// Subcommands copy the help configuration when they are created, so set it before they attach.
+	program.configureHelp({
+		optionDescription: (option) => {
+			const parts: string[] = [];
+
+			if (option.argChoices !== undefined) {
+				parts.push(
+					`values: ${option.argChoices
+						.map((choice) => {
+							return JSON.stringify(choice);
+						})
+						.join(' | ')}`
+				);
+			}
+
+			const defaultValue =
+				option.defaultValueDescription !== undefined
+					? JSON.stringify(option.defaultValueDescription)
+					: option.defaultValue !== undefined
+						? JSON.stringify(option.defaultValue)
+						: undefined;
+
+			if (defaultValue !== undefined) {
+				parts.push(`default: ${defaultValue}`);
+			}
+
+			return parts.length === 0 ? option.description : `${option.description} (${parts.join('; ')})`;
+		}
+	});
 
 	program.addHelpText('beforeAll', (context) => {
 		if (context.error || !isInteractive()) {

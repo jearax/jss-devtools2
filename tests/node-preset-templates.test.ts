@@ -22,7 +22,7 @@ const NODE_FLOOR = PACKAGE.nodeFloor;
 
 describe('node preset templates', () => {
 	it('renders package.json per package manager', () => {
-		for (const packageManager of ['npm', 'pnpm', 'yarn', 'bun'] as const) {
+		for (const packageManager of ['bun', 'pnpm', 'yarn', 'npm'] as const) {
 			expect(
 				packageJsonTemplate({
 					projectName: PROJECT_NAME,
@@ -59,7 +59,7 @@ describe('node preset templates', () => {
 	});
 
 	it('renders .vscode/settings.json per package manager', () => {
-		for (const packageManager of ['npm', 'pnpm', 'yarn', 'bun'] as const) {
+		for (const packageManager of ['bun', 'pnpm', 'yarn', 'npm'] as const) {
 			expect(vscodeSettingsJsonTemplate({ packageManager })).toMatchSnapshot(`vscode settings ${packageManager}`);
 		}
 	});
@@ -77,7 +77,7 @@ describe('node preset templates', () => {
 	});
 
 	it('renders the husky hooks per package manager', () => {
-		for (const packageManager of ['npm', 'pnpm', 'yarn', 'bun'] as const) {
+		for (const packageManager of ['bun', 'pnpm', 'yarn', 'npm'] as const) {
 			const input = {
 				command: localBinCommandLine(packageManager, 'lint-staged', [])
 			};

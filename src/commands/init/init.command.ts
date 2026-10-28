@@ -14,6 +14,7 @@ import { isInteractive } from '@/core/ui/terminal.ui';
 import { validateInitArguments } from './init.service';
 import { buildInitPlan, renderPlan } from './plan.service';
 import { preflightInit } from './preflight.service';
+import { PACKAGE_MANAGERS } from './templates/package-json.template';
 import { applyInitPlan } from './write.service';
 
 import type { PackageManagerName } from './templates/package-json.template';
@@ -22,39 +23,40 @@ import type { InitPreflight } from './types/init-plan.type';
 import type { Command } from 'commander';
 
 const DIR_DESCRIPTION =
-	'create a new project in this folder (missing or empty); without it, set up the project in the current folder';
+	'Create a new project in this folder (missing or empty); without it, set up the project in the current folder';
 
-const PM_CHOICES: readonly PackageManagerName[] = ['npm', 'yarn', 'pnpm', 'bun'];
+const PM_CHOICES = PACKAGE_MANAGERS;
 
 const EXAMPLES = `
 Examples:
-  $ jss-devtools init my-app              create my-app, asking for the package manager
-  $ jss-devtools init my-app --pm pnpm -y create my-app with pnpm, no questions (CI)
-  $ jss-devtools init                     set up the project in the current folder
-  $ jss-devtools init --dry-run           show what would change, write nothing
-  $ jss-devtools init -f                  replace existing ESLint, Prettier and commitlint configs`;
+  $ jss-devtools init my-app              Create my-app, asking for the package manager
+  $ jss-devtools init my-app --pm pnpm -y Create my-app with pnpm, no questions (CI)
+  $ jss-devtools init                     Set up the project in the current folder
+  $ jss-devtools init -f                  Replace existing ESLint, Prettier and commitlint configs
+  $ jss-devtools init --dry-run           Show what would change, write nothing`;
+
+// Shows `default: "npm"` in help without a parsed default: --pm must stay undefined when it is
+// not passed, so the question runs and the no-folder check still errors.
+const pmOption = new Option('--pm <name>', 'Package manager for a new project')
+	.choices([...PM_CHOICES])
+	.default(undefined, 'npm');
 
 export const registerInitCommand = (program: Command): void => {
 	program
 		.command('init')
-		.description('create a project, or set up the current one')
+		.description('Create a project, or set up the current one')
 		.argument('[dir]', DIR_DESCRIPTION)
 		.addOption(
-			new Option('--framework <name>', 'the preset to apply; only node is built so far')
+			new Option('--framework <name>', 'Preset to apply; only node for now')
 				.choices(['node', 'react', 'rn', 'next', 'nest'])
 				.default('node')
 		)
-		.addOption(
-			new Option(
-				'--pm <name>',
-				`package manager for a new project; asked when omitted, npm with --yes. Not accepted without <dir>: the current folder's manager is detected`
-			).choices([...PM_CHOICES])
-		)
+		.addOption(pmOption)
 		.option(
 			'-f, --force',
-			'replace the config files init owns when they already exist, and delete their other names (default: off; init stops and lists them)'
+			'Replace the config files init owns when they already exist, and delete their other names (default: off; init stops and lists them)'
 		)
-		.option('--no-vscode', 'do not write .vscode/ (default: written)')
+		.option('--no-vscode', 'Do not write .vscode/ (default: written)')
 		.option(COMMON_OPTIONS.yes.flags, COMMON_OPTIONS.yes.description)
 		.option(COMMON_OPTIONS.dryRun.flags, COMMON_OPTIONS.dryRun.description)
 		.addHelpText('after', EXAMPLES)
@@ -74,14 +76,15 @@ const askPackageManager = async (dirGiven: boolean, options: InitOptions): Promi
 		return 'npm';
 	}
 
-	const chosen = await select({
+	const chosen = await select<PackageManagerName>({
 		message: 'package manager',
 		options: PM_CHOICES.map((pm) => {
 			return {
 				value: pm,
 				label: pm
 			};
-		})
+		}),
+		initialValue: 'npm'
 	});
 
 	if (isCancel(chosen)) {

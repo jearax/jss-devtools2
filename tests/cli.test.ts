@@ -36,6 +36,8 @@ describe('cli program', () => {
 
 		expect(output).toContain('Usage: jss-devtools');
 		expect(output).toContain('JavaScript stack dev tools CLI');
+		expect(output).toContain('Output the version number');
+		expect(output).toContain('Display help for command');
 		expect(process.exitCode).toBe(0);
 	});
 
@@ -73,6 +75,8 @@ describe('cli program', () => {
 		});
 
 		expect(output).toContain('Usage: jss-devtools doctor');
+		expect(output).toContain('Check the environment');
+		expect(output).toContain('Display help for command');
 		expect(process.exitCode).toBe(0);
 	});
 });

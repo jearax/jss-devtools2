@@ -12,7 +12,7 @@ import { createDoctorContext, runDoctorChecks } from './doctor.service';
 import type { Command } from 'commander';
 
 export const registerDoctorCommand = (program: Command): void => {
-	program.command('doctor').description('check the environment').action(runDoctor);
+	program.command('doctor').description('Check the environment').action(runDoctor);
 };
 
 const runDoctor = async (): Promise<void> => {

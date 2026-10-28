@@ -14,7 +14,7 @@ const enabled = process.env['INIT_E2E'] === '1';
 
 const CLI = resolve(import.meta.dirname, '../dist/cli.mjs');
 
-const MANAGERS = ['npm', 'pnpm', 'yarn', 'bun'] as const;
+const MANAGERS = ['bun', 'pnpm', 'yarn', 'npm'] as const;
 
 type Manager = (typeof MANAGERS)[number];
 
