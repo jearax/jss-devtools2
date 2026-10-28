@@ -38,6 +38,12 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 		.allowExcessArguments(false);
 
 	// Subcommands copy the help configuration when they are created, so set it before they attach.
+	program.configureOutput({
+		outputError: (str: string, write: (str: string) => void) => {
+			write(str === '' ? str : `${str.charAt(0).toUpperCase()}${str.slice(1)}`);
+		}
+	});
+
 	program.configureHelp({
 		optionDescription: (option) => {
 			const parts: string[] = [];

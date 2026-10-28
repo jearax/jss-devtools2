@@ -95,7 +95,7 @@ describe('the check list', () => {
 				{
 					label: 'Git',
 					ok: false,
-					detail: 'git is not installed'
+					detail: 'Git is not installed'
 				}
 			]);
 		});

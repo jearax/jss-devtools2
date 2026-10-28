@@ -9,7 +9,7 @@ export const gitVersion = async (): Promise<GitVersion> => {
 	if (result.code === null) {
 		return {
 			status: 'missing',
-			problem: 'git is not installed'
+			problem: 'Git is not installed'
 		};
 	}
 

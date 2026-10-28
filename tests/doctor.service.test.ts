@@ -79,7 +79,7 @@ describe('the doctor checks', () => {
 				git: {
 					version: {
 						status: 'missing',
-						problem: 'git is not installed'
+						problem: 'Git is not installed'
 					},
 					isInsideWorkTree: () => {
 						return Promise.resolve(false);
@@ -91,7 +91,7 @@ describe('the doctor checks', () => {
 		const git = resultOf(results, 'git.installed');
 
 		expect(git.ok).toBe(false);
-		expect(git.detail).toBe('git is not installed');
+		expect(git.detail).toBe('Git is not installed');
 		expect(git.hint).toBe('Install git, then run the command again');
 	});
 
@@ -123,7 +123,7 @@ describe('the doctor checks', () => {
 				git: {
 					version: {
 						status: 'missing',
-						problem: 'git is not installed'
+						problem: 'Git is not installed'
 					},
 					isInsideWorkTree: () => {
 						return Promise.resolve(false);

@@ -144,7 +144,7 @@ describe('the init install step, piped', () => {
 
 		const { stderr } = await runInit('.', '-y');
 
-		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('Install failed; the files are written');
 		expect(stderr).toContain('$ npm install');
 		expect(stderr).not.toContain('$ cd');
 		expect(process.exitCode).toBe(1);
@@ -166,7 +166,7 @@ describe('the init install step, piped', () => {
 		expect(stdout).toContain('│  npm error code EACCES');
 		expect(stdout).toContain('■  Installing with npm');
 		expect(stdout).not.toContain('Installed with');
-		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('Install failed; the files are written');
 		expect(stderr).toContain('$ npm install');
 		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);

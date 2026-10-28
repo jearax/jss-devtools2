@@ -55,7 +55,7 @@ describe('cli program', () => {
 			return main(['node', 'jss-devtools', 'inti'], { exitOverride: true });
 		});
 
-		expect(output).toContain("error: unknown command 'inti'");
+		expect(output).toContain("Error: unknown command 'inti'");
 		expect(output).not.toContain('too many arguments');
 		expect(process.exitCode).toBe(1);
 	});

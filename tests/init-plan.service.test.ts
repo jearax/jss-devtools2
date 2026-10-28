@@ -484,7 +484,7 @@ describe('the package name in create mode', () => {
 				},
 				{}
 			);
-		}).toThrow('برنامج cannot be a package name');
+		}).toThrow('Not a valid package name: برنامج');
 	});
 });
 

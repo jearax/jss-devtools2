@@ -23,7 +23,7 @@ const SUPPORTED_LIST = PACKAGE_MANAGERS.map((pm) => {
 const HUSKY_HOOKS_PATHS = new Set<string>(['.husky/_', '.husky']);
 
 const notEmptyError = (dirArg: string): CliError => {
-	return new CliError(`${dirArg} is not empty`, {
+	return new CliError(`Folder ${dirArg} is not empty`, {
 		label: 'To set it up instead',
 		commands: [`cd ${shellQuote(dirArg)}`, 'jss-devtools init']
 	});
@@ -37,7 +37,7 @@ const ensureEmptyTarget = (dirArg: string): string => {
 	}
 
 	if (statSync(target).isFile()) {
-		throw new CliError(`${dirArg} is a file`, {
+		throw new CliError(`A file named ${dirArg} already exists`, {
 			hint: 'Pick another name'
 		});
 	}
@@ -64,10 +64,10 @@ const installedVersion = async (pm: PackageManagerName, cwd: string, create: boo
 
 	if (version === null) {
 		throw create
-			? new CliError(`${pm} is not installed`, {
+			? new CliError(`Package manager ${pm} is not installed`, {
 					hint: 'Install it, or pick another with --pm'
 				})
-			: new CliError(`this project uses ${pm}, which is not installed`, {
+			: new CliError(`This project uses ${pm}, which is not installed`, {
 					hint: `Install ${pm}, then rerun`
 				});
 	}
@@ -85,7 +85,7 @@ const preflightCreate = async (dirArg: string, options: InitOptions): Promise<In
 
 	// yarn 2+ defaults to Plug n Play, outside the yarn 1 scope this preset is tested against.
 	if (pm === 'yarn' && Number.parseInt(pmVersion, 10) >= 2) {
-		throw new CliError(`yarn ${pmVersion} is not supported, only yarn 1`, {
+		throw new CliError(`Only yarn 1 is supported, found yarn ${pmVersion}`, {
 			hint: 'Pick another with --pm'
 		});
 	}
@@ -101,9 +101,9 @@ const preflightCreate = async (dirArg: string, options: InitOptions): Promise<In
 
 const parsePackageJson = (cwd: string): Record<string, unknown> => {
 	if (!existsSync(join(cwd, 'package.json'))) {
-		throw new CliError('no package.json here', {
+		throw new CliError('No package.json here', {
 			label: 'To create a project',
-			commands: ['jss-devtools init <name>']
+			commands: ['jss-devtools init <project-name>']
 		});
 	}
 
@@ -112,7 +112,7 @@ const parsePackageJson = (cwd: string): Record<string, unknown> => {
 	try {
 		return JSON.parse(raw) as Record<string, unknown>;
 	} catch (error) {
-		throw new CliError(`package.json is not valid JSON: ${(error as Error).message}`, {
+		throw new CliError(`Invalid JSON in package.json: ${(error as Error).message}`, {
 			hint: 'Fix it, then rerun'
 		});
 	}
@@ -130,7 +130,7 @@ const ensurePnpmWorkspaceMergeable = (cwd: string): void => {
 	const raw = readFileSync(join(cwd, 'pnpm-workspace.yaml'), 'utf8');
 
 	if (mergePnpmWorkspaceYaml(raw).action === 'unmergeable') {
-		throw new CliError('pnpm-workspace.yaml cannot be extended line by line', {
+		throw new CliError('Cannot extend pnpm-workspace.yaml line by line', {
 			hint: 'Add esbuild: true and unrs-resolver: true under allowBuilds, then rerun'
 		});
 	}
@@ -154,13 +154,13 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 	const parsed = parsePackageJson(cwd);
 
 	if ('workspaces' in parsed || isMonorepoWorkspace(cwd)) {
-		throw new CliError('monorepos are not supported yet');
+		throw new CliError('Monorepos are not supported yet');
 	}
 
 	if (!existsSync(join(cwd, 'tsconfig.json'))) {
-		throw new CliError('no tsconfig.json here', {
+		throw new CliError('No tsconfig.json here', {
 			label: 'To create a new project instead',
-			commands: ['jss-devtools init <name>']
+			commands: ['jss-devtools init <project-name>']
 		});
 	}
 
@@ -168,14 +168,14 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 		const top = await gitTopLevel(cwd);
 
 		if (top === null) {
-			throw new CliError('not a git repository', {
+			throw new CliError('Not a git repository', {
 				label: 'To set one up',
 				commands: ['git init']
 			});
 		}
 
 		// git prints the resolved path; cwd can sit behind a symlink, so compare resolved paths.
-		throw new CliError('this is not the git root', {
+		throw new CliError('This is not the git root', {
 			label: 'To run it there',
 			commands: [`cd ${shellQuote(relative(realpathSync(cwd), top))}`, 'jss-devtools init']
 		});
@@ -184,7 +184,7 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 	const hooksPath = await gitHooksPath(cwd);
 
 	if (hooksPath !== null && !HUSKY_HOOKS_PATHS.has(hooksPath)) {
-		throw new CliError(`git hooks are managed by ${hooksPath} (core.hooksPath)`, {
+		throw new CliError(`Git hooks are managed by ${hooksPath} (core.hooksPath)`, {
 			label: 'To use husky',
 			commands: ['git config --unset core.hooksPath']
 		});
@@ -193,7 +193,7 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 	const detected = await detectPackageManager(cwd);
 
 	if (detected !== null && !SUPPORTED_AGENTS.has(detected.agent)) {
-		throw new CliError(`${detected.agent} is not supported`, {
+		throw new CliError(`Package manager ${detected.agent} is not supported`, {
 			hint: `Supported: ${SUPPORTED_LIST}`
 		});
 	}
@@ -226,7 +226,7 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 
 		const hint = withVscode ? '--no-vscode keeps .vscode/ as it is' : undefined;
 
-		throw new CliError(`already set up: ${conflicts.join(', ')}`, {
+		throw new CliError(`Already set up: ${conflicts.join(', ')}`, {
 			label: 'To replace them',
 			commands: ['jss-devtools init --force'],
 			...(hint === undefined ? {} : { hint })

@@ -122,7 +122,7 @@ describe('preflight, create mode', () => {
 			await failureMessage(() => {
 				return preflightInit(process.cwd(), [dir], {});
 			})
-		).toBe(`${dir} is not empty`);
+		).toBe(`Folder ${dir} is not empty`);
 		expectUnchanged(dir, before);
 	});
 
@@ -141,7 +141,7 @@ describe('preflight, create mode', () => {
 				await failureMessage(() => {
 					return preflightInit(process.cwd(), [dir], {});
 				})
-			).toBe('git is not installed');
+			).toBe('Git is not installed');
 			expectUnchanged(dir, before);
 		});
 	});
@@ -179,7 +179,7 @@ describe('preflight, create mode', () => {
 				await failureMessage(() => {
 					return preflightInit(process.cwd(), [dir], { pm: 'pnpm' });
 				})
-			).toBe('pnpm is not installed');
+			).toBe('Package manager pnpm is not installed');
 			expectUnchanged(dir, before);
 		});
 	});
@@ -199,7 +199,7 @@ describe('preflight, create mode', () => {
 				await failureMessage(() => {
 					return preflightInit(process.cwd(), [dir], { pm: 'yarn' });
 				})
-			).toBe('yarn 4.9.0 is not supported, only yarn 1');
+			).toBe('Only yarn 1 is supported, found yarn 4.9.0');
 			expectUnchanged(dir, before);
 		});
 	});
@@ -216,7 +216,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('no package.json here');
+		).toBe('No package.json here');
 		expectUnchanged(dir, before);
 	});
 
@@ -235,7 +235,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(`package.json is not valid JSON: ${parseError}`);
+		).toBe(`Invalid JSON in package.json: ${parseError}`);
 		expectUnchanged(dir, before);
 	});
 
@@ -251,7 +251,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('monorepos are not supported yet');
+		).toBe('Monorepos are not supported yet');
 		expectUnchanged(dir, before);
 	});
 
@@ -279,7 +279,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('pnpm-workspace.yaml cannot be extended line by line');
+		).toBe('Cannot extend pnpm-workspace.yaml line by line');
 		expectUnchanged(dir, before);
 	});
 
@@ -295,7 +295,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('monorepos are not supported yet');
+		).toBe('Monorepos are not supported yet');
 		expectUnchanged(dir, before);
 	});
 
@@ -307,7 +307,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('no tsconfig.json here');
+		).toBe('No tsconfig.json here');
 		expectUnchanged(dir, before);
 	});
 
@@ -319,7 +319,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('not a git repository');
+		).toBe('Not a git repository');
 		expectUnchanged(dir, before);
 	});
 
@@ -341,7 +341,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(child, [], {});
 			})
-		).toBe('this is not the git root');
+		).toBe('This is not the git root');
 		expectUnchanged(child, before);
 	});
 
@@ -367,7 +367,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(link, [], {});
 			})
-		).toBe('this is not the git root');
+		).toBe('This is not the git root');
 		expectUnchanged(child, before);
 	});
 
@@ -393,7 +393,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('git hooks are managed by .githooks (core.hooksPath)');
+		).toBe('Git hooks are managed by .githooks (core.hooksPath)');
 		expectUnchanged(dir, before);
 	});
 
@@ -414,7 +414,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe(`${agent} is not supported`);
+			).toBe(`Package manager ${agent} is not supported`);
 			expectUnchanged(dir, before);
 		}
 	});
@@ -451,7 +451,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe('this project uses npm, which is not installed');
+			).toBe('This project uses npm, which is not installed');
 			expectUnchanged(dir, before);
 		});
 	});
@@ -471,7 +471,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('already set up: eslint.config.mjs, .prettierrc.yml, .prettierrc.toml, .editorconfig');
+		).toBe('Already set up: eslint.config.mjs, .prettierrc.yml, .prettierrc.toml, .editorconfig');
 		expectUnchanged(dir, before);
 	});
 
@@ -495,7 +495,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe(`already set up: ${name}`);
+			).toBe(`Already set up: ${name}`);
 			expectUnchanged(dir, before);
 		}
 	});
@@ -517,7 +517,7 @@ describe('preflight, existing mode', () => {
 				await failureMessage(() => {
 					return preflightInit(dir, [], {});
 				})
-			).toBe(`already set up: package.json "${key}" key`);
+			).toBe(`Already set up: package.json "${key}" key`);
 			expectUnchanged(dir, before);
 		}
 	});
@@ -534,7 +534,7 @@ describe('preflight, existing mode', () => {
 			await failureMessage(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe('already set up: .vscode/settings.json');
+		).toBe('Already set up: .vscode/settings.json');
 		expectUnchanged(dir, before);
 	});
 

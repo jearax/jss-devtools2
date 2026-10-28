@@ -1,3 +1,4 @@
+import { SELECT_INSTRUCTIONS } from '@clack/prompts';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CliError } from '@/core/errors/cli.error';
@@ -417,13 +418,13 @@ describe('error rendering', () => {
 		process.env['NO_COLOR'] = '1';
 
 		const stderr = await capture(process.stderr, () => {
-			renderError(new CliError('install failed; the files are written', { commands: ['cd my-app', 'npm install'] }));
+			renderError(new CliError('Install failed; the files are written', { commands: ['cd my-app', 'npm install'] }));
 		});
 
 		expect(stderr).toBe(
 			[
 				'│',
-				'└  install failed; the files are written',
+				'└  Install failed; the files are written',
 				'   To finish:',
 				'     $ cd my-app',
 				'     $ npm install',
@@ -437,11 +438,18 @@ describe('error rendering', () => {
 		process.env['NO_COLOR'] = '1';
 
 		const stderr = await capture(process.stderr, () => {
-			renderError(new CliError('prettier-package-json failed; the files are written\nPrettier 3.9.10'));
+			renderError(
+				new CliError('Could not sort package.json with prettier-package-json; the files are written\nPrettier 3.9.10')
+			);
 		});
 
 		expect(stderr).toBe(
-			['│', '└  prettier-package-json failed; the files are written', '   Prettier 3.9.10', ''].join('\n')
+			[
+				'│',
+				'└  Could not sort package.json with prettier-package-json; the files are written',
+				'   Prettier 3.9.10',
+				''
+			].join('\n')
 		);
 		expect(stderr).not.toContain(ESC);
 	});
@@ -461,7 +469,7 @@ describe('error rendering', () => {
 		process.env['FORCE_COLOR'] = '1';
 
 		const stderr = await capture(process.stderr, () => {
-			renderError(new CliError('install failed; the files are written', { commands: ['npm install'] }));
+			renderError(new CliError('Install failed; the files are written', { commands: ['npm install'] }));
 		});
 
 		expect(stderr).toContain(`   To finish:\n     ${ESC}[2m$ ${ESC}[22m${ESC}[36mnpm install${ESC}[39m`);
@@ -484,5 +492,15 @@ describe('next step lines', () => {
 		const lines = nextStepLines(['npm install']);
 
 		expect(lines).toEqual([`     ${ESC}[2m$ ${ESC}[22m${ESC}[36mnpm install${ESC}[39m`]);
+	});
+});
+
+describe('select instructions', () => {
+	it('lists navigate, confirm and cancel, so a clack upgrade that changes the footer fails here', () => {
+		const withoutStyles = SELECT_INSTRUCTIONS.map((entry) => {
+			return entry.replace(new RegExp(`${ESC}\\[\\d+m`, 'g'), '');
+		});
+
+		expect(withoutStyles).toEqual(['↑/↓ to navigate', 'Enter: confirm', 'Esc/Ctrl+C: cancel']);
 	});
 });

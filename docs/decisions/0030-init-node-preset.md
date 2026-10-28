@@ -113,7 +113,7 @@ works as tested. "Windows: chỉ notes lại, không xử lý." (user). Native W
 
 - The only installer is a POSIX sh script (the package is private, so there is no npm install).
 - `init` runs pnpm, yarn and npm through `execFile`, which the Node docs say cannot launch their
-  `.cmd` shims, so it reports "npm is not installed".
+  `.cmd` shims, so it reports "Package manager npm is not installed".
 - The `cd` hints use POSIX quoting.
 - A generated project has no `.gitattributes`, so a Windows clone with `core.autocrlf=true` gets
   CRLF files that Prettier's `lf` rejects.

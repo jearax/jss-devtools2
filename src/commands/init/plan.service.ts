@@ -44,7 +44,7 @@ export const derivePackageName = (folder: string): string => {
 		.replace(/-+$/, '');
 
 	if (name === '') {
-		throw new CliError(`${folder} cannot be a package name`, {
+		throw new CliError(`Not a valid package name: ${folder}`, {
 			hint: 'Use a folder name with Latin letters or digits'
 		});
 	}

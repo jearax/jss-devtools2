@@ -26,13 +26,13 @@ import, because only a command file may import commander.
 
 - `--yes, -y`: never asks a question; each question takes its default, designed with that question.
   It does not mean "answer yes". Without `-y`, a terminal asks; with no terminal on stdin or stdout,
-  or with `CI` set, a question exits 1 with "not a terminal" and the hint
+  or with `CI` set, a question exits 1 with "Not a terminal" and the hint
   "Run it in a terminal, or pass --yes".
 - `--dry-run`: runs the read-only stages, shows `+` new and `~` changed files, writes nothing (no
   file, no install, no hooks, no manifest) and never asks. Exit 0 whenever the plan is shown,
   changes or not. With `--yes` it still writes nothing and is not an error.
 - `--help, -h`: commander's usage and options plus an `Examples` section. Exit 0. Always text.
-- Declining a confirmation, or Ctrl+C at it, exits 1 with "cancelled, nothing written" on stderr.
+- Declining a confirmation, or Ctrl+C at it, exits 1 with "Cancelled, nothing written" on stderr.
 - No `--json`, no JSON output anywhere. This closes T4.
 - `doctor` asks nothing and has neither flag.
 

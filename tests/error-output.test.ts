@@ -181,7 +181,7 @@ describe('the exit 1 output, one test per error row', () => {
 		).toBe(
 			[
 				'│',
-				`└  ${dir} is not empty`,
+				`└  Folder ${dir} is not empty`,
 				'   To set it up instead:',
 				`     $ cd ${dir}`,
 				'     $ jss-devtools init',
@@ -198,7 +198,7 @@ describe('the exit 1 output, one test per error row', () => {
 			await failure(() => {
 				return preflightInit(process.cwd(), [target], {});
 			})
-		).toBe(['│', `└  ${target} is a file`, '   ↳ Pick another name', ''].join('\n'));
+		).toBe(['│', `└  A file named ${target} already exists`, '   ↳ Pick another name', ''].join('\n'));
 	});
 
 	it('E3: git is not installed', async () => {
@@ -211,7 +211,7 @@ describe('the exit 1 output, one test per error row', () => {
 					return preflightInit(process.cwd(), [dir], {});
 				});
 			})
-		).toBe(['│', '└  git is not installed', '   ↳ Install git, then rerun', ''].join('\n'));
+		).toBe(['│', '└  Git is not installed', '   ↳ Install git, then rerun', ''].join('\n'));
 	});
 
 	it('E4: the chosen manager is not installed', async () => {
@@ -228,7 +228,9 @@ describe('the exit 1 output, one test per error row', () => {
 					return preflightInit(process.cwd(), [dir], { pm: 'pnpm' });
 				});
 			})
-		).toBe(['│', '└  pnpm is not installed', '   ↳ Install it, or pick another with --pm', ''].join('\n'));
+		).toBe(
+			['│', '└  Package manager pnpm is not installed', '   ↳ Install it, or pick another with --pm', ''].join('\n')
+		);
 	});
 
 	it('E5: the detected manager is not installed', async () => {
@@ -245,7 +247,7 @@ describe('the exit 1 output, one test per error row', () => {
 					return preflightInit(dir, [], {});
 				});
 			})
-		).toBe(['│', '└  this project uses npm, which is not installed', '   ↳ Install npm, then rerun', ''].join('\n'));
+		).toBe(['│', '└  This project uses npm, which is not installed', '   ↳ Install npm, then rerun', ''].join('\n'));
 	});
 
 	it('E6: yarn 2+ in create mode', async () => {
@@ -262,7 +264,7 @@ describe('the exit 1 output, one test per error row', () => {
 					return preflightInit(process.cwd(), [dir], { pm: 'yarn' });
 				});
 			})
-		).toBe(['│', '└  yarn 4.9.0 is not supported, only yarn 1', '   ↳ Pick another with --pm', ''].join('\n'));
+		).toBe(['│', '└  Only yarn 1 is supported, found yarn 4.9.0', '   ↳ Pick another with --pm', ''].join('\n'));
 	});
 
 	it('E7: an unsupported detected manager', async () => {
@@ -275,7 +277,7 @@ describe('the exit 1 output, one test per error row', () => {
 			await failure(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(['│', '└  deno is not supported', '   ↳ Supported: bun, pnpm, yarn 1, npm', ''].join('\n'));
+		).toBe(['│', '└  Package manager deno is not supported', '   ↳ Supported: bun, pnpm, yarn 1, npm', ''].join('\n'));
 	});
 
 	it('E8: no package.json in existing mode', async () => {
@@ -286,7 +288,9 @@ describe('the exit 1 output, one test per error row', () => {
 				return preflightInit(dir, [], {});
 			})
 		).toBe(
-			['│', '└  no package.json here', '   To create a project:', '     $ jss-devtools init <name>', ''].join('\n')
+			['│', '└  No package.json here', '   To create a project:', '     $ jss-devtools init <project-name>', ''].join(
+				'\n'
+			)
 		);
 	});
 
@@ -305,7 +309,7 @@ describe('the exit 1 output, one test per error row', () => {
 			await failure(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(['│', `└  package.json is not valid JSON: ${parseError}`, '   ↳ Fix it, then rerun', ''].join('\n'));
+		).toBe(['│', `└  Invalid JSON in package.json: ${parseError}`, '   ↳ Fix it, then rerun', ''].join('\n'));
 	});
 
 	it('E10: a workspaces field', async () => {
@@ -318,7 +322,7 @@ describe('the exit 1 output, one test per error row', () => {
 			await failure(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(['│', '└  monorepos are not supported yet', ''].join('\n'));
+		).toBe(['│', '└  Monorepos are not supported yet', ''].join('\n'));
 	});
 
 	it('E11: no tsconfig.json', async () => {
@@ -331,9 +335,9 @@ describe('the exit 1 output, one test per error row', () => {
 		).toBe(
 			[
 				'│',
-				'└  no tsconfig.json here',
+				'└  No tsconfig.json here',
 				'   To create a new project instead:',
-				'     $ jss-devtools init <name>',
+				'     $ jss-devtools init <project-name>',
 				''
 			].join('\n')
 		);
@@ -346,7 +350,7 @@ describe('the exit 1 output, one test per error row', () => {
 			await failure(() => {
 				return preflightInit(dir, [], {});
 			})
-		).toBe(['│', '└  not a git repository', '   To set one up:', '     $ git init', ''].join('\n'));
+		).toBe(['│', '└  Not a git repository', '   To set one up:', '     $ git init', ''].join('\n'));
 	});
 
 	it('E13: run below the git root', async () => {
@@ -357,7 +361,7 @@ describe('the exit 1 output, one test per error row', () => {
 				return preflightInit(child, [], {});
 			})
 		).toBe(
-			['│', '└  this is not the git root', '   To run it there:', '     $ cd ..', '     $ jss-devtools init', ''].join(
+			['│', '└  This is not the git root', '   To run it there:', '     $ cd ..', '     $ jss-devtools init', ''].join(
 				'\n'
 			)
 		);
@@ -389,7 +393,7 @@ describe('the exit 1 output, one test per error row', () => {
 		).toBe(
 			[
 				'│',
-				'└  git hooks are managed by .githooks (core.hooksPath)',
+				'└  Git hooks are managed by .githooks (core.hooksPath)',
 				'   To use husky:',
 				'     $ git config --unset core.hooksPath',
 				''
@@ -411,7 +415,7 @@ describe('the exit 1 output, one test per error row', () => {
 		).toBe(
 			[
 				'│',
-				'└  pnpm-workspace.yaml cannot be extended line by line',
+				'└  Cannot extend pnpm-workspace.yaml line by line',
 				'   ↳ Add esbuild: true and unrs-resolver: true under allowBuilds, then rerun',
 				''
 			].join('\n')
@@ -429,7 +433,7 @@ describe('the exit 1 output, one test per error row', () => {
 				return preflightInit(dir, [], {});
 			})
 		).toBe(
-			['│', '└  already set up: eslint.config.mjs', '   To replace them:', '     $ jss-devtools init --force', ''].join(
+			['│', '└  Already set up: eslint.config.mjs', '   To replace them:', '     $ jss-devtools init --force', ''].join(
 				'\n'
 			)
 		);
@@ -448,7 +452,7 @@ describe('the exit 1 output, one test per error row', () => {
 		).toBe(
 			[
 				'│',
-				'└  already set up: .vscode/settings.json',
+				'└  Already set up: .vscode/settings.json',
 				'   To replace them:',
 				'     $ jss-devtools init --force',
 				'   ↳ --no-vscode keeps .vscode/ as it is',
@@ -463,7 +467,7 @@ describe('the exit 1 output, one test per error row', () => {
 				derivePackageName('برنامج');
 			})
 		).toBe(
-			['│', '└  برنامج cannot be a package name', '   ↳ Use a folder name with Latin letters or digits', ''].join('\n')
+			['│', '└  Not a valid package name: برنامج', '   ↳ Use a folder name with Latin letters or digits', ''].join('\n')
 		);
 	});
 
@@ -482,7 +486,9 @@ describe('the exit 1 output, one test per error row', () => {
 					});
 				})
 			).toBe(
-				['│', '└  git init failed in target', '   To see why:', '     $ cd target', '     $ git init', ''].join('\n')
+				['│', '└  Could not run git init in target', '   To see why:', '     $ cd target', '     $ git init', ''].join(
+					'\n'
+				)
 			);
 		});
 	});
@@ -492,7 +498,7 @@ describe('the exit 1 output, one test per error row', () => {
 			failureSync(() => {
 				validateInitArguments([], { framework: 'react' });
 			})
-		).toBe(['│', '└  react is not supported yet', '   ↳ Only node is', ''].join('\n'));
+		).toBe(['│', '└  Framework react is not supported yet', '   ↳ Only node is', ''].join('\n'));
 	});
 
 	it('E20: --pm without a folder', () => {
@@ -500,7 +506,7 @@ describe('the exit 1 output, one test per error row', () => {
 			failureSync(() => {
 				validateInitArguments([], { pm: 'pnpm' });
 			})
-		).toBe(['│', '└  --pm needs <dir>', '   ↳ An existing project uses the manager it has', ''].join('\n'));
+		).toBe(['│', '└  Option --pm needs <dir>', '   ↳ An existing project uses the manager it has', ''].join('\n'));
 	});
 
 	it('E21: -f with a folder', () => {
@@ -508,6 +514,6 @@ describe('the exit 1 output, one test per error row', () => {
 			failureSync(() => {
 				validateInitArguments(['my-app'], { force: true });
 			})
-		).toBe(['│', '└  --force is for an existing project', '   ↳ Drop it when creating one', ''].join('\n'));
+		).toBe(['│', '└  Option --force is for an existing project', '   ↳ Drop it when creating one', ''].join('\n'));
 	});
 });

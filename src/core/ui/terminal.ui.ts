@@ -1,10 +1,13 @@
 import { styleText } from 'node:util';
 
-import { log, taskLog } from '@clack/prompts';
+import { log, SELECT_INSTRUCTIONS, taskLog } from '@clack/prompts';
 
 import { CliError } from '@/core/errors/cli.error';
 
 import { createAnimatedSpinner } from './animated-spinner.ui';
+
+// Clack renders the footer from this array at render time and has no option for custom text.
+SELECT_INSTRUCTIONS.push(`${styleText('dim', 'Esc/Ctrl+C:')} cancel`);
 
 /** `isTTY` is stdout, not stderr. */
 export type TerminalContext = {

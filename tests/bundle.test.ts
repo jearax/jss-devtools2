@@ -226,7 +226,7 @@ Examples:
 		const { stderr, code } = await runEntry('cli.mjs', ['init'], empty);
 
 		expect(code).toBe(1);
-		expect(stderr).toContain('not a terminal');
+		expect(stderr).toContain('Not a terminal');
 		expect(await readdir(empty)).toEqual([]);
 
 		await removeDir(empty);

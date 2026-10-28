@@ -95,7 +95,7 @@ const askPackageManager = async (dirGiven: boolean, options: InitOptions): Promi
 	});
 
 	if (isCancel(chosen)) {
-		throw new CliError('cancelled, nothing written');
+		throw new CliError('Cancelled, nothing written');
 	}
 
 	return chosen;
@@ -132,7 +132,9 @@ const applyCommandLine = (command: Command): string => {
 export const sortFailureMessage = (bin: string, result: { stdout: string; stderr: string }): string => {
 	const output = result.stderr.trim() || result.stdout.trim();
 
-	return output === '' ? `${bin} failed; the files are written` : `${bin} failed; the files are written\n${output}`;
+	return output === ''
+		? `Could not sort package.json with ${bin}; the files are written`
+		: `Could not sort package.json with ${bin}; the files are written\n${output}`;
 };
 
 const sortPackageJson = async (preflight: InitPreflight, relativeTarget: string, cwd: string): Promise<void> => {
@@ -153,7 +155,7 @@ const sortPackageJson = async (preflight: InitPreflight, relativeTarget: string,
 };
 
 const installError = (preflight: InitPreflight, relativeTarget: string): CliError => {
-	return new CliError('install failed; the files are written', {
+	return new CliError('Install failed; the files are written', {
 		commands: nextStepCommands(preflight, relativeTarget, `${preflight.pm} install`)
 	});
 };
@@ -167,7 +169,7 @@ const runInit = async (dirArg: string | undefined, options: InitOptions, command
 	validateInitArguments(positional, options);
 
 	if (options.dryRun !== true && options.yes !== true && !isInteractive()) {
-		throw new CliError('not a terminal', {
+		throw new CliError('Not a terminal', {
 			hint: 'Run it in a terminal, or pass --yes'
 		});
 	}
@@ -193,7 +195,7 @@ const runInit = async (dirArg: string | undefined, options: InitOptions, command
 		});
 
 		if (isCancel(confirmed) || confirmed !== true) {
-			throw new CliError('cancelled, nothing written');
+			throw new CliError('Cancelled, nothing written');
 		}
 	}
 

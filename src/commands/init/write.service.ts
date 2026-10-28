@@ -24,7 +24,7 @@ export const applyInitPlan = async (plan: InitPlan): Promise<void> => {
 		if (!(await gitInit(plan.targetDir))) {
 			const dir = basename(plan.targetDir);
 
-			throw new CliError(`git init failed in ${dir}`, {
+			throw new CliError(`Could not run git init in ${dir}`, {
 				label: 'To see why',
 				commands: [`cd ${shellQuote(dir)}`, 'git init']
 			});

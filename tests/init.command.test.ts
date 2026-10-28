@@ -163,7 +163,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit();
 
-		expect(stderr).toBe(['│', '└  not a terminal', '   ↳ Run it in a terminal, or pass --yes', ''].join('\n'));
+		expect(stderr).toBe(['│', '└  Not a terminal', '   ↳ Run it in a terminal, or pass --yes', ''].join('\n'));
 		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);
 		expect(snapshotDir(dir)).toBe(before);
@@ -213,7 +213,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit();
 
-		expect(stderr).toBe(['│', '└  cancelled, nothing written', ''].join('\n'));
+		expect(stderr).toBe(['│', '└  Cancelled, nothing written', ''].join('\n'));
 		expect(stderr).not.toContain('\u001b');
 		expect(process.exitCode).toBe(1);
 		expect(snapshotDir(dir)).toBe(before);
@@ -228,7 +228,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit();
 
-		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('Install failed; the files are written');
 		expect(stderr).toContain('To finish:');
 		expect(stderr).toContain('$ npm install');
 		expect(stderr).not.toContain('$ cd');
@@ -247,7 +247,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('my-app', '-y');
 
-		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('Install failed; the files are written');
 		expect(stderr).toContain('$ cd my-app');
 		expect(stderr).toContain('$ npm install');
 		expect(stderr).not.toContain('\u001b');
@@ -286,7 +286,7 @@ describe('the init command', () => {
 		).toEqual(['bun', 'pnpm', 'yarn', 'npm']);
 		expect(selectCalls[0]?.initialValue).toBe('npm');
 
-		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('Install failed; the files are written');
 		expect(stderr).toContain('$ cd my-app');
 		expect(stderr).toContain('$ npm install');
 		expect(process.exitCode).toBe(1);
@@ -297,7 +297,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('--pm', 'npm');
 
-		expect(stderr).toContain('--pm needs <dir>');
+		expect(stderr).toContain('Option --pm needs <dir>');
 		expect(process.exitCode).toBe(1);
 	});
 
@@ -316,7 +316,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('my-app', '-f');
 
-		expect(stderr).toContain('--force is for an existing project');
+		expect(stderr).toContain('Option --force is for an existing project');
 		expect(process.exitCode).toBe(1);
 	});
 
@@ -325,14 +325,14 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('my-app', '--framework', 'react');
 
-		expect(stderr).toContain('react is not supported yet');
+		expect(stderr).toContain('Framework react is not supported yet');
 		expect(process.exitCode).toBe(1);
 	});
 
 	it('suggests --dry-run for a misspelled flag and exits 1', async () => {
 		const { stderr } = await runInit('--dryrun');
 
-		expect(stderr).toContain("error: unknown option '--dryrun'");
+		expect(stderr).toContain("Error: unknown option '--dryrun'");
 		expect(stderr).toContain('(Did you mean --dry-run?)');
 		expect(process.exitCode).toBe(1);
 	});
@@ -342,7 +342,7 @@ describe('the init command', () => {
 
 		const { stderr } = await runInit('my-app', '--force');
 
-		expect(stderr).toContain('--force is for an existing project');
+		expect(stderr).toContain('Option --force is for an existing project');
 		expect(process.exitCode).toBe(1);
 	});
 
@@ -400,7 +400,7 @@ describe('the init command', () => {
 			});
 		});
 
-		expect(stderr).toContain("error: unknown option '--yes'");
+		expect(stderr).toContain("Error: unknown option '--yes'");
 		expect(process.exitCode).toBe(1);
 	});
 });
@@ -412,7 +412,7 @@ describe('the sort failure message', () => {
 				stdout: '',
 				stderr: 'Prettier 3.9.10\n'
 			})
-		).toBe('prettier failed; the files are written\nPrettier 3.9.10');
+		).toBe('Could not sort package.json with prettier; the files are written\nPrettier 3.9.10');
 	});
 
 	it('falls back to stdout when stderr is empty, and stays on one line without output', () => {
@@ -421,12 +421,12 @@ describe('the sort failure message', () => {
 				stdout: 'boom\n',
 				stderr: ''
 			})
-		).toBe('prettier-package-json failed; the files are written\nboom');
+		).toBe('Could not sort package.json with prettier-package-json; the files are written\nboom');
 		expect(
 			sortFailureMessage('prettier', {
 				stdout: '',
 				stderr: ''
 			})
-		).toBe('prettier failed; the files are written');
+		).toBe('Could not sort package.json with prettier; the files are written');
 	});
 });

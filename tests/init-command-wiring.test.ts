@@ -105,7 +105,7 @@ describe('init wired through commander', () => {
 		expect(calls.confirms).toBe(0);
 		// macOS resolves /var to /private/var under process.chdir, and process.cwd() follows it
 		expect(calls.install).toEqual([['pnpm', realpathSync(dir)]]);
-		expect(stderr).toContain('install failed; the files are written');
+		expect(stderr).toContain('Install failed; the files are written');
 		expect(stderr).toContain('$ pnpm install');
 		expect(stderr).not.toContain('$ cd');
 		expect(process.exitCode).toBe(1);
@@ -135,7 +135,7 @@ describe('init wired through commander', () => {
 
 		const { stderr } = await runInit('-y');
 
-		expect(stderr).toContain('prettier-package-json failed; the files are written');
+		expect(stderr).toContain('Could not sort package.json with prettier-package-json; the files are written');
 		expect(stderr).toContain('To finish:');
 		expect(stderr).toContain('$ pnpm exec prettier-package-json --write package.json');
 		expect(process.exitCode).toBe(1);
@@ -150,7 +150,7 @@ describe('init wired through commander', () => {
 
 		const { stderr } = await runInit('.', '-y');
 
-		expect(stderr).toContain('prettier-package-json failed; the files are written');
+		expect(stderr).toContain('Could not sort package.json with prettier-package-json; the files are written');
 		expect(stderr).toContain('$ npx prettier-package-json --write package.json');
 		expect(stderr).not.toContain('$ cd');
 		expect(process.exitCode).toBe(1);

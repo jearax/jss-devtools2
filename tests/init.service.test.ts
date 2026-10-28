@@ -28,7 +28,7 @@ describe('init argument rules', () => {
 			messageOf(() => {
 				validateInitArguments([], { framework: 'react' });
 			})
-		).toBe('react is not supported yet');
+		).toBe('Framework react is not supported yet');
 		expectsUnchangedDir(dir, before);
 
 		await removeDir(dir);
@@ -42,7 +42,7 @@ describe('init argument rules', () => {
 			messageOf(() => {
 				validateInitArguments([], { pm: 'pnpm' });
 			})
-		).toBe('--pm needs <dir>');
+		).toBe('Option --pm needs <dir>');
 		expectsUnchangedDir(dir, before);
 
 		await removeDir(dir);
@@ -56,7 +56,7 @@ describe('init argument rules', () => {
 			messageOf(() => {
 				validateInitArguments(['my-app'], { force: true });
 			})
-		).toBe('--force is for an existing project');
+		).toBe('Option --force is for an existing project');
 		expectsUnchangedDir(dir, before);
 
 		await removeDir(dir);

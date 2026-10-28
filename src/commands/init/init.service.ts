@@ -7,19 +7,19 @@ export const validateInitArguments = (positional: readonly string[], options: In
 	const dir = positional[0];
 
 	if (options.framework !== undefined && options.framework !== 'node') {
-		throw new CliError(`${options.framework} is not supported yet`, {
+		throw new CliError(`Framework ${options.framework} is not supported yet`, {
 			hint: 'Only node is'
 		});
 	}
 
 	if (dir === undefined && options.pm !== undefined) {
-		throw new CliError('--pm needs <dir>', {
+		throw new CliError('Option --pm needs <dir>', {
 			hint: 'An existing project uses the manager it has'
 		});
 	}
 
 	if (dir !== undefined && options.force === true) {
-		throw new CliError('--force is for an existing project', {
+		throw new CliError('Option --force is for an existing project', {
 			hint: 'Drop it when creating one'
 		});
 	}

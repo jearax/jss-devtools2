@@ -797,3 +797,27 @@ single-command preflight errors on one line. Every exit 1 message has up to thre
 The wording of every error row in
 [the message review](../reports/planner-261028-1136-init-message-rewrites.md) is approved with it,
 in the form listed in [the task](../reports/planner-261028-2338-error-output-format-task.md).
+
+## Capital first line, placeholder and cancel key
+
+Decided 2026-10-29: "Duyệt viết hoa dòng lỗi như bạn đề xuất, sử dụng <project-name>" and "`↑/↓ to
+navigate • Enter: confirm`, tôi nghĩ nên thêm esc|ctrl+c" (user).
+
+- The first line of every error starts with a capital letter. When it would start with a file, a
+  flag, a command or a value the user typed, the sentence is rewritten so that word is not first
+  (`Invalid JSON in package.json: …`, not `package.json is not valid JSON`). Commander's own errors
+  get the capital too; their words stay. The rewritten lines are listed in
+  [the task](../reports/planner-261029-0020-capital-errors-and-cancel-key-task.md).
+- The placeholder in a suggested command is `<project-name>`, replacing `<name>`.
+- The package manager question's footer adds `Esc/Ctrl+C: cancel`. Clack 1.8.1 maps Esc to cancel
+  (`["escape", "cancel"]` in the bundle) and reads the footer from its exported
+  `SELECT_INSTRUCTIONS` array at render time.
+
+## lint-staged without repeated work
+
+Decided 2026-10-29: "strategy là `bỏ prettier --write thừa` (tức là tôi đã test với flow của git
+commit + husky trước đó, sao cho hạn hết duplicate command)" (user). Each staged file goes through
+each tool at most once and the commit output lists as few commands as the file types need: no
+`prettier --write` after `eslint --fix` (the `prettier/prettier` rule already formats), and the other
+globs merged or trimmed where a real commit shows it is safe. Same change in this repository's
+`package.json` and in the `LINT_STAGED` that init writes.
