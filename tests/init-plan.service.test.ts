@@ -1,4 +1,5 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -12,6 +13,7 @@ import {
 	pnpmWorkspaceYamlExistingTemplate,
 	pnpmWorkspaceYamlTemplate
 } from '@/commands/init/templates/pnpm-workspace-yaml.template';
+import { applyInitPlan } from '@/commands/init/write.service';
 import { localBinCommandLine } from '@/core/adapters/package-manager.adapter';
 
 import { makeEmptyDir, removeDir } from './support/tmp-dir';
@@ -627,6 +629,44 @@ describe('sorting the plan list', () => {
 			'eslint.config.mjs',
 			'package.json'
 		]);
+	});
+
+	it('deletes a legacy ESLint config and the eslintConfig key with -f', async () => {
+		const rawPackageJson = '{"name":"x","eslintConfig":{"rules":{}},"prettier":{"singleQuote":true}}';
+
+		const dir = await makeProject({
+			'package.json': rawPackageJson,
+			'tsconfig.json': '{}\n',
+			'.eslintrc.json': 'old\n'
+		});
+
+		const plan = buildInitPlan(existingPreflight(dir, rawPackageJson), { force: true });
+
+		expect(
+			plan.entries
+				.filter((entry) => {
+					return entry.action === 'delete';
+				})
+				.map((entry) => {
+					return entry.path;
+				})
+		).toEqual(['.eslintrc.json']);
+
+		const packageEntry = plan.entries.find((entry) => {
+			return entry.path === 'package.json';
+		});
+
+		const merged = JSON.parse(packageEntry?.content ?? '{}') as Record<string, unknown>;
+
+		expect(merged['eslintConfig']).toBeUndefined();
+		expect(merged['name']).toBe('x');
+
+		await applyInitPlan(plan);
+
+		expect(existsSync(join(dir, '.eslintrc.json'))).toBe(false);
+		expect(JSON.parse(await readFile(join(dir, 'package.json'), 'utf8'))).not.toHaveProperty('eslintConfig');
+		expect(JSON.parse(await readFile(join(dir, 'package.json'), 'utf8'))).toHaveProperty('name', 'x');
+		expect(existsSync(join(dir, 'tsconfig.json'))).toBe(true);
 	});
 
 	it('puts a folder before a file at the same level', () => {

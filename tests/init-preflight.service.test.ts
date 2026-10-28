@@ -481,10 +481,36 @@ describe('preflight, existing mode', () => {
 		expectUnchanged(dir, before);
 	});
 
+	it('exits 1 listing every legacy ESLint config name that is already there', async () => {
+		for (const name of [
+			'.eslintrc.js',
+			'.eslintrc.cjs',
+			'.eslintrc.yaml',
+			'.eslintrc.yml',
+			'.eslintrc.json',
+			'.eslintrc'
+		] as const) {
+			const dir = await makeGitProject({
+				...EXISTING_PROJECT,
+				[name]: 'old\n'
+			});
+
+			const before = snapshotDir(dir);
+
+			expect(
+				await failureMessage(() => {
+					return preflightInit(dir, [], {});
+				})
+			).toBe(`these files already exist: ${name}; to replace them: jss-devtools init --force`);
+			expectUnchanged(dir, before);
+		}
+	});
+
 	it('exits 1 listing a prettier or commitlint key in package.json, and the folder is unchanged', async () => {
 		for (const [key, value] of [
 			['prettier', '{"singleQuote":true}'],
-			['commitlint', '{"extends":["@commitlint/config-conventional"]}']
+			['commitlint', '{"extends":["@commitlint/config-conventional"]}'],
+			['eslintConfig', '{"rules":{}}']
 		] as const) {
 			const dir = await makeGitProject({
 				...EXISTING_PROJECT,

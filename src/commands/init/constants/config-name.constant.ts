@@ -3,7 +3,8 @@ export type ConfigNames = {
 	packageJsonKeys: readonly string[];
 };
 
-// Names read from the ESLint, Prettier and commitlint docs on 2026-10-27.
+// Names read from the ESLint, Prettier and commitlint docs on 2026-10-27; the legacy ESLint names
+// are configFilenames from @eslint/eslintrc, read 2026-10-28.
 export const CONFIG_NAMES: Readonly<Record<'eslint' | 'prettier' | 'commitlint', ConfigNames>> = {
 	eslint: {
 		files: [
@@ -12,9 +13,15 @@ export const CONFIG_NAMES: Readonly<Record<'eslint' | 'prettier' | 'commitlint',
 			'eslint.config.cjs',
 			'eslint.config.ts',
 			'eslint.config.mts',
-			'eslint.config.cts'
+			'eslint.config.cts',
+			'.eslintrc.js',
+			'.eslintrc.cjs',
+			'.eslintrc.yaml',
+			'.eslintrc.yml',
+			'.eslintrc.json',
+			'.eslintrc'
 		],
-		packageJsonKeys: []
+		packageJsonKeys: ['eslintConfig']
 	},
 	prettier: {
 		files: [

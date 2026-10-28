@@ -174,7 +174,7 @@ const preflightExisting = async (cwd: string, options: InitOptions): Promise<Ini
 
 	const fileConflicts = ownedConflicts(cwd, options.vscode !== false);
 
-	const keyConflicts = (['prettier', 'commitlint'] as const).flatMap((tool) => {
+	const keyConflicts = (['eslint', 'prettier', 'commitlint'] as const).flatMap((tool) => {
 		return CONFIG_NAMES[tool].packageJsonKeys
 			.filter((key) => {
 				return parsed[key] !== undefined;

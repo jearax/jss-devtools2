@@ -70,7 +70,7 @@ export const mergePackageJson = (parsed: Record<string, unknown>, input: Package
 	}
 
 	if (input.force) {
-		for (const tool of ['prettier', 'commitlint'] as const) {
+		for (const tool of ['eslint', 'prettier', 'commitlint'] as const) {
 			for (const key of CONFIG_NAMES[tool].packageJsonKeys) {
 				if (merged[key] !== undefined) {
 					delete merged[key];
