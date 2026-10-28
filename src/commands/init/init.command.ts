@@ -34,6 +34,8 @@ const DIR_DESCRIPTION = 'Folder for a new project (missing or empty); omit it to
 
 const PM_CHOICES = PACKAGE_MANAGERS;
 
+const PM_QUESTION_ORDER = [...PACKAGE_MANAGERS].reverse();
+
 const EXAMPLES = `
 Examples:
   $ jss-devtools init my-app              Create my-app, asking for the package manager
@@ -84,8 +86,8 @@ const askPackageManager = async (dirGiven: boolean, options: InitOptions): Promi
 	}
 
 	const chosen = await select<PackageManagerName>({
-		message: 'package manager',
-		options: PM_CHOICES.map((pm) => {
+		message: 'Which package manager?',
+		options: PM_QUESTION_ORDER.map((pm) => {
 			return {
 				value: pm,
 				label: pm
@@ -190,7 +192,7 @@ const runInit = async (dirArg: string | undefined, options: InitOptions, command
 
 	if (options.yes !== true) {
 		const confirmed = await confirm({
-			message: `write ${plan.entries.length} files to ${preflight.projectName} and install?`,
+			message: `Write ${plan.entries.length} files to ${preflight.projectName} and install?`,
 			initialValue: true
 		});
 

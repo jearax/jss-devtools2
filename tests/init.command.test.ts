@@ -27,6 +27,10 @@ const selectCalls = vi.hoisted(() => {
 	return [] as Array<{ message: string; options: Array<{ value: string; label: string }>; initialValue?: string }>;
 });
 
+const confirmCalls = vi.hoisted(() => {
+	return [] as Array<{ message: string; initialValue?: boolean }>;
+});
+
 vi.mock('@/core/ui/terminal.ui', async (importOriginal) => {
 	const actual = await importOriginal<Record<string, unknown>>();
 
@@ -48,7 +52,9 @@ vi.mock('@clack/prompts', async (importOriginal) => {
 
 			return Promise.resolve(answers.pm);
 		},
-		confirm: () => {
+		confirm: (input: { message: string; initialValue?: boolean }) => {
+			confirmCalls.push(input);
+
 			return Promise.resolve(answers.confirm);
 		}
 	};
@@ -92,6 +98,7 @@ const originalRegistry = process.env['npm_config_registry'];
 
 beforeEach(() => {
 	selectCalls.length = 0;
+	confirmCalls.length = 0;
 	interactivity.enabled = false;
 	answers.pm = 'npm';
 	answers.confirm = true;
@@ -269,7 +276,7 @@ describe('the init command', () => {
 		expect(existsSync(join(dir, 'apps', 'My App', 'src', 'main.ts'))).toBe(true);
 	}, 120_000);
 
-	it('asks for the package manager in create mode when the terminal is interactive', async () => {
+	it('asks the package manager question in the decided order and wording', async () => {
 		await useCwd();
 
 		useDeadRegistry();
@@ -279,12 +286,16 @@ describe('the init command', () => {
 		const { stderr } = await runInit('my-app');
 
 		expect(selectCalls).toHaveLength(1);
+		expect(selectCalls[0]?.message).toBe('Which package manager?');
 		expect(
 			selectCalls[0]?.options.map((option) => {
 				return option.value;
 			})
-		).toEqual(['bun', 'pnpm', 'yarn', 'npm']);
+		).toEqual(['npm', 'yarn', 'pnpm', 'bun']);
 		expect(selectCalls[0]?.initialValue).toBe('npm');
+
+		expect(confirmCalls).toHaveLength(1);
+		expect(confirmCalls[0]?.message).toMatch(/^Write \d+ files to my-app and install\?$/);
 
 		expect(stderr).toContain('Install failed; the files are written');
 		expect(stderr).toContain('$ cd my-app');
