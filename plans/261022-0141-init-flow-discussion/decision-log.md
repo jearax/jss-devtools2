@@ -895,3 +895,12 @@ waits for the harness module, which brings the managed files it would compare ag
 
 The package manager rows follow the order fixed under "Package manager order" (bun, pnpm, yarn,
 npm), not the npm-first order of the mockup.
+
+## Colours in `--help`
+
+Asked 2026-10-30: "`Options: , Examples: ,...` thì cần có màu lên, để phân biệt" (user). Decided the
+same day, option "Bold + vàng" (user): section titles (`Usage:`, `Arguments:`, `Options:`,
+`Commands:`, `Examples:`) bold yellow. The rest follows the colours the CLI already uses, as
+proposed: command names, option flags, argument names and example commands cyan; placeholders
+(`<name>`, `[dir]`, `[options]`), the `(values: …; default: …)` suffix and the `$` of an example
+dim; descriptions uncoloured. Piped, `CI=1` or `NO_COLOR`, the help text stays exactly as today.

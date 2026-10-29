@@ -140,6 +140,10 @@ export const nextStepLines = (
 	});
 };
 
+export const helpTitle = (title: string): string => {
+	return styleText(['bold', 'yellow'], title);
+};
+
 export const nextStepBlock = (
 	label: string,
 	commands: readonly string[],

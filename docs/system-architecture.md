@@ -117,6 +117,13 @@ run with `FORCE_COLOR` set keeps its colour codes and a run with `NO_COLOR` set 
 layer only guarantees that the animation, and with it the cursor codes, never reaches a piped
 output.
 
+The help is coloured through commander's help style hooks in `src/cli.ts` and the `Examples`
+section in `init.command.ts`: section titles bold yellow, flags, command, argument and example
+command names cyan, and placeholders plus the `(values: …; default: …)` suffix dim. Commander
+strips the codes from every help write — the formatted help and `addHelpText` text alike — when
+the target stream has no colours, so piped, `CI=1` and `NO_COLOR` runs print the help byte for
+byte as uncoloured, and wrapping still measures width without the codes.
+
 The animated spinner is drawn in `src/core/ui/animated-spinner.ui.ts` and not by clack. Clack's
 spinner registers global process handlers while it runs: the `unhandledRejection` one swallows a
 detached rejection, so the process ends with exit 0, and the `SIGINT` one makes Ctrl+C print

@@ -11,6 +11,7 @@ import { CliError } from '@/core/errors/cli.error';
 import { showBanner } from '@/core/ui/banner.ui';
 import {
 	createTaskLog,
+	helpTitle,
 	isInteractive,
 	nextStepBlock,
 	nextStepLines,
@@ -36,13 +37,31 @@ const PM_CHOICES = PACKAGE_MANAGERS;
 
 const PM_QUESTION_ORDER = [...PACKAGE_MANAGERS].reverse();
 
-const EXAMPLES = `
-Examples:
-  $ jss-devtools init my-app              Create my-app, asking for the package manager
-  $ jss-devtools init my-app --pm pnpm -y Create my-app with pnpm, no questions (CI)
-  $ jss-devtools init                     Set up the project in the current folder
-  $ jss-devtools init -f                  Replace existing ESLint, Prettier and commitlint configs
-  $ jss-devtools init --dry-run           Show what would change, write nothing`;
+const EXAMPLE_ROWS: ReadonlyArray<readonly [string, string]> = [
+	['jss-devtools init my-app', 'Create my-app, asking for the package manager'],
+	['jss-devtools init my-app --pm pnpm -y', 'Create my-app with pnpm, no questions (CI)'],
+	['jss-devtools init', 'Set up the project in the current folder'],
+	['jss-devtools init -f', 'Replace existing ESLint, Prettier and commitlint configs'],
+	['jss-devtools init --dry-run', 'Show what would change, write nothing']
+];
+
+const examplesText = (): string => {
+	const commandWidth = Math.max(
+		...EXAMPLE_ROWS.map(([command]) => {
+			return command.length;
+		})
+	);
+
+	return [
+		'',
+		helpTitle('Examples:'),
+		...EXAMPLE_ROWS.map(([command, description]) => {
+			const gap = ' '.repeat(commandWidth - command.length + 1);
+
+			return `  ${styleText('dim', '$ ')}${styleText('cyan', command)}${gap}${description}`;
+		})
+	].join('\n');
+};
 
 // Shows `default: "npm"` in help without a parsed default: --pm must stay undefined when it is
 // not passed, so the question runs and the no-folder check still errors.
@@ -68,7 +87,7 @@ export const registerInitCommand = (program: Command): void => {
 		.option('--no-vscode', 'Do not write .vscode/ (default: written)')
 		.option(COMMON_OPTIONS.yes.flags, COMMON_OPTIONS.yes.description)
 		.option(COMMON_OPTIONS.dryRun.flags, COMMON_OPTIONS.dryRun.description)
-		.addHelpText('after', EXAMPLES)
+		.addHelpText('after', examplesText)
 		.action(runInit);
 };
 

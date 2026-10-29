@@ -1,4 +1,5 @@
 import { realpathSync } from 'node:fs';
+import { styleText } from 'node:util';
 
 import { Command, CommanderError } from 'commander';
 
@@ -7,10 +8,19 @@ import { registerInitCommand } from '@/commands/init/init.command';
 import { PACKAGE } from '@/core/constants/package.constant';
 import { CliError } from '@/core/errors/cli.error';
 import { bannerText, showBanner } from '@/core/ui/banner.ui';
-import { isInteractive, renderError } from '@/core/ui/terminal.ui';
+import { helpTitle, isInteractive, renderError } from '@/core/ui/terminal.ui';
 
 export type ProgramOptions = {
 	exitOverride?: boolean;
+};
+
+const styleHelpTerm = (term: string): string => {
+	return term
+		.split(' ')
+		.map((word) => {
+			return word[0] === '<' || word[0] === '[' ? styleText('dim', word) : styleText('cyan', word);
+		})
+		.join(' ');
 };
 
 // Only `src/cli.ts` may construct the root command: commands attach to it, they do not replace it.
@@ -45,6 +55,11 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 	});
 
 	program.configureHelp({
+		styleTitle: helpTitle,
+		styleUsage: styleHelpTerm,
+		styleOptionTerm: styleHelpTerm,
+		styleSubcommandTerm: styleHelpTerm,
+		styleArgumentTerm: styleHelpTerm,
 		optionDescription: (option) => {
 			const parts: string[] = [];
 
@@ -70,6 +85,17 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 			}
 
 			return parts.length === 0 ? option.description : `${option.description} (${parts.join('; ')})`;
+		},
+		styleOptionDescription: (description) => {
+			if (!description.endsWith(')')) {
+				return description;
+			}
+
+			const start = description.lastIndexOf(' (');
+
+			return start === -1
+				? description
+				: `${description.slice(0, start)} ${styleText('dim', description.slice(start + 1))}`;
 		}
 	});
 
