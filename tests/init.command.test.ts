@@ -62,7 +62,7 @@ vi.mock('@clack/prompts', async (importOriginal) => {
 
 const run = promisify(execFile);
 
-const HELP_BLOCK = `Usage: jss-devtools init [options] [dir]
+const HELP_BLOCK = `Usage: jss-devtools init [dir] [options]
 
 Create a project, or set up the current one
 
@@ -207,6 +207,17 @@ describe('the init command', () => {
 		expect(stdout).toContain('Dry run: nothing written\n   To apply:\n');
 		expect(stdout).toContain(`${applyLine}\n`);
 		expect(stdout).not.toContain('\u001b');
+	});
+
+	it('parses init --dry-run my-app and init my-app --dry-run the same', async () => {
+		await useCwd();
+
+		const flagFirst = await runInit('--dry-run', 'my-app');
+		const dirFirst = await runInit('my-app', '--dry-run');
+
+		expect(dirFirst.stdout).toBe(flagFirst.stdout);
+		expect(flagFirst.stdout).toContain('Dry run: nothing written');
+		expect(flagFirst.stdout).toContain('     $ jss-devtools init my-app\n');
 	});
 
 	it('exits 1 when the confirmation is declined, leaving the folder unchanged', async () => {

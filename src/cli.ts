@@ -1,7 +1,7 @@
 import { realpathSync } from 'node:fs';
 import { styleText } from 'node:util';
 
-import { Command, CommanderError } from 'commander';
+import { Command, CommanderError, Help } from 'commander';
 
 import { registerDoctorCommand } from '@/commands/doctor/doctor.command';
 import { registerInitCommand } from '@/commands/init/init.command';
@@ -21,6 +21,18 @@ const styleHelpTerm = (term: string): string => {
 			return word[0] === '<' || word[0] === '[' ? styleText('dim', word) : styleText('cyan', word);
 		})
 		.join(' ');
+};
+
+const defaultHelp = new Help();
+
+const optionsLast = (term: string): string => {
+	const words = term.split(' ');
+
+	const kept = words.filter((word) => {
+		return word !== '[options]';
+	});
+
+	return kept.length === words.length ? term : [...kept, '[options]'].join(' ');
 };
 
 // Only `src/cli.ts` may construct the root command: commands attach to it, they do not replace it.
@@ -56,6 +68,12 @@ export const createProgram = ({ exitOverride = false }: ProgramOptions = {}): Co
 
 	program.configureHelp({
 		styleTitle: helpTitle,
+		commandUsage: (cmd) => {
+			return optionsLast(defaultHelp.commandUsage(cmd));
+		},
+		subcommandTerm: (cmd) => {
+			return optionsLast(defaultHelp.subcommandTerm(cmd));
+		},
 		styleUsage: styleHelpTerm,
 		styleOptionTerm: styleHelpTerm,
 		styleSubcommandTerm: styleHelpTerm,

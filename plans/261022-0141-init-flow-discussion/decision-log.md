@@ -904,3 +904,13 @@ same day, option "Bold + vàng" (user): section titles (`Usage:`, `Arguments:`, 
 proposed: command names, option flags, argument names and example commands cyan; placeholders
 (`<name>`, `[dir]`, `[options]`), the `(values: …; default: …)` suffix and the `$` of an example
 dim; descriptions uncoloured. Piped, `CI=1` or `NO_COLOR`, the help text stays exactly as today.
+
+## `[options]` last in every usage
+
+Asked 2026-10-30: "`Usage: jss-devtools init [options] [dir]` -> `Usage: jss-devtools init [dir]
+[options]`" (user). Decided the same day, option "Mọi command": "nếu đã chốt thì phải apply cho tất
+cả, để align hết, thống nhất" (user). `[options]` stands last in every usage the help prints: the
+root (`jss-devtools [command] [options]`), the `Commands:` list (`init [dir] [options]`, `doctor
+[options]`) and each command's `Usage:` line. One rule, so a new command follows it. Only the help
+changes: commander already accepts options before or after the arguments, and the examples already
+put the folder first.

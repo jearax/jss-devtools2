@@ -61,7 +61,7 @@ describe('help colours', () => {
 		expect(output).toContain(helpTitle('Arguments:'));
 		expect(output).toContain(helpTitle('Options:'));
 		expect(output).toContain(helpTitle('Examples:'));
-		expect(output).toContain(`${helpTitle('Usage:')} ${styleHelpTerm('jss-devtools init [options] [dir]')}`);
+		expect(output).toContain(`${helpTitle('Usage:')} ${styleHelpTerm('jss-devtools init [dir] [options]')}`);
 		expect(output).toContain(`  ${styleHelpTerm('dir')}                 Folder for a new project`);
 		expect(output).toContain(`  ${styleHelpTerm('--pm <name>')}         Package manager for a new project `);
 		expect(output).toContain(`  ${styleHelpTerm('--force, -f')}         Replace existing ESLint`);
@@ -77,9 +77,11 @@ describe('help colours', () => {
 
 		const output = await run(process.stdout, ['--help']);
 
+		expect(output).toContain(helpTitle('Usage:'));
+		expect(output).toContain(`${helpTitle('Usage:')} ${styleHelpTerm('jss-devtools [command] [options]')}`);
 		expect(output).toContain(helpTitle('Commands:'));
 		expect(output).toContain(`  ${styleHelpTerm('doctor')}`);
-		expect(output).toContain(`  ${styleHelpTerm('init [options] [dir]')}`);
+		expect(output).toContain(`  ${styleHelpTerm('init [dir] [options]')}`);
 		expect(output).toContain(`  ${styleHelpTerm('help [command]')}`);
 	});
 

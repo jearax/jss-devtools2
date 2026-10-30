@@ -172,7 +172,7 @@ describe('standalone bundle', () => {
 		const { stdout, code } = await cli('init', '--help');
 
 		expect(code).toBe(0);
-		expect(stdout).toBe(`Usage: jss-devtools init [options] [dir]
+		expect(stdout).toBe(`Usage: jss-devtools init [dir] [options]
 
 Create a project, or set up the current one
 
