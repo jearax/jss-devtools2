@@ -124,6 +124,11 @@ strips the codes from every help write — the formatted help and `addHelpText` 
 the target stream has no colours, so piped, `CI=1` and `NO_COLOR` runs print the help byte for
 byte as uncoloured, and wrapping still measures width without the codes.
 
+Every usage line puts `[options]` last — `jss-devtools [command] [options]`,
+`init [dir] [options]` — through one rule in the same `configureHelp` call in `src/cli.ts`, so a
+new command follows it without its own `.usage()`. Parsing is unchanged: options are accepted
+before or after the folder.
+
 The animated spinner is drawn in `src/core/ui/animated-spinner.ui.ts` and not by clack. Clack's
 spinner registers global process handlers while it runs: the `unhandledRejection` one swallows a
 detached rejection, so the process ends with exit 0, and the `SIGINT` one makes Ctrl+C print
@@ -150,6 +155,13 @@ banner fits in 80 columns.
 returns it when the help is not an error, and a listener registered before `.version()` writes it
 before the version. Piped, captured or in CI there is no banner, so `--version` is exactly
 `x.y.z`, which is what `scripts/install.sh` reads.
+
+The art takes a left to right gradient over the design system's primary colours, declared beside
+it in `src/core/constants/banner.constant.ts`, with the shadow characters dimmed. The colour depth
+comes from the stream's `getColorDepth`: a truecolor terminal gets the gradient, a 256-colour one
+the nearest colours, a 16-colour one a single magenta, and `NO_COLOR` or a non-terminal no codes.
+The depth comes from Node so one rule is shared with `styleText`, not a second copy of the
+environment checks.
 
 ## Package facts
 
@@ -372,7 +384,7 @@ One fact, one home. Nothing is written twice in two files that can drift.
 | Runtime dependencies bundled   | Same list                                          | `tests/bundle.test.ts`, as the real guard                                |
 | Node floor                     | `package.json` `engines.node`, `>=24.11.0`         | pnpm (`engineStrict`), consumers, both CI jobs, `PACKAGE.nodeFloor`      |
 | Interactive-terminal rule      | `src/core/ui/terminal.ui.ts` `isInteractive`       | the terminal layer                                                       |
-| Banner art                     | `src/core/constants/banner.constant.ts`            | `src/core/ui/banner.ui.ts`                                               |
+| Banner art and colours         | `src/core/constants/banner.constant.ts`            | `src/core/ui/banner.ui.ts`                                               |
 | Exit codes                     | `src/core/constants/exit-code.constant.ts`         | `CliError`, the commands that end with their own code                    |
 | Installer and home-page floor  | `scripts/install.sh`, `docker/home.html`           | `tests/install.test.ts`, which proves both equal the floor               |
 | Release checksum format        | `scripts/stage-release.mjs`                        | `scripts/install.sh`                                                     |
