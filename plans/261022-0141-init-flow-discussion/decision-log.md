@@ -914,3 +914,20 @@ root (`jss-devtools [command] [options]`), the `Commands:` list (`init [dir] [op
 [options]`) and each command's `Usage:` line. One rule, so a new command follows it. Only the help
 changes: commander already accepts options before or after the arguments, and the examples already
 put the folder first.
+
+## Banner: the Node.js label
+
+Decided 2026-10-30: "`node v24.22.0 · macOS arm64` -> `Node.js v24.22.0 · macOS arm64`" (user), the
+same name doctor's first row uses. The banner art and colours are under review in
+[the banner research](../reports/researcher-261030-1009-banner-art-and-colour.md).
+
+## Banner colours
+
+Asked 2026-10-30: "Tôi không thích kiểu hiện tại, tô 3 lớp màu ... dùng cách 2, nhưng màu có thể
+base-on từ design system (DS) này được không? `https://design-system.jjuidev.com/vi/home`" (user).
+Decided the same day from the preview, option D1: "Chốt, dùng D1" (user). The art stays figlet's
+ANSI Shadow `JSS`. It is coloured with a left-to-right gradient over the design system's default skin
+primary ramp, 300 `#e1a9d5`, 400 `#cd89bc`, 500 `#ab6496` (read from the site's CSS, `:root`
+tokens `--color-primary-300/400/500`, on 2026-10-30), with the shadow characters `╚╔╗╝║═` dimmed.
+It replaces the one-colour-per-row cyan, blue, magenta. Research:
+[researcher-261030-1009-banner-art-and-colour.md](../reports/researcher-261030-1009-banner-art-and-colour.md).
